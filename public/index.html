@@ -14,23 +14,16 @@
         ::-webkit-scrollbar-thumb { background: #1A1B1E; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #111214; }
         .discord-input-placeholder::placeholder { color: #87898C; }
-        #drag-overlay { z-index: 9999; }
+        .msg-ping { background-color: rgba(240, 178, 50, 0.1); border-left: 4px solid #F0B232; }
     </style>
 </head>
 <body class="bg-[#313338] text-[#DBDEE1] h-screen w-screen overflow-hidden flex selection:bg-[#5865F2] selection:text-white relative">
-
-    <!-- Overlay de Drag & Drop -->
-    <div id="drag-overlay" class="hidden absolute inset-0 bg-[#5865F2]/90 backdrop-blur-sm flex-col items-center justify-center text-white border-8 border-dashed border-white m-4 rounded-3xl pointer-events-none transition-all">
-        <i class="fa-solid fa-file-arrow-up text-7xl mb-4"></i>
-        <h2 class="text-4xl font-bold">Solte o arquivo aqui!</h2>
-        <p class="text-lg mt-2 opacity-80">Ele será preparado para envio no chat atual.</p>
-    </div>
 
     <!-- Modal de Login -->
     <div id="login-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] backdrop-blur-sm transition-opacity">
         <div class="bg-[#313338] p-8 rounded-lg shadow-2xl w-full max-w-md">
             <h2 class="text-2xl font-bold text-center text-white mb-2" id="login-title">Bem-vindo ao Danicord!</h2>
-            <p class="text-center text-[#B5BAC1] text-sm mb-6" id="login-subtitle">Pronto para conversar?</p>
+            <p class="text-center text-[#B5BAC1] text-sm mb-6" id="login-subtitle">Aviso: Apenas 1 conta por rede conectada.</p>
             <form id="login-form" class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Nome de Exibição <span class="text-red-500">*</span></label>
@@ -38,40 +31,25 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">URL da Foto (Opcional)</label>
-                    <input type="url" id="avatar" placeholder="https://..." class="w-full bg-[#1E1F22] text-white rounded p-2.5 focus:outline-none focus:ring-1 focus:ring-[#5865F2]">
+                    <input type="url" id="avatar" class="w-full bg-[#1E1F22] text-white rounded p-2.5 focus:outline-none focus:ring-1 focus:ring-[#5865F2]">
                 </div>
                 <button type="submit" class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-semibold py-2.5 rounded mt-4">Entrar</button>
             </form>
         </div>
     </div>
 
-    <!-- Modal de Configurar Perfil -->
-    <div id="profile-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[60] backdrop-blur-sm">
-        <div class="bg-[#313338] rounded-lg shadow-2xl w-full max-w-md overflow-hidden">
-            <div id="profile-banner-preview" class="h-24 bg-[#5865F2] w-full"></div>
-            <div class="p-6 relative">
-                <div class="absolute -top-12 left-6 border-4 border-[#313338] rounded-full">
-                    <img id="profile-avatar-preview" src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-20 h-20 rounded-full object-cover bg-[#1E1F22]">
-                </div>
-                <div class="mt-10 space-y-4">
-                    <h3 class="text-xl font-bold text-white mb-4">Customizar Perfil</h3>
-                    <div>
-                        <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Nome</label>
-                        <input type="text" id="prof-name" class="w-full bg-[#1E1F22] text-white rounded p-2 focus:outline-none focus:ring-1 focus:ring-[#5865F2]">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Cor do Banner</label>
-                        <input type="color" id="prof-color" value="#5865F2" class="w-full h-10 bg-[#1E1F22] rounded cursor-pointer border-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Nova URL da Foto</label>
-                        <input type="url" id="prof-avatar" class="w-full bg-[#1E1F22] text-white rounded p-2 focus:outline-none focus:ring-1 focus:ring-[#5865F2]">
-                    </div>
-                    <div class="flex gap-2 justify-end mt-6">
-                        <button onclick="closeProfile()" class="px-4 py-2 hover:underline text-white">Cancelar</button>
-                        <button onclick="saveProfile()" class="bg-[#5865F2] hover:bg-[#4752C4] text-white px-4 py-2 rounded font-medium">Salvar Mudanças</button>
-                    </div>
-                </div>
+    <!-- Modal Criar Grupo/DM -->
+    <div id="group-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[60] backdrop-blur-sm">
+        <div class="bg-[#313338] p-6 rounded-lg shadow-2xl w-full max-w-md border border-[#1E1F22]">
+            <h3 class="text-xl font-bold text-white mb-4">Criar Novo Grupo</h3>
+            <input type="text" id="group-name" placeholder="Nome do Grupo" class="w-full bg-[#1E1F22] text-white rounded p-2 focus:outline-none focus:ring-1 focus:ring-[#5865F2] mb-4">
+            <p class="text-xs font-bold text-[#87898C] uppercase mb-2">Selecione os Amigos:</p>
+            <div id="group-users-list" class="max-h-40 overflow-y-auto space-y-2 mb-6 p-2 bg-[#2B2D31] rounded">
+                <!-- Lista injetada aqui -->
+            </div>
+            <div class="flex gap-2 justify-end">
+                <button onclick="closeGroupModal()" class="px-4 py-2 hover:underline text-white">Cancelar</button>
+                <button onclick="submitGroup()" class="bg-[#23A559] hover:bg-[#1f8c4b] text-white px-4 py-2 rounded font-medium">Criar Chat</button>
             </div>
         </div>
     </div>
@@ -79,14 +57,11 @@
     <!-- Interface Principal -->
     <div id="app-container" class="hidden h-full w-full flex">
         
-        <!-- Barra de Servidores (Esquerda) -->
-        <nav class="w-[72px] bg-[#1E1F22] h-full flex flex-col items-center py-3 gap-2 flex-shrink-0 z-10" id="server-sidebar">
-            <div onclick="requestJoinServer('global')" class="w-12 h-12 bg-[#5865F2] text-white rounded-[16px] flex items-center justify-center cursor-pointer shadow-lg hover:rounded-xl tooltip-trigger">
-                <i class="fa-solid fa-globe text-2xl"></i>
-            </div>
-            <div class="w-8 h-[2px] bg-[#313338] rounded-full my-1"></div>
-            <!-- Botão Adicionar Servidor -->
-            <div onclick="createServer()" class="w-12 h-12 bg-[#313338] text-[#23A559] hover:bg-[#23A559] hover:text-white rounded-[24px] hover:rounded-xl flex items-center justify-center cursor-pointer transition-all">
+        <!-- Barra de Servidores (Esquerda Dinâmica) -->
+        <nav class="w-[72px] bg-[#1E1F22] h-full flex flex-col items-center py-3 gap-2 flex-shrink-0 overflow-y-auto z-10" id="server-sidebar">
+            <!-- Servidores aparecerão aqui -->
+            <div class="w-8 h-[2px] bg-[#313338] rounded-full my-1 mt-auto" id="server-separator"></div>
+            <div onclick="createServer()" class="w-12 h-12 bg-[#313338] text-[#23A559] hover:bg-[#23A559] hover:text-white rounded-[24px] hover:rounded-xl flex items-center justify-center cursor-pointer transition-all" title="Criar Servidor Público">
                 <i class="fa-solid fa-plus text-xl"></i>
             </div>
         </nav>
@@ -95,15 +70,13 @@
         <aside class="w-60 bg-[#2B2D31] flex flex-col flex-shrink-0 rounded-tl-lg overflow-hidden">
             <header class="h-12 border-b border-[#1E1F22] flex items-center px-4 font-bold text-white shadow-sm transition relative group">
                 <span id="current-server-name" class="truncate">Carregando...</span>
-                
-                <!-- Botão Copiar Convite -->
-                <button onclick="copyInviteLink()" class="ml-auto text-[#B5BAC1] hover:text-[#5865F2] bg-[#1E1F22] px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition shadow" title="Copiar Link de Convite">
+                <button onclick="copyInviteLink()" class="ml-auto text-[#B5BAC1] hover:text-[#5865F2] bg-[#1E1F22] px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition shadow">
                     <i class="fa-solid fa-user-plus"></i> Invite
                 </button>
             </header>
             
             <div class="flex-1 overflow-y-auto p-2">
-                <div class="text-[#87898C] text-xs font-bold uppercase flex items-center mb-1"><i class="fa-solid fa-chevron-down text-[10px] mr-1"></i> Canais</div>
+                <div class="text-[#87898C] text-xs font-bold uppercase flex items-center mb-1"><i class="fa-solid fa-chevron-down text-[10px] mr-1"></i> Chat</div>
                 <div class="bg-[#404249] text-white rounded px-2 py-1.5 flex items-center gap-2 mb-0.5">
                     <i class="fa-solid fa-hashtag text-[#87898C] text-lg"></i><span>geral</span>
                 </div>
@@ -111,15 +84,12 @@
 
             <!-- Painel do Usuário -->
             <div class="h-[52px] bg-[#232428] flex items-center px-2 gap-2">
-                <div class="relative cursor-pointer hover:bg-[#3F4147] p-1 rounded flex-1 flex items-center gap-2 overflow-hidden">
-                    <img id="my-avatar-display" src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-8 h-8 rounded-full object-cover">
+                <div class="relative p-1 rounded flex-1 flex items-center gap-2 overflow-hidden">
+                    <img id="my-avatar-display" src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-8 h-8 rounded-full object-cover border border-[#1E1F22]">
                     <div class="flex flex-col min-w-0">
                         <span id="my-name-display" class="text-sm font-semibold text-white leading-tight truncate">Usuário</span>
                         <span class="text-[10px] text-[#23A559] leading-tight font-bold">Online</span>
                     </div>
-                </div>
-                <div class="flex text-[#B5BAC1]">
-                    <button onclick="openProfile()" class="hover:bg-[#3F4147] hover:text-white p-1.5 rounded transition"><i class="fa-solid fa-gear"></i></button>
                 </div>
             </div>
         </aside>
@@ -128,27 +98,36 @@
         <main class="flex-1 flex flex-col bg-[#313338] relative min-w-0">
             <header class="h-12 border-b border-[#1E1F22] flex items-center px-4 font-semibold text-white shadow-sm gap-2">
                 <i class="fa-solid fa-hashtag text-[#87898C] text-xl"></i>
-                <span>geral</span>
+                <span id="chat-header-name">geral</span>
             </header>
 
-            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-1"></div>
 
             <div class="px-4 pb-6 pt-2">
                 <div class="bg-[#383A40] rounded-lg flex flex-col">
-                    <!-- Preview de Anexo Aprimorado -->
+                    
+                    <!-- Area de Resposta (Reply Banner) -->
+                    <div id="reply-banner" class="hidden bg-[#2B2D31] px-4 py-2 flex items-center justify-between border-b border-[#1E1F22] rounded-t-lg">
+                        <div class="flex items-center gap-2 text-sm text-[#B5BAC1]">
+                            <i class="fa-solid fa-reply"></i>
+                            <span id="reply-text">Respondendo a @Usuário</span>
+                        </div>
+                        <button onclick="cancelReply()" class="text-[#B5BAC1] hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+
+                    <!-- Preview de Anexo -->
                     <div id="attachment-preview" class="hidden p-4 border-b border-[#2B2D31] flex items-center gap-4 relative">
                         <div class="bg-[#2B2D31] p-3 rounded-lg flex items-center gap-3 border border-[#1E1F22]">
                             <i class="fa-solid fa-file-circle-check text-3xl text-[#5865F2]"></i>
                             <div class="flex flex-col">
-                                <span id="attachment-name" class="text-sm font-semibold text-white max-w-[250px] truncate">arquivo.mp4</span>
-                                <span id="attachment-size" class="text-xs text-[#B5BAC1]">0.00 MB</span>
+                                <span id="attachment-name" class="text-sm font-semibold text-white max-w-[250px] truncate">arquivo</span>
                             </div>
                         </div>
                         <button onclick="removeAttachment()" class="absolute top-2 right-2 text-[#87898C] hover:text-red-500 transition"><i class="fa-solid fa-trash"></i></button>
                     </div>
 
                     <div class="flex items-center px-4 py-2 min-h-[44px]">
-                        <input type="file" id="file-input" class="hidden" onchange="handleFileInput(event)">
+                        <input type="file" id="file-input" class="hidden" onchange="handleFiles(event.target.files)">
                         <button onclick="document.getElementById('file-input').click()" class="text-[#B5BAC1] hover:text-[#DBDEE1] bg-[#2B2D31] w-6 h-6 rounded-full flex items-center justify-center hover:bg-[#4E5058] mr-4 transition"><i class="fa-solid fa-plus text-sm"></i></button>
                         <input type="text" id="message-input" placeholder="Conversar..." class="flex-1 bg-transparent border-none outline-none text-[#DBDEE1] discord-input-placeholder py-1">
                     </div>
@@ -158,181 +137,200 @@
 
         <!-- Barra de Membros -->
         <aside class="w-60 bg-[#2B2D31] flex-shrink-0 hidden md:flex flex-col pb-4">
-            <div class="px-4 py-6 font-bold text-xs text-[#87898C] uppercase tracking-wide">
-                Usuários Online — <span id="online-count">0</span>
+            <div class="px-4 py-4 flex justify-between items-center">
+                <span class="font-bold text-xs text-[#87898C] uppercase tracking-wide">Online — <span id="online-count">0</span></span>
+                <button onclick="openGroupModal()" class="text-[#B5BAC1] hover:text-white bg-[#1E1F22] p-1.5 rounded" title="Novo Grupo"><i class="fa-solid fa-user-group"></i>+</button>
             </div>
             <div id="members-list" class="flex-1 overflow-y-auto px-2 space-y-[2px]"></div>
         </aside>
     </div>
 
     <script>
-        let currentUser = { name: '', avatar: '', color: '#5865F2' };
+        let currentUser = { name: '', avatar: '', color: '#5865F2', socketId: null };
         let currentServerId = 'global';
-        let selectedFile = null;
-        let isUploading = false;
-        let socket = null;
+        let selectedFile = null, isUploading = false, replyingTo = null;
+        let onlineUsersData = []; // Armazena usuários para o modal de grupo
+        let myServers = new Map(); // Servidores que o UI conhece
 
+        let socket = null;
         try { socket = io(); } catch(e) { console.warn("Socket.io inativo."); }
 
-        // --- SISTEMA DE CONVITE (Verificar URL) ---
+        // --- SISTEMA DE LOGIN E INICIALIZAÇÃO ---
         const urlParams = new URLSearchParams(window.location.search);
         const inviteCode = urlParams.get('invite');
-        if (inviteCode) {
-            document.getElementById('login-title').innerText = "Você foi convidado!";
-            document.getElementById('login-subtitle').innerText = "Preencha para entrar no servidor secreto.";
-        }
 
-        // --- LOGIN ---
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
             currentUser.name = document.getElementById('username').value.trim();
-            currentUser.avatar = document.getElementById('avatar').value.trim() || 'https://cdn.discordapp.com/embed/avatars/' + Math.floor(Math.random() * 5) + '.png';
+            currentUser.avatar = document.getElementById('avatar').value.trim() || `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random() * 5)}.png`;
             
-            updateUIProfile();
+            document.getElementById('my-name-display').innerText = currentUser.name;
+            document.getElementById('my-avatar-display').src = currentUser.avatar;
+
             document.getElementById('login-modal').style.display = 'none';
             document.getElementById('app-container').classList.remove('hidden');
             
             if(socket) socket.emit('user joined', { user: currentUser, inviteId: inviteCode });
         });
 
-        // --- CUSTOMIZAÇÃO DE PERFIL ---
-        function updateUIProfile() {
-            document.getElementById('my-name-display').innerText = currentUser.name;
-            document.getElementById('my-avatar-display').src = currentUser.avatar;
-            document.getElementById('prof-name').value = currentUser.name;
-            document.getElementById('prof-avatar').value = currentUser.avatar;
-            document.getElementById('prof-color').value = currentUser.color;
-            document.getElementById('profile-avatar-preview').src = currentUser.avatar;
-            document.getElementById('profile-banner-preview').style.backgroundColor = currentUser.color;
+        // --- BARRA DE SERVIDORES DINÂMICA ---
+        function renderSidebar() {
+            const sidebar = document.getElementById('server-sidebar');
+            const sep = document.getElementById('server-separator');
+            
+            // Remove antigos botões (preservando o separador e o botão de add)
+            Array.from(sidebar.children).forEach(child => {
+                if(child.id !== 'server-separator' && !child.innerHTML.includes('fa-plus')) {
+                    sidebar.removeChild(child);
+                }
+            });
+
+            myServers.forEach(srv => {
+                const div = document.createElement('div');
+                // Se for o servidor atual, fica mais quadrado, senão é redondo
+                const isActive = srv.id === currentServerId;
+                const radius = isActive ? 'rounded-[16px]' : 'rounded-[24px]';
+                const bg = isActive ? 'bg-[#5865F2]' : 'bg-[#313338] hover:bg-[#5865F2]';
+                
+                div.className = `w-12 h-12 ${bg} text-white ${radius} hover:rounded-[16px] flex items-center justify-center cursor-pointer transition-all shadow mb-2 flex-shrink-0`;
+                div.title = srv.name;
+                div.onclick = () => socket.emit('join server', srv.id);
+                div.innerHTML = `<i class="fa-solid ${srv.icon} text-xl"></i>`;
+                
+                sidebar.insertBefore(div, sep);
+            });
         }
 
-        function openProfile() { document.getElementById('profile-modal').classList.remove('hidden'); }
-        function closeProfile() { document.getElementById('profile-modal').classList.add('hidden'); }
-        function saveProfile() {
-            currentUser.name = document.getElementById('prof-name').value;
-            currentUser.avatar = document.getElementById('prof-avatar').value;
-            currentUser.color = document.getElementById('prof-color').value;
-            updateUIProfile();
-            closeProfile();
-            if(socket) socket.emit('update profile', currentUser);
+        // --- GRUPOS E DMs ---
+        function openGroupModal() {
+            const list = document.getElementById('group-users-list');
+            list.innerHTML = '';
+            onlineUsersData.forEach(u => {
+                if (u.name === currentUser.name) return; // não mostra a si mesmo
+                list.innerHTML += `
+                    <label class="flex items-center gap-3 p-2 rounded hover:bg-[#3F4147] cursor-pointer transition">
+                        <input type="checkbox" value="${u.socketId}" class="group-checkbox w-4 h-4 rounded text-[#5865F2] bg-[#1E1F22] border-none focus:ring-0 cursor-pointer">
+                        <img src="${u.avatar}" class="w-6 h-6 rounded-full object-cover">
+                        <span class="text-white text-sm">${u.name}</span>
+                    </label>
+                `;
+            });
+            document.getElementById('group-modal').classList.remove('hidden');
+        }
+        function closeGroupModal() { document.getElementById('group-modal').classList.add('hidden'); }
+        function submitGroup() {
+            const name = document.getElementById('group-name').value.trim() || `Grupo de ${currentUser.name}`;
+            const checkboxes = document.querySelectorAll('.group-checkbox:checked');
+            const members = Array.from(checkboxes).map(cb => cb.value);
+            
+            if (members.length === 0) return alert("Selecione pelo menos um amigo!");
+            
+            socket.emit('create group', { name, members });
+            closeGroupModal();
         }
 
-        // Live preview do perfil
-        document.getElementById('prof-color').addEventListener('input', e => document.getElementById('profile-banner-preview').style.backgroundColor = e.target.value);
-        document.getElementById('prof-avatar').addEventListener('input', e => document.getElementById('profile-avatar-preview').src = e.target.value || 'https://cdn.discordapp.com/embed/avatars/0.png');
-
-        // --- SERVIDORES & CONVITES ---
         function createServer() {
-            const sName = prompt("Qual o nome do seu novo servidor?");
-            if (sName && sName.trim() !== '') {
-                socket.emit('create server', { name: sName });
-            }
+            const name = prompt("Nome do Servidor Público:");
+            if (name) socket.emit('create server', { name });
         }
-        function requestJoinServer(id) { socket.emit('join server', id); }
+
         function copyInviteLink() {
             const link = window.location.origin + window.location.pathname + '?invite=' + currentServerId;
-            // ExecCommand (Compatibilidade exigida em Iframes)
-            const tempInput = document.createElement("input");
-            tempInput.value = link;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand("copy");
-            document.body.removeChild(tempInput);
-            alert("Link de convite copiado!\n\n" + link);
+            navigator.clipboard.writeText(link).catch(() => {
+                const temp = document.createElement("input"); temp.value = link;
+                document.body.appendChild(temp); temp.select(); document.execCommand("copy"); document.body.removeChild(temp);
+            });
+            alert("Link copiado: " + link);
         }
 
-        // --- ARQUIVOS (Drag & Drop, Paste, Input) ---
+        // --- RESPOSTAS E ARQUIVOS ---
         function handleFiles(files) {
-            const file = files[0];
-            if (file) {
-                selectedFile = file;
-                const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-                document.getElementById('attachment-name').innerText = file.name;
-                document.getElementById('attachment-size').innerText = `${sizeMB} MB`;
+            if (files[0]) {
+                selectedFile = files[0];
+                document.getElementById('attachment-name').innerText = selectedFile.name;
                 document.getElementById('attachment-preview').classList.remove('hidden');
                 document.getElementById('message-input').focus();
             }
         }
-        function handleFileInput(e) { handleFiles(e.target.files); }
-        function removeAttachment() {
-            selectedFile = null;
-            document.getElementById('file-input').value = '';
-            document.getElementById('attachment-preview').classList.add('hidden');
+        function removeAttachment() { selectedFile = null; document.getElementById('file-input').value = ''; document.getElementById('attachment-preview').classList.add('hidden'); }
+        
+        function setReply(id, name, text) {
+            replyingTo = { id, name, text: text.substring(0, 50) + (text.length > 50 ? '...' : '') };
+            document.getElementById('reply-banner').classList.remove('hidden');
+            document.getElementById('reply-text').innerText = `Respondendo a @${name}`;
+            document.getElementById('message-input').focus();
+        }
+        function cancelReply() { replyingTo = null; document.getElementById('reply-banner').classList.add('hidden'); }
+
+        // --- SISTEMA DE ADMIN DYPZ ---
+        function deleteMsg(msgId) {
+            if (confirm("Deletar mensagem para todos?")) socket.emit('delete message', { serverId: currentServerId, msgId });
+        }
+        function banUser(socketId) {
+            if (confirm("Banir este usuário pelo IP para sempre?")) socket.emit('ban user', socketId);
         }
 
-        // CTRL+V (Paste)
-        document.addEventListener('paste', (e) => {
-            if (e.clipboardData && e.clipboardData.files.length > 0) {
-                handleFiles(e.clipboardData.files);
-            }
-        });
-
-        // Drag and Drop Global
-        let dragCounter = 0;
-        const dragOverlay = document.getElementById('drag-overlay');
-        document.addEventListener('dragenter', (e) => {
-            e.preventDefault();
-            dragCounter++;
-            dragOverlay.classList.remove('hidden');
-            dragOverlay.classList.add('flex');
-        });
-        document.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            dragCounter--;
-            if (dragCounter === 0) {
-                dragOverlay.classList.add('hidden');
-                dragOverlay.classList.remove('flex');
-            }
-        });
-        document.addEventListener('dragover', e => e.preventDefault());
-        document.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dragCounter = 0;
-            dragOverlay.classList.add('hidden');
-            dragOverlay.classList.remove('flex');
-            if (e.dataTransfer && e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files);
-        });
-
-        // --- MENSAGENS E SOCKETS ---
+        // --- MENSAGENS UI ---
         const chatMessages = document.getElementById('chat-messages');
         const messageInput = document.getElementById('message-input');
 
         function appendMessage(msg) {
-            const isBottom = chatMessages.scrollHeight - chatMessages.clientHeight <= chatMessages.scrollTop + 50;
             const div = document.createElement('div');
+            div.id = `msg-${msg.id}`;
+            const isDypz = currentUser.name.toLowerCase() === 'dypz';
             
-            if (msg.type === 'system') {
-                div.className = 'text-[#87898C] text-sm py-1 font-bold text-center my-4';
-                div.innerText = `— ${msg.text} —`;
-            } else {
-                div.className = 'flex gap-4 hover:bg-[#2E3035] py-2 px-4 -mx-4 transition group mt-2';
-                
-                let mediaHtml = '';
-                if (msg.mediaUrl) {
-                    if (msg.mediaType === 'image') mediaHtml = `<img src="${msg.mediaUrl}" class="max-w-sm max-h-80 rounded mt-2 cursor-pointer border border-[#1E1F22]">`;
-                    else if (msg.mediaType === 'video') mediaHtml = `<video src="${msg.mediaUrl}" controls class="max-w-md rounded mt-2 bg-black border border-[#1E1F22]"></video>`;
-                    else if (msg.mediaType === 'audio') mediaHtml = `<audio src="${msg.mediaUrl}" controls class="mt-2 w-full max-w-sm"></audio>`;
-                    else mediaHtml = `<a href="${msg.mediaUrl}" target="_blank" class="mt-2 flex items-center gap-2 bg-[#2B2D31] p-3 rounded max-w-xs text-[#00A8FC] hover:underline border border-[#1E1F22]"><i class="fa-solid fa-download text-xl"></i> Baixar Arquivo</a>`;
-                }
-                const textHtml = msg.text ? `<p class="text-[#DBDEE1] whitespace-pre-wrap">${msg.text}</p>` : '';
-                const time = new Date(msg.timestamp).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+            // Highlight se for pingado
+            const isMentioned = msg.text && msg.text.includes(`@${currentUser.name}`);
+            const baseClass = isMentioned ? 'msg-ping' : 'hover:bg-[#2E3035]';
 
-                div.innerHTML = `
-                    <div class="relative flex-shrink-0">
-                        <img src="${msg.user.avatar}" class="w-10 h-10 rounded-full object-cover">
-                        <div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-[#313338]" style="background-color: ${msg.user.color || '#5865F2'}"></div>
-                    </div>
-                    <div class="flex flex-col min-w-0 flex-1">
-                        <div class="flex items-baseline gap-2">
-                            <span class="font-medium text-white" style="color: ${msg.user.color || 'white'}">${msg.user.name}</span>
-                            <span class="text-xs text-[#87898C]">${time}</span>
-                        </div>
-                        ${textHtml}
-                        ${mediaHtml}
-                    </div>`;
+            div.className = `flex gap-4 py-1 px-4 -mx-4 transition group relative ${baseClass}`;
+            
+            // Admin ou Menu (Botões escondidos até o hover)
+            let menuHtml = `<div class="absolute top-0 right-4 hidden group-hover:flex items-center bg-[#313338] border border-[#1E1F22] rounded shadow-md overflow-hidden z-10">`;
+            menuHtml += `<button onclick="setReply('${msg.id}', '${msg.user.name}', '${msg.text ? msg.text.replace(/'/g, "\\'") : 'Mídia'}')" class="p-2 text-[#B5BAC1] hover:bg-[#404249] hover:text-white" title="Responder"><i class="fa-solid fa-reply"></i></button>`;
+            
+            if (isDypz) {
+                menuHtml += `<button onclick="deleteMsg('${msg.id}')" class="p-2 text-red-500 hover:bg-[#404249]" title="Deletar Mensagem"><i class="fa-solid fa-trash"></i></button>`;
+                if (msg.user.name.toLowerCase() !== 'dypz') {
+                    menuHtml += `<button onclick="banUser('${msg.user.socketId}')" class="p-2 text-red-500 hover:bg-[#404249]" title="Banir IP"><i class="fa-solid fa-gavel"></i></button>`;
+                }
             }
+            menuHtml += `</div>`;
+
+            let mediaHtml = '', replyHtml = '';
+            if (msg.mediaUrl) {
+                if (msg.mediaType === 'image') mediaHtml = `<img src="${msg.mediaUrl}" class="max-w-sm max-h-80 rounded mt-2 border border-[#1E1F22]">`;
+                else if (msg.mediaType === 'video') mediaHtml = `<video src="${msg.mediaUrl}" controls class="max-w-md rounded mt-2 bg-black border border-[#1E1F22]"></video>`;
+                else if (msg.mediaType === 'audio') mediaHtml = `<audio src="${msg.mediaUrl}" controls class="mt-2 w-full max-w-sm"></audio>`;
+                else mediaHtml = `<a href="${msg.mediaUrl}" target="_blank" class="mt-2 inline-flex items-center gap-2 bg-[#2B2D31] p-3 rounded text-[#00A8FC] hover:underline"><i class="fa-solid fa-download"></i> Arquivo</a>`;
+            }
+
+            if (msg.replyTo) {
+                replyHtml = `<div class="text-[#B5BAC1] text-xs flex items-center gap-2 mb-1 opacity-70 before:content-[''] before:w-6 before:h-[1px] before:bg-[#4E5058]"><img src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-3 h-3 rounded-full"> <span class="font-bold">@${msg.replyTo.name}</span>: ${msg.replyTo.text}</div>`;
+            }
+
+            // Destaca a menção no texto
+            let safeText = msg.text || '';
+            if (isMentioned) {
+                const regex = new RegExp(`@${currentUser.name}`, 'g');
+                safeText = safeText.replace(regex, `<span class="bg-[#5865F2]/30 text-[#C9CDD6] font-medium px-1 rounded">@${currentUser.name}</span>`);
+            }
+
+            div.innerHTML = `
+                ${menuHtml}
+                <img src="${msg.user.avatar}" class="w-10 h-10 rounded-full object-cover mt-1 cursor-pointer">
+                <div class="flex flex-col min-w-0 flex-1">
+                    ${replyHtml}
+                    <div class="flex items-baseline gap-2">
+                        <span class="font-medium text-white hover:underline cursor-pointer">${msg.user.name}</span>
+                        <span class="text-xs text-[#87898C]">${new Date(msg.timestamp).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</span>
+                    </div>
+                    <p class="text-[#DBDEE1] whitespace-pre-wrap leading-tight mt-0.5">${safeText}</p>
+                    ${mediaHtml}
+                </div>`;
+            
             chatMessages.appendChild(div);
-            if (isBottom || msg.user?.name === currentUser.name) chatMessages.scrollTop = chatMessages.scrollHeight;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
         async function sendMessage() {
@@ -347,72 +345,84 @@
             if (selectedFile) {
                 const formData = new FormData();
                 formData.append('media', selectedFile);
-                messageInput.placeholder = "Enviando arquivo...";
+                messageInput.placeholder = "Enviando (pode demorar para arquivos grandes)...";
                 try {
                     const res = await fetch('/upload', { method: 'POST', body: formData });
                     const data = await res.json();
                     if (data.url) { mediaUrl = data.url; mediaType = data.type; }
-                } catch (e) { alert("Erro ao enviar arquivo."); }
+                } catch (e) { alert("Erro ao enviar arquivo (talvez excedeu o limite do host)."); }
             }
 
-            if (socket) socket.emit('chat message', { serverId: currentServerId, text, mediaUrl, mediaType });
+            if (socket) socket.emit('chat message', { serverId: currentServerId, text, mediaUrl, mediaType, replyTo: replyingTo });
             
             messageInput.value = '';
             removeAttachment();
+            cancelReply();
             isUploading = false;
             messageInput.disabled = false;
             messageInput.placeholder = "Conversar...";
             messageInput.focus();
         }
 
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-        });
+        messageInput.addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }});
 
-        // Escutando Eventos Socket
+        // --- EVENTOS DE SOCKET ---
         if (socket) {
+            socket.on('initial servers', (srvs) => {
+                srvs.forEach(s => myServers.set(s.id, s));
+                renderSidebar();
+            });
+
+            socket.on('server created', (srv) => {
+                myServers.set(srv.id, srv);
+                renderSidebar();
+            });
+
             socket.on('server data', (data) => {
                 currentServerId = data.server.id;
                 document.getElementById('current-server-name').innerText = data.server.name;
+                document.getElementById('chat-header-name').innerText = data.server.name;
                 chatMessages.innerHTML = '';
                 
-                // Cabeçalho Inicial
-                const header = document.createElement('div');
-                header.className = 'mt-8 mb-6';
-                header.innerHTML = `
-                    <div class="w-16 h-16 bg-[#5865F2] rounded-full flex items-center justify-center mb-4"><i class="fa-solid ${data.server.icon || 'fa-hashtag'} text-white text-3xl"></i></div>
-                    <h1 class="text-white text-3xl font-bold mb-2">Bem-vindo(a) a ${data.server.name}!</h1>
-                    <p class="text-[#B5BAC1]">Este é o começo do chat. Envie convites aos seus amigos.</p>
+                chatMessages.innerHTML = `
+                    <div class="mt-8 mb-6">
+                        <div class="w-16 h-16 bg-[#5865F2] rounded-full flex items-center justify-center mb-4"><i class="fa-solid ${data.server.icon} text-white text-3xl"></i></div>
+                        <h1 class="text-white text-3xl font-bold mb-2">Início do Chat</h1>
+                    </div>
                 `;
-                chatMessages.appendChild(header);
-
                 data.history.forEach(appendMessage);
-                setTimeout(() => chatMessages.scrollTop = chatMessages.scrollHeight, 100);
+                renderSidebar(); // Atualiza highlight da sidebar
             });
 
             socket.on('chat message', (data) => {
                 if (data.serverId === currentServerId) appendMessage(data.message);
             });
 
+            socket.on('message deleted', (msgId) => {
+                const msgEl = document.getElementById(`msg-${msgId}`);
+                if (msgEl) msgEl.remove();
+            });
+
             socket.on('update users', (users) => {
+                onlineUsersData = users;
                 document.getElementById('online-count').innerText = users.length;
-                const membersList = document.getElementById('members-list');
-                membersList.innerHTML = '';
+                const ml = document.getElementById('members-list');
+                ml.innerHTML = '';
                 users.forEach(u => {
-                    const div = document.createElement('div');
-                    div.className = 'flex items-center gap-3 p-1.5 rounded hover:bg-[#35373C] cursor-pointer group transition';
-                    div.innerHTML = `
-                        <div class="relative">
-                            <img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover">
-                            <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-[#2B2D31] rounded-full" style="background-color: ${u.color || '#23A559'}"></div>
+                    const isDypz = u.name.toLowerCase() === 'dypz' ? '<i class="fa-solid fa-crown text-[#F0B232] text-[10px] ml-1" title="Admin"></i>' : '';
+                    ml.innerHTML += `
+                        <div class="flex items-center gap-3 p-1.5 rounded hover:bg-[#35373C] cursor-pointer group transition" onclick="messageInput.value += ' @${u.name} '; messageInput.focus();">
+                            <div class="relative">
+                                <img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover">
+                                <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-[#2B2D31] rounded-full bg-[#23A559]"></div>
+                            </div>
+                            <span class="text-[#87898C] group-hover:text-[#DBDEE1] font-medium truncate flex-1 flex items-center">${u.name} ${isDypz}</span>
                         </div>
-                        <span class="text-[#87898C] group-hover:text-[#DBDEE1] font-medium truncate flex-1 transition" style="color: ${u.color || ''}">${u.name}</span>
                     `;
-                    membersList.appendChild(div);
                 });
             });
 
-            socket.on('error message', msg => alert(msg));
+            socket.on('error message', alert);
         }
     </script>
 </body>
