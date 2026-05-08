@@ -16,18 +16,34 @@
         .discord-input-placeholder::placeholder { color: #87898C; }
         .msg-ping { background-color: rgba(240, 178, 50, 0.1); border-left: 4px solid #F0B232; }
         .msg-everyone { background-color: rgba(250, 166, 26, 0.1); border-left: 4px solid #FAA61A; }
+        
+        /* Drag Overlay e Partículas */
+        #drag-overlay { z-index: 9999; }
+        .particle { position: absolute; pointer-events: none; border-radius: 50%; opacity: 0.8; }
+        
+        /* Animações de Partículas */
+        @keyframes fallSnow { 0% { transform: translateY(-10px) translateX(0); opacity: 1; } 100% { transform: translateY(120px) translateX(20px); opacity: 0; } }
+        @keyframes floatStars { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 50% { opacity: 1; scale: 1.2; } 100% { transform: translateY(-50px) scale(0.5); opacity: 0; } }
+        @keyframes pulseFire { 0% { transform: translateY(0) scale(1); opacity: 0.8; } 100% { transform: translateY(-30px) scale(0.2); opacity: 0; } }
     </style>
 </head>
 <body class="bg-[#313338] text-[#DBDEE1] h-screen w-screen overflow-hidden flex selection:bg-[#5865F2] selection:text-white relative">
 
-    <!-- TELA DE BANIMENTO (Escondida por padrão) -->
+    <!-- OVERLAY ARRASTAR/SOLTAR (DRAG & DROP DE VOLTA!) -->
+    <div id="drag-overlay" class="hidden absolute inset-0 bg-[#5865F2]/90 backdrop-blur-sm flex-col items-center justify-center text-white border-8 border-dashed border-white m-4 rounded-3xl transition-all">
+        <i class="fa-solid fa-file-arrow-up text-7xl mb-4"></i>
+        <h2 class="text-4xl font-bold">Solte o arquivo aqui!</h2>
+        <p class="text-lg mt-2 opacity-80">Será enviado diretamente no chat.</p>
+    </div>
+
+    <!-- TELA BANIMENTO -->
     <div id="ban-screen" class="hidden fixed inset-0 bg-[#111214] z-[9999] flex-col items-center justify-center text-center p-6">
         <i class="fa-solid fa-gavel text-red-500 text-7xl mb-6"></i>
         <h1 class="text-5xl font-black text-white mb-4">VOCÊ FOI BANIDO</h1>
-        <p class="text-[#B5BAC1] text-lg max-w-md">Seu endereço de IP foi bloqueado permanentemente pelo administrador dypz. Você não pode mais acessar o Danicord.</p>
+        <p class="text-[#B5BAC1] text-lg max-w-md">Seu IP foi bloqueado permanentemente por dypz.</p>
     </div>
 
-    <!-- Modal de Login -->
+    <!-- MODAL LOGIN -->
     <div id="login-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] backdrop-blur-sm transition-opacity">
         <div class="bg-[#313338] p-8 rounded-lg shadow-2xl w-full max-w-md">
             <h2 class="text-2xl font-bold text-center text-white mb-2" id="login-title">Bem-vindo ao Danicord!</h2>
@@ -38,64 +54,56 @@
                     <input type="text" id="username" required class="w-full bg-[#1E1F22] text-white rounded p-2.5 focus:outline-none focus:ring-1 focus:ring-[#5865F2]">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">URL da Foto / GIF (Opcional)</label>
+                    <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">URL Avatar (GIF Suportado)</label>
                     <input type="url" id="avatar" class="w-full bg-[#1E1F22] text-white rounded p-2.5 focus:outline-none focus:ring-1 focus:ring-[#5865F2]">
                 </div>
-                <button type="submit" class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-semibold py-2.5 rounded mt-4 transition">Entrar</button>
+                <button type="submit" class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-semibold py-2.5 rounded mt-4">Entrar</button>
             </form>
         </div>
     </div>
 
-    <!-- Modal Customizar Perfil (Completo) -->
+    <!-- MODAL CUSTOMIZAR PERFIL -->
     <div id="profile-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[70] backdrop-blur-sm">
         <div class="bg-[#313338] rounded-lg shadow-2xl w-full max-w-md overflow-hidden border border-[#1E1F22]">
-            <div id="profile-banner-preview" class="h-24 bg-[#5865F2] w-full transition-colors"></div>
+            <div id="profile-banner-preview" class="h-24 bg-[#5865F2] w-full relative overflow-hidden transition-colors"></div>
             <div class="p-6 relative">
                 <div class="absolute -top-12 left-6 border-[6px] border-[#313338] rounded-full">
-                    <img id="profile-avatar-preview" src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-20 h-20 rounded-full object-cover bg-[#1E1F22]">
+                    <img id="profile-avatar-preview" src="" class="w-20 h-20 rounded-full object-cover bg-[#1E1F22]">
                 </div>
-                <div class="mt-10 space-y-4">
-                    <h3 class="text-xl font-bold text-white mb-4">Seu Perfil do Danicord</h3>
+                <div class="mt-10 space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                    <h3 class="text-xl font-bold text-white mb-2">Seu Perfil Danicord</h3>
                     
-                    <div>
-                        <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Nome</label>
-                        <input type="text" id="prof-name" class="w-full bg-[#1E1F22] text-white rounded p-2 focus:outline-none focus:ring-1 focus:ring-[#5865F2]">
-                    </div>
+                    <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Nome</label><input type="text" id="prof-name" class="w-full bg-[#1E1F22] text-white rounded p-2 focus:ring-1 focus:ring-[#5865F2]"></div>
+                    <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Status / Atividade</label><input type="text" id="prof-activity" placeholder="Ex: Jogando Minecraft" class="w-full bg-[#1E1F22] text-white rounded p-2 focus:ring-1 focus:ring-[#5865F2]"></div>
+                    <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Sobre Mim (Bio)</label><textarea id="prof-bio" rows="2" class="w-full bg-[#1E1F22] text-white rounded p-2 text-sm"></textarea></div>
                     
-                    <div>
-                        <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Sobre Mim (Bio)</label>
-                        <textarea id="prof-bio" rows="3" class="w-full bg-[#1E1F22] text-white rounded p-2 focus:outline-none focus:ring-1 focus:ring-[#5865F2] text-sm resize-none" placeholder="Conte mais sobre você..."></textarea>
-                    </div>
-
                     <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Cor do Banner</label>
-                            <input type="color" id="prof-color" class="w-full h-10 bg-[#1E1F22] rounded cursor-pointer border-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">URL Avatar (GIF/PNG)</label>
-                            <input type="url" id="prof-avatar" class="w-full bg-[#1E1F22] text-white rounded p-2 focus:outline-none focus:ring-1 focus:ring-[#5865F2] text-sm">
+                        <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Cor do Banner</label><input type="color" id="prof-color" class="w-full h-10 bg-[#1E1F22] rounded cursor-pointer border-none"></div>
+                        <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Partículas</label>
+                            <select id="prof-particles" class="w-full bg-[#1E1F22] text-white rounded p-2 h-10 border-none outline-none">
+                                <option value="none">Nenhuma</option><option value="snow">Neve ❄️</option><option value="stars">Estrelas ✨</option><option value="fire">Fogo 🔥</option>
+                            </select>
                         </div>
                     </div>
+                    <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">URL Avatar (GIF/PNG)</label><input type="url" id="prof-avatar" class="w-full bg-[#1E1F22] text-white rounded p-2 text-sm"></div>
                     
-                    <div class="flex gap-2 justify-end mt-6 pt-4 border-t border-[#1E1F22]">
+                    <div class="flex gap-2 justify-end pt-4 border-t border-[#1E1F22]">
                         <button onclick="closeProfile()" class="px-4 py-2 hover:underline text-white">Cancelar</button>
-                        <button onclick="saveProfile()" class="bg-[#5865F2] hover:bg-[#4752C4] text-white px-4 py-2 rounded font-medium transition">Salvar</button>
+                        <button onclick="saveProfile()" class="bg-[#5865F2] hover:bg-[#4752C4] text-white px-4 py-2 rounded font-medium">Salvar</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Popout do Usuário (Mostra ao clicar na foto de alguém) -->
+    <!-- USER POPOUT CARD -->
     <div id="user-popout" class="hidden absolute z-[80] bg-[#111214] rounded-lg shadow-2xl w-[300px] overflow-hidden border border-[#1E1F22]">
-        <div id="popout-banner" class="h-16 w-full bg-[#5865F2]"></div>
+        <div id="popout-banner" class="h-16 w-full bg-[#5865F2] relative overflow-hidden"></div>
         <div class="p-4 relative">
-            <div class="absolute -top-10 left-4 border-[6px] border-[#111214] rounded-full">
-                <img id="popout-avatar" src="" class="w-[72px] h-[72px] rounded-full object-cover bg-[#1E1F22]">
-            </div>
+            <div class="absolute -top-10 left-4 border-[6px] border-[#111214] rounded-full"><img id="popout-avatar" src="" class="w-[72px] h-[72px] rounded-full object-cover bg-[#1E1F22]"></div>
             <div class="mt-8 bg-[#2B2D31] rounded-lg p-3">
-                <h4 id="popout-name" class="text-lg font-bold text-white mb-2 truncate">Nome</h4>
+                <h4 id="popout-name" class="text-lg font-bold text-white truncate">Nome</h4>
+                <p id="popout-activity" class="text-xs font-medium text-[#DBDEE1] mb-2 truncate hidden"></p>
                 <div class="w-full h-[1px] bg-[#1E1F22] mb-2"></div>
                 <h5 class="text-[10px] font-bold text-[#B5BAC1] uppercase mb-1">Sobre mim</h5>
                 <p id="popout-bio" class="text-sm text-[#DBDEE1] break-words whitespace-pre-wrap">Nenhuma bio.</p>
@@ -103,140 +111,140 @@
         </div>
     </div>
 
-    <!-- Modal Criar Grupo/DM -->
-    <div id="group-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[60] backdrop-blur-sm">
-        <div class="bg-[#313338] p-6 rounded-lg shadow-2xl w-full max-w-md border border-[#1E1F22]">
-            <h3 class="text-xl font-bold text-white mb-4">Criar Novo Grupo</h3>
-            <input type="text" id="group-name" placeholder="Nome do Grupo" class="w-full bg-[#1E1F22] text-white rounded p-2 focus:outline-none focus:ring-1 focus:ring-[#5865F2] mb-4">
-            <p class="text-xs font-bold text-[#87898C] uppercase mb-2">Selecione os Amigos:</p>
-            <div id="group-users-list" class="max-h-40 overflow-y-auto space-y-2 mb-6 p-2 bg-[#2B2D31] rounded">
-                <!-- Lista injetada aqui -->
+    <!-- MODAL CRIAR CANAL -->
+    <div id="channel-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[60] backdrop-blur-sm">
+        <div class="bg-[#313338] p-6 rounded-lg shadow-2xl w-full max-w-sm border border-[#1E1F22]">
+            <h3 class="text-xl font-bold text-white mb-4">Criar Canal</h3>
+            <div class="flex flex-col gap-2 mb-4">
+                <label class="flex items-center gap-2 text-white bg-[#2B2D31] p-3 rounded cursor-pointer border border-transparent hover:border-[#5865F2] has-[:checked]:bg-[#404249]">
+                    <input type="radio" name="channel-type" value="text" checked class="hidden"><i class="fa-solid fa-hashtag text-[#87898C] text-lg"></i><span>Texto</span>
+                </label>
+                <label class="flex items-center gap-2 text-white bg-[#2B2D31] p-3 rounded cursor-pointer border border-transparent hover:border-[#5865F2] has-[:checked]:bg-[#404249]">
+                    <input type="radio" name="channel-type" value="voice" class="hidden"><i class="fa-solid fa-volume-high text-[#87898C] text-lg"></i><span>Voz / Tela</span>
+                </label>
             </div>
+            <input type="text" id="channel-name" placeholder="nome-do-canal" class="w-full bg-[#1E1F22] text-white rounded p-2 mb-4 outline-none focus:ring-1 focus:ring-[#5865F2]">
             <div class="flex gap-2 justify-end">
-                <button onclick="closeGroupModal()" class="px-4 py-2 hover:underline text-white">Cancelar</button>
-                <button onclick="submitGroup()" class="bg-[#23A559] hover:bg-[#1f8c4b] text-white px-4 py-2 rounded font-medium">Criar Chat</button>
+                <button onclick="closeChannelModal()" class="px-4 py-2 text-white hover:underline">Cancelar</button>
+                <button onclick="submitChannel()" class="bg-[#5865F2] text-white px-4 py-2 rounded">Criar</button>
             </div>
         </div>
     </div>
 
-    <!-- Interface Principal -->
+    <!-- INTERFACE PRINCIPAL -->
     <div id="app-container" class="hidden h-full w-full flex">
         
-        <!-- Barra de Servidores (Esquerda Dinâmica) -->
+        <!-- SIDEBAR SERVIDORES -->
         <nav class="w-[72px] bg-[#1E1F22] h-full flex flex-col items-center py-3 gap-2 flex-shrink-0 overflow-y-auto z-10" id="server-sidebar">
             <div class="w-8 h-[2px] bg-[#313338] rounded-full my-1 mt-auto" id="server-separator"></div>
-            <div onclick="createServer()" class="w-12 h-12 bg-[#313338] text-[#23A559] hover:bg-[#23A559] hover:text-white rounded-[24px] hover:rounded-xl flex items-center justify-center cursor-pointer transition-all" title="Criar Servidor Público">
-                <i class="fa-solid fa-plus text-xl"></i>
-            </div>
+            <div onclick="createServer()" class="w-12 h-12 bg-[#313338] text-[#23A559] hover:bg-[#23A559] hover:text-white rounded-[24px] hover:rounded-xl flex items-center justify-center cursor-pointer transition-all"><i class="fa-solid fa-plus text-xl"></i></div>
         </nav>
 
-        <!-- Barra de Canais -->
-        <aside class="w-60 bg-[#2B2D31] flex flex-col flex-shrink-0 rounded-tl-lg overflow-hidden">
-            <header class="h-12 border-b border-[#1E1F22] flex items-center px-4 font-bold text-white shadow-sm transition relative group">
+        <!-- SIDEBAR CANAIS -->
+        <aside class="w-60 bg-[#2B2D31] flex flex-col flex-shrink-0 rounded-tl-lg overflow-hidden relative">
+            <header class="h-12 border-b border-[#1E1F22] flex items-center px-4 font-bold text-white shadow-sm group">
                 <span id="current-server-name" class="truncate">Carregando...</span>
-                <button onclick="copyInviteLink()" class="ml-auto text-[#B5BAC1] hover:text-[#5865F2] bg-[#1E1F22] px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition shadow">
-                    <i class="fa-solid fa-user-plus"></i> Invite
-                </button>
+                <button onclick="copyInviteLink()" class="ml-auto text-[#B5BAC1] hover:text-[#5865F2] opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-user-plus"></i></button>
             </header>
             
             <div class="flex-1 overflow-y-auto p-2">
-                <div class="text-[#87898C] text-xs font-bold uppercase flex items-center mb-1"><i class="fa-solid fa-chevron-down text-[10px] mr-1"></i> Chat</div>
-                <div class="bg-[#404249] text-white rounded px-2 py-1.5 flex items-center gap-2 mb-0.5">
-                    <i class="fa-solid fa-hashtag text-[#87898C] text-lg"></i><span>geral</span>
+                <div class="flex items-center justify-between text-[#87898C] text-xs font-bold uppercase mb-1">
+                    <span><i class="fa-solid fa-chevron-down text-[10px] mr-1"></i> Canais</span>
+                    <button onclick="openChannelModal()" class="hover:text-white"><i class="fa-solid fa-plus"></i></button>
+                </div>
+                <div id="channel-list" class="space-y-0.5"></div>
+            </div>
+
+            <!-- Painel Voz Conectada -->
+            <div id="voice-connection-panel" class="hidden bg-[#1E1F22] border-t border-[#111214] p-2 flex flex-col gap-2 text-white text-xs">
+                <div class="flex justify-between items-center text-[#23A559] font-bold"><span class="truncate"><i class="fa-solid fa-signal mr-1"></i> Voz Conectada</span> <button onclick="leaveVoice()" class="text-[#87898C] hover:text-red-500"><i class="fa-solid fa-phone-slash"></i></button></div>
+                <div class="flex gap-2 text-lg text-[#B5BAC1]">
+                    <button id="btn-mic" onclick="toggleMic()" class="hover:text-white hover:bg-[#35373C] p-1.5 rounded flex-1"><i class="fa-solid fa-microphone"></i></button>
+                    <button id="btn-cam" onclick="toggleCam()" class="hover:text-white hover:bg-[#35373C] p-1.5 rounded flex-1"><i class="fa-solid fa-video"></i></button>
+                    <button id="btn-screen" onclick="toggleScreen()" class="hover:text-white hover:bg-[#35373C] p-1.5 rounded flex-1"><i class="fa-solid fa-desktop"></i></button>
                 </div>
             </div>
 
-            <!-- Painel do Usuário -->
-            <div class="h-[52px] bg-[#232428] flex items-center px-2 gap-2">
+            <!-- Painel Usuário -->
+            <div class="h-[52px] bg-[#232428] flex items-center px-2 gap-2 flex-shrink-0">
                 <div class="relative cursor-pointer hover:bg-[#3F4147] p-1 rounded flex-1 flex items-center gap-2 overflow-hidden transition" onclick="openProfile()">
-                    <img id="my-avatar-display" src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-8 h-8 rounded-full object-cover border border-[#1E1F22]">
+                    <img id="my-avatar-display" src="" class="w-8 h-8 rounded-full object-cover">
                     <div class="flex flex-col min-w-0">
-                        <span id="my-name-display" class="text-sm font-semibold text-white leading-tight truncate">Usuário</span>
-                        <span class="text-[10px] text-[#23A559] leading-tight font-bold">Configurar Perfil</span>
+                        <span id="my-name-display" class="text-sm font-semibold text-white truncate">Usuário</span>
+                        <span id="my-activity-display" class="text-[10px] text-[#B5BAC1] truncate">Configurar</span>
                     </div>
                 </div>
             </div>
         </aside>
 
-        <!-- Área de Chat -->
+        <!-- ÁREA CENTRAL (CHAT + VIDEOS) -->
         <main class="flex-1 flex flex-col bg-[#313338] relative min-w-0" onclick="closeUserPopout()">
             <header class="h-12 border-b border-[#1E1F22] flex items-center px-4 font-semibold text-white shadow-sm gap-2">
-                <i class="fa-solid fa-hashtag text-[#87898C] text-xl"></i>
+                <i id="header-channel-icon" class="fa-solid fa-hashtag text-[#87898C] text-xl"></i>
                 <span id="chat-header-name">geral</span>
             </header>
+
+            <!-- Grid de Vídeos WebRTC -->
+            <div id="video-grid" class="hidden grid-cols-2 md:grid-cols-3 gap-2 p-4 bg-[#1E1F22] border-b border-[#2B2D31] max-h-[40vh] overflow-y-auto">
+                <!-- Videos adicionados dinamicamente -->
+            </div>
 
             <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-1"></div>
 
             <div class="px-4 pb-6 pt-2">
                 <div class="bg-[#383A40] rounded-lg flex flex-col">
-                    <!-- Area de Resposta (Reply Banner) -->
                     <div id="reply-banner" class="hidden bg-[#2B2D31] px-4 py-2 flex items-center justify-between border-b border-[#1E1F22] rounded-t-lg">
-                        <div class="flex items-center gap-2 text-sm text-[#B5BAC1]">
-                            <i class="fa-solid fa-reply"></i>
-                            <span id="reply-text">Respondendo a @Usuário</span>
-                        </div>
+                        <div class="flex items-center gap-2 text-sm text-[#B5BAC1]"><i class="fa-solid fa-reply"></i><span id="reply-text"></span></div>
                         <button onclick="cancelReply()" class="text-[#B5BAC1] hover:text-white"><i class="fa-solid fa-xmark"></i></button>
                     </div>
-
-                    <!-- Preview de Anexo -->
                     <div id="attachment-preview" class="hidden p-4 border-b border-[#2B2D31] flex items-center gap-4 relative">
                         <div class="bg-[#2B2D31] p-3 rounded-lg flex items-center gap-3 border border-[#1E1F22]">
                             <i class="fa-solid fa-file-circle-check text-3xl text-[#5865F2]"></i>
-                            <div class="flex flex-col">
-                                <span id="attachment-name" class="text-sm font-semibold text-white max-w-[250px] truncate">arquivo</span>
-                            </div>
+                            <span id="attachment-name" class="text-sm font-semibold text-white max-w-[250px] truncate">arquivo</span>
                         </div>
                         <button onclick="removeAttachment()" class="absolute top-2 right-2 text-[#87898C] hover:text-red-500 transition"><i class="fa-solid fa-trash"></i></button>
                     </div>
-
                     <div class="flex items-center px-4 py-2 min-h-[44px]">
                         <input type="file" id="file-input" class="hidden" onchange="handleFiles(event.target.files)">
                         <button onclick="document.getElementById('file-input').click()" class="text-[#B5BAC1] hover:text-[#DBDEE1] bg-[#2B2D31] w-6 h-6 rounded-full flex items-center justify-center hover:bg-[#4E5058] mr-4 transition"><i class="fa-solid fa-plus text-sm"></i></button>
-                        <input type="text" id="message-input" placeholder="Conversar... (Use @everyone para notificar todos)" class="flex-1 bg-transparent border-none outline-none text-[#DBDEE1] discord-input-placeholder py-1">
+                        <input type="text" id="message-input" placeholder="Conversar... (@everyone notifica todos)" class="flex-1 bg-transparent border-none outline-none text-[#DBDEE1] discord-input-placeholder py-1">
                     </div>
                 </div>
             </div>
         </main>
 
-        <!-- Barra de Membros -->
+        <!-- SIDEBAR MEMBROS -->
         <aside class="w-60 bg-[#2B2D31] flex-shrink-0 hidden md:flex flex-col pb-4">
-            <div class="px-4 py-4 flex justify-between items-center">
-                <span class="font-bold text-xs text-[#87898C] uppercase tracking-wide">Online — <span id="online-count">0</span></span>
-                <button onclick="openGroupModal()" class="text-[#B5BAC1] hover:text-white bg-[#1E1F22] p-1.5 rounded" title="Novo Grupo"><i class="fa-solid fa-user-group"></i>+</button>
-            </div>
+            <div class="px-4 py-4"><span class="font-bold text-xs text-[#87898C] uppercase tracking-wide">Membros Online</span></div>
             <div id="members-list" class="flex-1 overflow-y-auto px-2 space-y-[2px]"></div>
         </aside>
     </div>
 
     <script>
-        let currentUser = { name: '', avatar: '', color: '#5865F2', bio: '', socketId: null };
-        let currentServerId = 'global';
+        // --- ESTADOS ---
+        let currentUser = { name: '', avatar: '', color: '#5865F2', bio: '', particles: 'none', activity: '', socketId: null };
+        let currentServer = null; 
+        let currentTextChannelId = 'geral';
+        let currentVoiceChannelId = null;
+        
         let selectedFile = null, isUploading = false, replyingTo = null;
         let onlineUsersData = []; 
         let myServers = new Map(); 
 
         let socket = null;
-        try { socket = io(); } catch(e) { console.warn("Socket.io inativo."); }
+        try { socket = io(); } catch(e) {}
 
         const urlParams = new URLSearchParams(window.location.search);
         const inviteCode = urlParams.get('invite');
-        if (inviteCode) {
-            document.getElementById('login-title').innerText = "Você foi convidado!";
-        }
 
-        // --- SISTEMA DE BANIMENTO CLIENT-SIDE ---
+        // --- SISTEMA BAN & LOGIN ---
         if (socket) {
             socket.on('banned permanently', () => {
-                document.getElementById('ban-screen').classList.remove('hidden');
-                document.getElementById('ban-screen').classList.add('flex');
-                document.getElementById('login-modal').style.display = 'none';
+                document.getElementById('ban-screen').classList.replace('hidden', 'flex');
                 document.getElementById('app-container').style.display = 'none';
             });
-
-            // Anti-alt: Força o usuário a usar a conta vinculada ao IP
             socket.on('force login', (forcedUser) => {
-                currentUser = forcedUser;
-                updateUIProfile();
+                currentUser = forcedUser; updateUIProfile();
                 document.getElementById('login-modal').style.display = 'none';
                 document.getElementById('app-container').classList.remove('hidden');
                 socket.emit('user joined', { user: currentUser, inviteId: inviteCode });
@@ -246,138 +254,15 @@
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
             currentUser.name = document.getElementById('username').value.trim();
-            currentUser.avatar = document.getElementById('avatar').value.trim() || `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random() * 5)}.png`;
-            currentUser.color = '#5865F2';
-            currentUser.bio = '';
-            
+            currentUser.avatar = document.getElementById('avatar').value.trim() || `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random()*5)}.png`;
+            currentUser.color = '#5865F2'; currentUser.bio = ''; currentUser.particles = 'none'; currentUser.activity = '';
             updateUIProfile();
-
             document.getElementById('login-modal').style.display = 'none';
             document.getElementById('app-container').classList.remove('hidden');
-            
             if(socket) socket.emit('user joined', { user: currentUser, inviteId: inviteCode });
         });
 
-        // --- CUSTOMIZAÇÃO DE PERFIL ---
-        function updateUIProfile() {
-            document.getElementById('my-name-display').innerText = currentUser.name;
-            document.getElementById('my-avatar-display').src = currentUser.avatar;
-            document.getElementById('prof-name').value = currentUser.name;
-            document.getElementById('prof-avatar').value = currentUser.avatar;
-            document.getElementById('prof-color').value = currentUser.color || '#5865F2';
-            document.getElementById('prof-bio').value = currentUser.bio || '';
-            document.getElementById('profile-avatar-preview').src = currentUser.avatar;
-            document.getElementById('profile-banner-preview').style.backgroundColor = currentUser.color || '#5865F2';
-        }
-
-        function openProfile() { 
-            updateUIProfile();
-            document.getElementById('profile-modal').classList.remove('hidden'); 
-        }
-        function closeProfile() { document.getElementById('profile-modal').classList.add('hidden'); }
-        function saveProfile() {
-            currentUser.name = document.getElementById('prof-name').value;
-            currentUser.avatar = document.getElementById('prof-avatar').value || `https://cdn.discordapp.com/embed/avatars/0.png`;
-            currentUser.color = document.getElementById('prof-color').value;
-            currentUser.bio = document.getElementById('prof-bio').value;
-            updateUIProfile();
-            closeProfile();
-            if(socket) socket.emit('update profile', currentUser);
-        }
-
-        // Previews ao vivo no painel de edição
-        document.getElementById('prof-color').addEventListener('input', e => document.getElementById('profile-banner-preview').style.backgroundColor = e.target.value);
-        document.getElementById('prof-avatar').addEventListener('input', e => document.getElementById('profile-avatar-preview').src = e.target.value || 'https://cdn.discordapp.com/embed/avatars/0.png');
-
-        // --- POPOUT DE USUÁRIO (CARD) ---
-        function showUserPopout(event, socketId) {
-            event.stopPropagation(); // Evita fechar imediatamente
-            const user = onlineUsersData.find(u => u.socketId === socketId);
-            if(!user) return;
-
-            const popout = document.getElementById('user-popout');
-            document.getElementById('popout-banner').style.backgroundColor = user.color || '#5865F2';
-            document.getElementById('popout-avatar').src = user.avatar;
-            document.getElementById('popout-name').innerText = user.name;
-            document.getElementById('popout-name').style.color = user.color || 'white';
-            document.getElementById('popout-bio').innerText = user.bio || 'Este usuário prefere manter o mistério.';
-
-            // Posiciona o card perto do clique
-            popout.style.top = Math.min(event.clientY, window.innerHeight - 300) + 'px';
-            popout.style.left = Math.min(event.clientX + 20, window.innerWidth - 320) + 'px';
-            popout.classList.remove('hidden');
-        }
-        function closeUserPopout() { document.getElementById('user-popout').classList.add('hidden'); }
-
-        // --- BARRA DE SERVIDORES ---
-        function renderSidebar() {
-            const sidebar = document.getElementById('server-sidebar');
-            const sep = document.getElementById('server-separator');
-            
-            Array.from(sidebar.children).forEach(child => {
-                if(child.id !== 'server-separator' && !child.innerHTML.includes('fa-plus')) {
-                    sidebar.removeChild(child);
-                }
-            });
-
-            myServers.forEach(srv => {
-                const div = document.createElement('div');
-                const isActive = srv.id === currentServerId;
-                const radius = isActive ? 'rounded-[16px]' : 'rounded-[24px]';
-                const bg = isActive ? 'bg-[#5865F2]' : 'bg-[#313338] hover:bg-[#5865F2]';
-                
-                div.className = `w-12 h-12 ${bg} text-white ${radius} hover:rounded-[16px] flex items-center justify-center cursor-pointer transition-all shadow mb-2 flex-shrink-0`;
-                div.title = srv.name;
-                div.onclick = () => socket.emit('join server', srv.id);
-                div.innerHTML = `<i class="fa-solid ${srv.icon} text-xl"></i>`;
-                
-                sidebar.insertBefore(div, sep);
-            });
-        }
-
-        // --- GRUPOS & SERVIDORES & CONVITES ---
-        function openGroupModal() {
-            const list = document.getElementById('group-users-list');
-            list.innerHTML = '';
-            onlineUsersData.forEach(u => {
-                if (u.socketId === currentUser.socketId) return;
-                list.innerHTML += `
-                    <label class="flex items-center gap-3 p-2 rounded hover:bg-[#3F4147] cursor-pointer transition">
-                        <input type="checkbox" value="${u.socketId}" class="group-checkbox w-4 h-4 rounded text-[#5865F2] bg-[#1E1F22] border-none focus:ring-0 cursor-pointer">
-                        <img src="${u.avatar}" class="w-6 h-6 rounded-full object-cover">
-                        <span class="text-white text-sm" style="color: ${u.color || 'white'}">${u.name}</span>
-                    </label>
-                `;
-            });
-            document.getElementById('group-modal').classList.remove('hidden');
-        }
-        function closeGroupModal() { document.getElementById('group-modal').classList.add('hidden'); }
-        function submitGroup() {
-            const name = document.getElementById('group-name').value.trim() || `Grupo de ${currentUser.name}`;
-            const checkboxes = document.querySelectorAll('.group-checkbox:checked');
-            const members = Array.from(checkboxes).map(cb => cb.value);
-            
-            if (members.length === 0) return alert("Selecione pelo menos um amigo!");
-            
-            socket.emit('create group', { name, members });
-            closeGroupModal();
-        }
-
-        function createServer() {
-            const name = prompt("Nome do Servidor Público:");
-            if (name) socket.emit('create server', { name });
-        }
-
-        function copyInviteLink() {
-            const link = window.location.origin + window.location.pathname + '?invite=' + currentServerId;
-            navigator.clipboard.writeText(link).catch(() => {
-                const temp = document.createElement("input"); temp.value = link;
-                document.body.appendChild(temp); temp.select(); document.execCommand("copy"); document.body.removeChild(temp);
-            });
-            alert("Link de convite copiado!\n\n" + link);
-        }
-
-        // --- ARQUIVOS E RESPOSTAS ---
+        // --- ARRASTAR E SOLTAR & CTRL+V DE VOLTA ---
         function handleFiles(files) {
             if (files[0]) {
                 selectedFile = files[0];
@@ -388,6 +273,165 @@
         }
         function removeAttachment() { selectedFile = null; document.getElementById('file-input').value = ''; document.getElementById('attachment-preview').classList.add('hidden'); }
         
+        document.addEventListener('paste', (e) => {
+            if (e.clipboardData && e.clipboardData.files.length > 0) handleFiles(e.clipboardData.files);
+        });
+
+        let dragCounter = 0;
+        const dragOverlay = document.getElementById('drag-overlay');
+        document.addEventListener('dragenter', (e) => { e.preventDefault(); dragCounter++; dragOverlay.classList.replace('hidden', 'flex'); });
+        document.addEventListener('dragleave', (e) => { e.preventDefault(); dragCounter--; if (dragCounter === 0) dragOverlay.classList.replace('flex', 'hidden'); });
+        document.addEventListener('dragover', e => e.preventDefault());
+        document.addEventListener('drop', (e) => {
+            e.preventDefault(); dragCounter = 0; dragOverlay.classList.replace('flex', 'hidden');
+            if (e.dataTransfer && e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files);
+        });
+
+        // --- PARTICULAS & PERFIL ---
+        function applyParticles(element, type) {
+            element.innerHTML = ''; // Limpa
+            if (type === 'none') return;
+            const count = type === 'snow' ? 20 : (type === 'stars' ? 15 : 10);
+            for(let i=0; i<count; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.top = (Math.random() * 50 - 20) + 'px';
+                
+                if(type === 'snow') { p.style.width = p.style.height = (Math.random()*4+2)+'px'; p.style.background = 'white'; p.style.animation = `fallSnow ${Math.random()*2+2}s linear infinite`; }
+                else if(type === 'stars') { p.style.width = p.style.height = (Math.random()*6+3)+'px'; p.style.background = '#FFD700'; p.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)'; p.style.animation = `floatStars ${Math.random()*2+2}s ease-in-out infinite`; }
+                else if(type === 'fire') { p.style.width = p.style.height = (Math.random()*10+5)+'px'; p.style.background = 'radial-gradient(circle, #ff9d00, #ff2a00)'; p.style.animation = `pulseFire ${Math.random()+0.5}s infinite alternate`; p.style.top = '100%'; }
+                element.appendChild(p);
+            }
+        }
+
+        function updateUIProfile() {
+            document.getElementById('my-name-display').innerText = currentUser.name;
+            document.getElementById('my-avatar-display').src = currentUser.avatar;
+            document.getElementById('my-activity-display').innerText = currentUser.activity || 'Online';
+            
+            document.getElementById('prof-name').value = currentUser.name;
+            document.getElementById('prof-avatar').value = currentUser.avatar;
+            document.getElementById('prof-color').value = currentUser.color || '#5865F2';
+            document.getElementById('prof-bio').value = currentUser.bio || '';
+            document.getElementById('prof-activity').value = currentUser.activity || '';
+            document.getElementById('prof-particles').value = currentUser.particles || 'none';
+            
+            document.getElementById('profile-avatar-preview').src = currentUser.avatar;
+            document.getElementById('profile-banner-preview').style.backgroundColor = currentUser.color || '#5865F2';
+            applyParticles(document.getElementById('profile-banner-preview'), currentUser.particles);
+        }
+
+        function openProfile() { updateUIProfile(); document.getElementById('profile-modal').classList.remove('hidden'); }
+        function closeProfile() { document.getElementById('profile-modal').classList.add('hidden'); }
+        function saveProfile() {
+            currentUser.name = document.getElementById('prof-name').value;
+            currentUser.avatar = document.getElementById('prof-avatar').value || `https://cdn.discordapp.com/embed/avatars/0.png`;
+            currentUser.color = document.getElementById('prof-color').value;
+            currentUser.bio = document.getElementById('prof-bio').value;
+            currentUser.activity = document.getElementById('prof-activity').value;
+            currentUser.particles = document.getElementById('prof-particles').value;
+            updateUIProfile(); closeProfile();
+            if(socket) socket.emit('update profile', currentUser);
+        }
+
+        document.getElementById('prof-color').addEventListener('input', e => document.getElementById('profile-banner-preview').style.backgroundColor = e.target.value);
+        document.getElementById('prof-avatar').addEventListener('input', e => document.getElementById('profile-avatar-preview').src = e.target.value || 'https://cdn.discordapp.com/embed/avatars/0.png');
+        document.getElementById('prof-particles').addEventListener('change', e => applyParticles(document.getElementById('profile-banner-preview'), e.target.value));
+
+        function showUserPopout(event, socketId) {
+            event.stopPropagation();
+            const user = onlineUsersData.find(u => u.socketId === socketId);
+            if(!user) return;
+
+            const popout = document.getElementById('user-popout');
+            const banner = document.getElementById('popout-banner');
+            banner.style.backgroundColor = user.color || '#5865F2';
+            applyParticles(banner, user.particles || 'none');
+            
+            document.getElementById('popout-avatar').src = user.avatar;
+            document.getElementById('popout-name').innerText = user.name;
+            document.getElementById('popout-name').style.color = user.color || 'white';
+            document.getElementById('popout-bio').innerText = user.bio || 'Este usuário prefere manter o mistério.';
+            
+            const act = document.getElementById('popout-activity');
+            if(user.activity) { act.innerText = user.activity; act.classList.remove('hidden'); } else { act.classList.add('hidden'); }
+
+            popout.style.top = Math.min(event.clientY, window.innerHeight - 300) + 'px';
+            popout.style.left = Math.min(event.clientX + 20, window.innerWidth - 320) + 'px';
+            popout.classList.remove('hidden');
+        }
+        function closeUserPopout() { document.getElementById('user-popout').classList.add('hidden'); }
+
+        // --- SERVIDORES E CANAIS ---
+        function renderSidebar() {
+            const sidebar = document.getElementById('server-sidebar');
+            const sep = document.getElementById('server-separator');
+            Array.from(sidebar.children).forEach(c => { if(c.id !== 'server-separator' && !c.innerHTML.includes('fa-plus')) sidebar.removeChild(c); });
+            
+            myServers.forEach(srv => {
+                const div = document.createElement('div');
+                const isAct = currentServer && srv.id === currentServer.id;
+                div.className = `w-12 h-12 ${isAct?'bg-[#5865F2] rounded-[16px]':'bg-[#313338] rounded-[24px] hover:bg-[#5865F2] hover:rounded-[16px]'} text-white flex items-center justify-center cursor-pointer transition-all mb-2 flex-shrink-0`;
+                div.title = srv.name; div.onclick = () => socket.emit('join server', srv.id);
+                div.innerHTML = `<i class="fa-solid ${srv.icon} text-xl"></i>`;
+                sidebar.insertBefore(div, sep);
+            });
+        }
+
+        function renderChannels() {
+            if(!currentServer) return;
+            const cl = document.getElementById('channel-list');
+            cl.innerHTML = '';
+            Object.values(currentServer.channels).forEach(ch => {
+                const isActText = ch.type === 'text' && ch.id === currentTextChannelId;
+                const isActVoice = ch.type === 'voice' && ch.id === currentVoiceChannelId;
+                const icon = ch.type === 'text' ? 'fa-hashtag' : 'fa-volume-high';
+                const bg = (isActText || isActVoice) ? 'bg-[#404249] text-white' : 'text-[#87898C] hover:bg-[#35373C] hover:text-[#DBDEE1]';
+                
+                const div = document.createElement('div');
+                div.className = `${bg} rounded px-2 py-1.5 flex items-center gap-2 cursor-pointer transition`;
+                div.onclick = () => {
+                    if(ch.type === 'text') switchTextChannel(ch.id);
+                    else joinVoiceChannel(ch.id);
+                };
+                div.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="truncate">${ch.name}</span>`;
+                cl.appendChild(div);
+            });
+        }
+
+        function switchTextChannel(chId) {
+            currentTextChannelId = chId;
+            const ch = currentServer.channels[chId];
+            document.getElementById('chat-header-name').innerText = ch.name;
+            document.getElementById('header-channel-icon').className = 'fa-solid fa-hashtag text-[#87898C] text-xl';
+            document.getElementById('chat-messages').innerHTML = `
+                <div class="mt-8 mb-6">
+                    <div class="w-16 h-16 bg-[#5865F2] rounded-full flex items-center justify-center mb-4"><i class="fa-solid fa-hashtag text-white text-3xl"></i></div>
+                    <h1 class="text-white text-3xl font-bold mb-2">Bem-vindo(a) a #${ch.name}</h1>
+                </div>`;
+            if (ch.messages) ch.messages.forEach(appendMessage);
+            renderChannels();
+        }
+
+        function openChannelModal() { document.getElementById('channel-modal').classList.remove('hidden'); }
+        function closeChannelModal() { document.getElementById('channel-modal').classList.add('hidden'); }
+        function submitChannel() {
+            const name = document.getElementById('channel-name').value.trim().replace(/\s+/g, '-').toLowerCase();
+            const type = document.querySelector('input[name="channel-type"]:checked').value;
+            if(name && currentServer) socket.emit('create channel', { serverId: currentServer.id, name, type });
+            closeChannelModal();
+        }
+
+        function createServer() { const name = prompt("Nome do Servidor:"); if(name) socket.emit('create server', { name }); }
+        function copyInviteLink() {
+            if(!currentServer) return;
+            const link = window.location.origin + window.location.pathname + '?invite=' + currentServer.id;
+            navigator.clipboard.writeText(link).catch(() => { const t=document.createElement("input"); t.value=link; document.body.appendChild(t); t.select(); document.execCommand("copy"); document.body.removeChild(t); });
+            alert("Link copiado: " + link);
+        }
+
+        // --- MENSAGENS, ADMIN E RESPOSTAS ---
         function setReply(id, name, text) {
             replyingTo = { id, name, text: text.substring(0, 50) + (text.length > 50 ? '...' : '') };
             document.getElementById('reply-banner').classList.remove('hidden');
@@ -395,182 +439,291 @@
             document.getElementById('message-input').focus();
         }
         function cancelReply() { replyingTo = null; document.getElementById('reply-banner').classList.add('hidden'); }
-
-        // --- PODERES DO ADMIN ---
-        function deleteMsg(msgId) {
-            if (confirm("Deletar mensagem para todos?")) socket.emit('delete message', { serverId: currentServerId, msgId });
-        }
-        function banUser(socketId) {
-            if (confirm("Banir este usuário pelo IP para sempre? Ele não poderá mais voltar.")) socket.emit('ban user', socketId);
-        }
-
-        // --- MENSAGENS UI ---
-        const chatMessages = document.getElementById('chat-messages');
-        const messageInput = document.getElementById('message-input');
+        function deleteMsg(msgId) { if(confirm("Deletar mensagem para todos?")) socket.emit('delete message', { serverId: currentServer.id, channelId: currentTextChannelId, msgId }); }
+        function banUser(socketId) { if(confirm("Banir este IP permanentemente?")) socket.emit('ban user', socketId); }
 
         function appendMessage(msg) {
-            const div = document.createElement('div');
-            div.id = `msg-${msg.id}`;
+            const div = document.createElement('div'); div.id = `msg-${msg.id}`;
             const isDypz = currentUser.name.toLowerCase() === 'dypz';
-            
-            // Lógica de Pings e @everyone
             let safeText = msg.text || '';
-            const isEveryone = safeText.includes('@everyone');
-            const isMentioned = safeText.includes(`@${currentUser.name}`);
-            
-            let baseClass = 'hover:bg-[#2E3035]';
-            if (isEveryone) baseClass = 'msg-everyone';
-            else if (isMentioned) baseClass = 'msg-ping';
+            const isEv = safeText.includes('@everyone'), isMen = safeText.includes(`@${currentUser.name}`);
+            let baseClass = isEv ? 'msg-everyone' : (isMen ? 'msg-ping' : 'hover:bg-[#2E3035]');
 
             div.className = `flex gap-4 py-1 px-4 -mx-4 transition group relative ${baseClass}`;
             
-            // Menu da Mensagem
-            let menuHtml = `<div class="absolute top-0 right-4 hidden group-hover:flex items-center bg-[#313338] border border-[#1E1F22] rounded shadow-md overflow-hidden z-10">`;
-            menuHtml += `<button onclick="setReply('${msg.id}', '${msg.user.name}', '${msg.text ? msg.text.replace(/'/g, "\\'") : 'Mídia'}')" class="p-2 text-[#B5BAC1] hover:bg-[#404249] hover:text-white" title="Responder"><i class="fa-solid fa-reply"></i></button>`;
-            
-            if (isDypz) {
-                menuHtml += `<button onclick="deleteMsg('${msg.id}')" class="p-2 text-red-500 hover:bg-[#404249]" title="Deletar Mensagem"><i class="fa-solid fa-trash"></i></button>`;
-                if (msg.user.name.toLowerCase() !== 'dypz') {
-                    menuHtml += `<button onclick="banUser('${msg.user.socketId}')" class="p-2 text-red-500 hover:bg-[#404249]" title="Banir IP"><i class="fa-solid fa-gavel"></i></button>`;
-                }
+            let menuHtml = `<div class="absolute top-0 right-4 hidden group-hover:flex items-center bg-[#313338] border border-[#1E1F22] rounded shadow z-10">`;
+            menuHtml += `<button onclick="setReply('${msg.id}', '${msg.user.name}', '${msg.text ? msg.text.replace(/'/g, "\\'") : 'Mídia'}')" class="p-2 text-[#B5BAC1] hover:bg-[#404249]"><i class="fa-solid fa-reply"></i></button>`;
+            if(isDypz) {
+                menuHtml += `<button onclick="deleteMsg('${msg.id}')" class="p-2 text-red-500 hover:bg-[#404249]"><i class="fa-solid fa-trash"></i></button>`;
+                if(msg.user.name.toLowerCase() !== 'dypz') menuHtml += `<button onclick="banUser('${msg.user.socketId}')" class="p-2 text-red-500 hover:bg-[#404249]"><i class="fa-solid fa-gavel"></i></button>`;
             }
             menuHtml += `</div>`;
 
             let mediaHtml = '', replyHtml = '';
             if (msg.mediaUrl) {
-                if (msg.mediaType === 'image') mediaHtml = `<img src="${msg.mediaUrl}" class="max-w-sm max-h-80 rounded mt-2 border border-[#1E1F22]">`;
-                else if (msg.mediaType === 'video') mediaHtml = `<video src="${msg.mediaUrl}" controls class="max-w-md rounded mt-2 bg-black border border-[#1E1F22]"></video>`;
-                else if (msg.mediaType === 'audio') mediaHtml = `<audio src="${msg.mediaUrl}" controls class="mt-2 w-full max-w-sm"></audio>`;
-                else mediaHtml = `<a href="${msg.mediaUrl}" target="_blank" class="mt-2 inline-flex items-center gap-2 bg-[#2B2D31] p-3 rounded text-[#00A8FC] hover:underline"><i class="fa-solid fa-download"></i> Baixar Arquivo</a>`;
+                if(msg.mediaType === 'image') mediaHtml = `<img src="${msg.mediaUrl}" class="max-w-sm max-h-80 rounded mt-2 border border-[#1E1F22]">`;
+                else if(msg.mediaType === 'video') mediaHtml = `<video src="${msg.mediaUrl}" controls class="max-w-md rounded mt-2 bg-black border border-[#1E1F22]"></video>`;
+                else if(msg.mediaType === 'audio') mediaHtml = `<audio src="${msg.mediaUrl}" controls class="mt-2 w-full max-w-sm"></audio>`;
+                else mediaHtml = `<a href="${msg.mediaUrl}" target="_blank" class="mt-2 inline-flex items-center gap-2 bg-[#2B2D31] p-3 rounded text-[#00A8FC] hover:underline"><i class="fa-solid fa-download"></i> Arquivo</a>`;
             }
+            if(msg.replyTo) replyHtml = `<div class="text-[#B5BAC1] text-xs flex items-center gap-2 mb-1 opacity-70 before:content-[''] before:w-6 before:h-[1px] before:bg-[#4E5058]"><img src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-3 h-3 rounded-full"> <span class="font-bold">@${msg.replyTo.name}</span>: ${msg.replyTo.text}</div>`;
+            if(isEv) safeText = safeText.replace(/@everyone/g, `<span class="bg-[#FAA61A]/30 text-[#FEE75C] font-medium px-1 rounded">@everyone</span>`);
+            if(isMen) safeText = safeText.replace(new RegExp(`@${currentUser.name}`, 'g'), `<span class="bg-[#5865F2]/30 text-[#C9CDD6] font-medium px-1 rounded">@${currentUser.name}</span>`);
 
-            if (msg.replyTo) {
-                replyHtml = `<div class="text-[#B5BAC1] text-xs flex items-center gap-2 mb-1 opacity-70 before:content-[''] before:w-6 before:h-[1px] before:bg-[#4E5058]"><img src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-3 h-3 rounded-full"> <span class="font-bold">@${msg.replyTo.name}</span>: ${msg.replyTo.text}</div>`;
-            }
-
-            // Destaca os @
-            if (isEveryone) safeText = safeText.replace(/@everyone/g, `<span class="bg-[#FAA61A]/30 text-[#FEE75C] font-medium px-1 rounded">@everyone</span>`);
-            if (isMentioned) safeText = safeText.replace(new RegExp(`@${currentUser.name}`, 'g'), `<span class="bg-[#5865F2]/30 text-[#C9CDD6] font-medium px-1 rounded">@${currentUser.name}</span>`);
-
-            div.innerHTML = `
-                ${menuHtml}
+            div.innerHTML = `${menuHtml}
                 <div class="relative flex-shrink-0 cursor-pointer" onclick="showUserPopout(event, '${msg.user.socketId}')">
                     <img src="${msg.user.avatar}" class="w-10 h-10 rounded-full object-cover mt-1">
-                    <div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-[#313338] bg-[#23A559]"></div>
                 </div>
                 <div class="flex flex-col min-w-0 flex-1">
                     ${replyHtml}
-                    <div class="flex items-baseline gap-2">
-                        <span class="font-medium text-white hover:underline cursor-pointer" style="color: ${msg.user.color || 'white'}" onclick="showUserPopout(event, '${msg.user.socketId}')">${msg.user.name}</span>
-                        <span class="text-xs text-[#87898C]">${new Date(msg.timestamp).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</span>
-                    </div>
-                    <p class="text-[#DBDEE1] whitespace-pre-wrap leading-tight mt-0.5">${safeText}</p>
-                    ${mediaHtml}
+                    <div class="flex items-baseline gap-2"><span class="font-medium text-white hover:underline cursor-pointer" style="color: ${msg.user.color||'white'}" onclick="showUserPopout(event, '${msg.user.socketId}')">${msg.user.name}</span><span class="text-xs text-[#87898C]">${new Date(msg.timestamp).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span></div>
+                    <p class="text-[#DBDEE1] whitespace-pre-wrap leading-tight mt-0.5">${safeText}</p>${mediaHtml}
                 </div>`;
-            
-            chatMessages.appendChild(div);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            const chatBox = document.getElementById('chat-messages');
+            chatBox.appendChild(div); chatBox.scrollTop = chatBox.scrollHeight;
         }
 
         async function sendMessage() {
-            if (isUploading) return;
-            const text = messageInput.value.trim();
+            if (isUploading || !currentServer) return;
+            const text = document.getElementById('message-input').value.trim();
             if (!text && !selectedFile) return;
-
-            isUploading = true;
-            messageInput.disabled = true;
+            isUploading = true; document.getElementById('message-input').disabled = true;
             let mediaUrl = null, mediaType = null;
-
-            if (selectedFile) {
-                const formData = new FormData();
-                formData.append('media', selectedFile);
-                messageInput.placeholder = "Enviando arquivo...";
-                try {
-                    const res = await fetch('/upload', { method: 'POST', body: formData });
-                    const data = await res.json();
-                    if (data.url) { mediaUrl = data.url; mediaType = data.type; }
-                } catch (e) { alert("Erro no upload."); }
+            if(selectedFile) {
+                const fd = new FormData(); fd.append('media', selectedFile);
+                document.getElementById('message-input').placeholder = "Enviando arquivo...";
+                try { const res = await fetch('/upload', {method:'POST', body:fd}); const data = await res.json(); if(data.url) {mediaUrl=data.url; mediaType=data.type;} } catch(e) {}
             }
-
-            if (socket) socket.emit('chat message', { serverId: currentServerId, text, mediaUrl, mediaType, replyTo: replyingTo });
-            
-            messageInput.value = '';
-            removeAttachment();
-            cancelReply();
-            isUploading = false;
-            messageInput.disabled = false;
-            messageInput.placeholder = "Conversar... (Use @everyone para notificar todos)";
-            messageInput.focus();
+            if(socket) socket.emit('chat message', { serverId: currentServer.id, channelId: currentTextChannelId, text, mediaUrl, mediaType, replyTo: replyingTo });
+            document.getElementById('message-input').value = ''; removeAttachment(); cancelReply();
+            isUploading = false; document.getElementById('message-input').disabled = false; document.getElementById('message-input').placeholder = "Conversar..."; document.getElementById('message-input').focus();
         }
+        document.getElementById('message-input').addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }});
 
-        messageInput.addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }});
-
-        // --- EVENTOS DO SOCKET ---
-        if (socket) {
-            socket.on('initial servers', (srvs) => {
-                srvs.forEach(s => myServers.set(s.id, s));
-                renderSidebar();
-            });
-
-            socket.on('server created', (srv) => {
-                myServers.set(srv.id, srv);
-                renderSidebar();
-            });
-
+        // --- EVENTOS SOCKET UI ---
+        if(socket) {
+            socket.on('initial servers', (srvs) => { srvs.forEach(s => myServers.set(s.id, s)); renderSidebar(); });
+            socket.on('server created', (srv) => { myServers.set(srv.id, srv); renderSidebar(); });
+            
             socket.on('server data', (data) => {
-                currentServerId = data.server.id;
-                document.getElementById('current-server-name').innerText = data.server.name;
-                document.getElementById('chat-header-name').innerText = data.server.name;
-                chatMessages.innerHTML = '';
-                
-                chatMessages.innerHTML = `
-                    <div class="mt-8 mb-6">
-                        <div class="w-16 h-16 bg-[#5865F2] rounded-full flex items-center justify-center mb-4"><i class="fa-solid ${data.server.icon} text-white text-3xl"></i></div>
-                        <h1 class="text-white text-3xl font-bold mb-2">Bem-vindo(a) a ${data.server.name}</h1>
-                        <p class="text-[#B5BAC1]">Envie um link de convite (Invite) para seus amigos entrarem.</p>
-                    </div>
-                `;
-                data.history.forEach(appendMessage);
-                renderSidebar(); 
+                currentServer = data;
+                document.getElementById('current-server-name').innerText = data.name;
+                const textChannels = Object.values(data.channels).filter(c=>c.type==='text');
+                if(textChannels.length > 0) switchTextChannel(textChannels[0].id);
+                renderChannels(); renderSidebar();
+            });
+
+            socket.on('channel created', ({ serverId, channel }) => {
+                if(currentServer && currentServer.id === serverId) {
+                    currentServer.channels[channel.id] = channel;
+                    renderChannels();
+                }
             });
 
             socket.on('chat message', (data) => {
-                if (data.serverId === currentServerId) appendMessage(data.message);
+                if(currentServer && data.serverId === currentServer.id) {
+                    if(currentServer.channels[data.channelId]) currentServer.channels[data.channelId].messages.push(data.message);
+                    if(data.channelId === currentTextChannelId) appendMessage(data.message);
+                }
             });
-
-            socket.on('message deleted', (msgId) => {
-                const msgEl = document.getElementById(`msg-${msgId}`);
-                if (msgEl) msgEl.remove();
-            });
+            socket.on('message deleted', ({ channelId, msgId }) => { if(channelId === currentTextChannelId) { const el = document.getElementById(`msg-${msgId}`); if(el) el.remove(); } });
 
             socket.on('update users', (users) => {
                 onlineUsersData = users;
-                document.getElementById('online-count').innerText = users.length;
-                const ml = document.getElementById('members-list');
-                ml.innerHTML = '';
+                const ml = document.getElementById('members-list'); ml.innerHTML = '';
                 users.forEach(u => {
                     const isDypz = u.name.toLowerCase() === 'dypz' ? '<i class="fa-solid fa-crown text-[#F0B232] text-[10px] ml-1" title="Admin"></i>' : '';
-                    ml.innerHTML += `
-                        <div class="flex items-center gap-3 p-1.5 rounded hover:bg-[#35373C] cursor-pointer group transition" onclick="showUserPopout(event, '${u.socketId}')">
-                            <div class="relative">
-                                <img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover">
-                                <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-[#2B2D31] rounded-full bg-[#23A559]"></div>
-                            </div>
-                            <span class="text-[#87898C] group-hover:text-[#DBDEE1] font-medium truncate flex-1 flex items-center" style="color: ${u.color || ''}">${u.name} ${isDypz}</span>
-                        </div>
-                    `;
+                    ml.innerHTML += `<div class="flex items-center gap-3 p-1.5 rounded hover:bg-[#35373C] cursor-pointer group" onclick="showUserPopout(event, '${u.socketId}')">
+                        <img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover"><div class="flex flex-col min-w-0"><span class="text-[#87898C] group-hover:text-[#DBDEE1] font-medium truncate" style="color:${u.color||''}">${u.name} ${isDypz}</span>
+                        ${u.activity ? `<span class="text-[10px] text-[#B5BAC1] truncate">${u.activity}</span>` : ''}</div></div>`;
                 });
             });
+            socket.on('system message', (msg) => { const div = document.createElement('div'); div.className = 'text-[#F0B232] text-sm py-2 font-bold text-center bg-[#F0B232]/10 rounded'; div.innerHTML = msg; document.getElementById('chat-messages').appendChild(div); });
+            socket.on('error message', alert);
+        }
 
-            socket.on('system message', (msg) => {
-                const div = document.createElement('div');
-                div.className = 'text-[#F0B232] text-sm py-2 font-bold text-center my-2 bg-[#F0B232]/10 border border-[#F0B232]/20 rounded';
-                div.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-2"></i> ${msg}`;
-                chatMessages.appendChild(div);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+        // ==========================================
+        //  WEBRTC (VOZ E TELA) IGUAL DISCORD
+        // ==========================================
+        let localStream = null;
+        let screenStream = null;
+        let peerConnections = {};
+        const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+
+        async function joinVoiceChannel(chId) {
+            if(currentVoiceChannelId) leaveVoice();
+            currentVoiceChannelId = chId;
+            document.getElementById('voice-connection-panel').classList.remove('hidden');
+            document.getElementById('video-grid').classList.replace('hidden', 'grid');
+            renderChannels();
+
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                addVideoBox(socket.id, localStream, currentUser.name, true);
+                socket.emit('join voice', { serverId: currentServer.id, channelId: chId });
+            } catch(e) { alert("Permissão de microfone negada!"); leaveVoice(); }
+        }
+
+        function leaveVoice() {
+            if(!currentVoiceChannelId) return;
+            socket.emit('leave voice', { serverId: currentServer.id, channelId: currentVoiceChannelId });
+            currentVoiceChannelId = null;
+            if(localStream) localStream.getTracks().forEach(t => t.stop());
+            if(screenStream) screenStream.getTracks().forEach(t => t.stop());
+            localStream = null; screenStream = null;
+            Object.values(peerConnections).forEach(pc => pc.close());
+            peerConnections = {};
+            document.getElementById('voice-connection-panel').classList.add('hidden');
+            document.getElementById('video-grid').classList.replace('grid', 'hidden');
+            document.getElementById('video-grid').innerHTML = ''; // Limpa grid
+            renderChannels();
+            // Reseta botões
+            document.getElementById('btn-mic').innerHTML = '<i class="fa-solid fa-microphone"></i>';
+            document.getElementById('btn-cam').innerHTML = '<i class="fa-solid fa-video"></i>';
+            document.getElementById('btn-screen').innerHTML = '<i class="fa-solid fa-desktop"></i>';
+            document.getElementById('btn-mic').classList.remove('text-red-500');
+        }
+
+        function addVideoBox(id, stream, name, isLocal=false) {
+            let box = document.getElementById(`vidbox-${id}`);
+            if(!box) {
+                box = document.createElement('div');
+                box.id = `vidbox-${id}`;
+                box.className = 'relative bg-black rounded-lg overflow-hidden border border-[#1E1F22] aspect-video flex items-center justify-center';
+                box.innerHTML = `<video id="vid-${id}" class="w-full h-full object-contain" autoplay playsinline ${isLocal ? 'muted' : ''}></video>
+                                 <div class="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white">${name}</div>`;
+                document.getElementById('video-grid').appendChild(box);
+            }
+            const vid = document.getElementById(`vid-${id}`);
+            if(vid.srcObject !== stream) vid.srcObject = stream;
+        }
+
+        function removeVideoBox(id) { const box = document.getElementById(`vidbox-${id}`); if(box) box.remove(); }
+
+        // Controles Locais
+        function toggleMic() {
+            if(!localStream) return;
+            const track = localStream.getAudioTracks()[0];
+            if(track) {
+                track.enabled = !track.enabled;
+                const btn = document.getElementById('btn-mic');
+                btn.innerHTML = track.enabled ? '<i class="fa-solid fa-microphone"></i>' : '<i class="fa-solid fa-microphone-slash"></i>';
+                btn.classList.toggle('text-red-500', !track.enabled);
+            }
+        }
+
+        async function toggleCam() {
+            if(!localStream) return;
+            const btn = document.getElementById('btn-cam');
+            const videoTrack = localStream.getVideoTracks()[0];
+            
+            if(videoTrack) { // Desliga
+                videoTrack.stop(); localStream.removeTrack(videoTrack);
+                btn.classList.remove('text-[#23A559]');
+                updateAllPeerTracks();
+            } else { // Liga
+                try {
+                    const vs = await navigator.mediaDevices.getUserMedia({ video: true });
+                    localStream.addTrack(vs.getVideoTracks()[0]);
+                    btn.classList.add('text-[#23A559]');
+                    updateAllPeerTracks();
+                } catch(e) { alert("Câmera não encontrada."); }
+            }
+        }
+
+        async function toggleScreen() {
+            const btn = document.getElementById('btn-screen');
+            if(screenStream) { // Desliga tela
+                screenStream.getTracks().forEach(t=>t.stop()); screenStream = null;
+                btn.classList.remove('text-[#23A559]');
+                updateAllPeerTracks(); // Volta para webcam
+            } else { // Liga tela
+                try {
+                    screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                    screenStream.getVideoTracks()[0].onended = () => toggleScreen(); // Se parar pelo navegador
+                    btn.classList.add('text-[#23A559]');
+                    updateAllPeerTracks();
+                } catch(e) {}
+            }
+        }
+
+        function updateAllPeerTracks() {
+            // Atualiza vídeo local
+            const streamToRender = screenStream || localStream;
+            addVideoBox(socket.id, streamToRender, currentUser.name, true);
+            
+            // Substitui tracks em todas as conexões RTCPeerConnection
+            Object.values(peerConnections).forEach(pc => {
+                const senders = pc.getSenders();
+                const vTrack = streamToRender.getVideoTracks()[0];
+                const aTrack = localStream.getAudioTracks()[0];
+                
+                const vSender = senders.find(s => s.track && s.track.kind === 'video');
+                if(vTrack && vSender) vSender.replaceTrack(vTrack);
+                else if(vTrack && !vSender) pc.addTrack(vTrack, streamToRender);
+                else if(!vTrack && vSender) pc.removeTrack(vSender);
+                
+                const aSender = senders.find(s => s.track && s.track.kind === 'audio');
+                if(aTrack && aSender) aSender.replaceTrack(aTrack);
+            });
+        }
+
+        // Conexão WebRTC entre pares
+        function createPeerConnection(peerId, initiate) {
+            const pc = new RTCPeerConnection(rtcConfig);
+            peerConnections[peerId] = pc;
+            
+            const streamToSend = screenStream || localStream;
+            streamToSend.getTracks().forEach(t => pc.addTrack(t, streamToSend));
+
+            pc.onicecandidate = (event) => {
+                if(event.candidate) socket.emit('webrtc signal', { target: peerId, signal: { type: 'ice', candidate: event.candidate } });
+            };
+
+            pc.ontrack = (event) => {
+                const peerUser = onlineUsersData.find(u => u.socketId === peerId);
+                addVideoBox(peerId, event.streams[0], peerUser ? peerUser.name : 'Membro');
+            };
+
+            if(initiate) {
+                pc.createOffer().then(offer => {
+                    pc.setLocalDescription(offer);
+                    socket.emit('webrtc signal', { target: peerId, signal: offer });
+                });
+            }
+            return pc;
+        }
+
+        if(socket) {
+            // Alguém entrou no mesmo canal que eu, eu inicio a oferta
+            socket.on('user joined voice', (peerId) => {
+                if(currentVoiceChannelId) createPeerConnection(peerId, true);
             });
 
-            socket.on('error message', alert);
+            // Alguém saiu
+            socket.on('user left voice', (peerId) => {
+                if(peerConnections[peerId]) { peerConnections[peerId].close(); delete peerConnections[peerId]; }
+                removeVideoBox(peerId);
+            });
+
+            // Recebe sinais
+            socket.on('webrtc signal', async (data) => {
+                if(!currentVoiceChannelId) return;
+                const peerId = data.sender;
+                let pc = peerConnections[peerId];
+                
+                if(data.signal.type === 'offer') {
+                    if(!pc) pc = createPeerConnection(peerId, false);
+                    await pc.setRemoteDescription(new RTCSessionDescription(data.signal));
+                    const answer = await pc.createAnswer();
+                    await pc.setLocalDescription(answer);
+                    socket.emit('webrtc signal', { target: peerId, signal: answer });
+                } else if(data.signal.type === 'answer') {
+                    if(pc) await pc.setRemoteDescription(new RTCSessionDescription(data.signal));
+                } else if(data.signal.type === 'ice') {
+                    if(pc) pc.addIceCandidate(new RTCIceCandidate(data.signal.candidate));
+                }
+            });
         }
     </script>
 </body>
