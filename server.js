@@ -12,9 +12,7 @@ const io = new Server(server, {
 });
 
 const uploadDir = path.join(__dirname, 'public', 'uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, uploadDir),
@@ -30,82 +28,90 @@ app.use(express.json());
 
 app.post('/upload', upload.single('media'), (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'Nenhum arquivo enviado.' });
-    
     const mime = req.file.mimetype;
     let type = 'file';
     if (mime.startsWith('image/')) type = 'image';
     if (mime.startsWith('video/')) type = 'video';
     if (mime.startsWith('audio/')) type = 'audio';
-
     res.json({ url: `/uploads/${req.file.filename}`, type: type });
 });
 
-// --- SISTEMAS DE MODERAÇÃO E ESTADO (MEMÓRIA) ---
+// --- ESTADO DA APLICAÇÃO ---
 const activeUsers = new Map();
 const bannedIPs = new Set();
-const ipToUser = new Map(); // Anti-Alt: Salva a conta original do IP
+const ipToUser = new Map(); 
 
+// Nova Estrutura de Servidores com Canais
 const servers = {
-    'global': { id: 'global', name: 'Danicord Global', icon: 'fa-globe', type: 'public', messages: [] }
+    'global': { 
+        id: 'global', name: 'Danicord Global', icon: 'fa-globe', type: 'public', 
+        channels: {
+            'geral': { id: 'geral', name: 'geral', type: 'text', messages: [] },
+            'voz': { id: 'voz', name: 'Voz Principal', type: 'voice' }
+        }
+    }
 };
 
 io.on('connection', (socket) => {
-    // Captura o IP real (funciona no Render.com)
     let clientIp = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
     if (clientIp.includes(',')) clientIp = clientIp.split(',')[0].trim();
 
-    console.log('Tentativa de conexão:', socket.id, 'IP:', clientIp);
-
-    // 1. VERIFICAÇÃO DE BANIMENTO ABSOLUTO
     if (bannedIPs.has(clientIp)) {
         socket.emit('banned permanently');
         socket.disconnect(true);
         return;
     }
 
-    // 2. FORÇA O LOGIN SE O IP JÁ TEM CONTA (Anti-Alt Implacável)
-    if (ipToUser.has(clientIp)) {
-        socket.emit('force login', ipToUser.get(clientIp));
-    }
-
+    if (ipToUser.has(clientIp)) socket.emit('force login', ipToUser.get(clientIp));
     socket.msgTimestamps = [];
 
-    // Quando o usuário entra
+    // Login
     socket.on('user joined', ({ user, inviteId }) => {
         if (bannedIPs.has(clientIp)) return;
-
-        // Se o IP já tem uma conta registrada, sobrepõe a tentativa do usuário (ele não pode criar alt)
-        if (ipToUser.has(clientIp)) {
-            user = ipToUser.get(clientIp);
-        } else {
-            // Primeiro acesso do IP, registra essa conta como a oficial dele
-            ipToUser.set(clientIp, user);
-        }
+        if (ipToUser.has(clientIp)) user = ipToUser.get(clientIp);
+        else ipToUser.set(clientIp, user);
 
         user.socketId = socket.id;
-        user.ip = clientIp; // Salva o IP no objeto para o admin poder banir
+        user.ip = clientIp;
         activeUsers.set(socket.id, user);
         
         let serverToJoin = 'global';
         if (inviteId && servers[inviteId]) serverToJoin = inviteId;
 
-        socket.emit('initial servers', Object.values(servers).filter(s => s.type === 'public'));
+        // Envia apenas o Global inicialmente
+        socket.emit('initial servers', [servers['global']]);
         joinServer(socket, serverToJoin);
         io.emit('update users', Array.from(activeUsers.values()));
     });
 
-    // Criação de Servidores e Grupos
+    // Criação de Servidores e Canais
     socket.on('create server', (data) => {
         const newServerId = 'srv_' + Date.now().toString(36);
-        servers[newServerId] = { id: newServerId, name: data.name, icon: 'fa-server', type: 'public', messages: [] };
-        io.emit('server created', servers[newServerId]); 
+        servers[newServerId] = { 
+            id: newServerId, name: data.name, icon: 'fa-server', type: 'private', 
+            channels: {
+                'geral': { id: 'geral', name: 'geral', type: 'text', messages: [] },
+                'voz': { id: 'voz', name: 'Voz', type: 'voice' }
+            }
+        };
+        // Emite apenas para quem criou (Privacidade)
+        socket.emit('server created', servers[newServerId]); 
         joinServer(socket, newServerId);
+    });
+
+    socket.on('create channel', ({ serverId, name, type }) => {
+        if (!servers[serverId]) return;
+        const chId = 'ch_' + Date.now().toString(36);
+        servers[serverId].channels[chId] = { id: chId, name: name, type: type, messages: type === 'text' ? [] : undefined };
+        io.to(serverId).emit('channel created', { serverId, channel: servers[serverId].channels[chId] });
     });
 
     socket.on('create group', (data) => {
         const newServerId = 'grp_' + Date.now().toString(36);
-        servers[newServerId] = { id: newServerId, name: data.name, icon: 'fa-users', type: 'group', messages: [] };
-
+        servers[newServerId] = { 
+            id: newServerId, name: data.name, icon: 'fa-users', type: 'group', 
+            channels: { 'geral': { id: 'geral', name: 'geral', type: 'text', messages: [] } }
+        };
         const membersToJoin = [...data.members, socket.id];
         membersToJoin.forEach(memberId => {
             const memberSocket = io.sockets.sockets.get(memberId);
@@ -118,61 +124,73 @@ io.on('connection', (socket) => {
     });
 
     socket.on('join server', (serverId) => {
-        if (servers[serverId]) joinServer(socket, serverId);
+        if (servers[serverId]) {
+            socket.emit('server created', servers[serverId]); // Adiciona à UI caso seja por invite
+            joinServer(socket, serverId);
+        }
     });
 
-    // Atualização de Perfil (Bio, Avatar, Cor)
+    // Perfil Avançado
     socket.on('update profile', (newProfile) => {
         const current = activeUsers.get(socket.id);
         if (current) {
             newProfile.socketId = socket.id;
             newProfile.ip = current.ip;
             activeUsers.set(socket.id, newProfile);
-            ipToUser.set(current.ip, newProfile); // Atualiza a conta oficial do IP
+            ipToUser.set(current.ip, newProfile);
             io.emit('update users', Array.from(activeUsers.values()));
         }
     });
 
-    // Chat e Anti-Spam
+    // Sistema de Mensagens (agora por Canal)
     socket.on('chat message', (msgData) => {
         const user = activeUsers.get(socket.id);
-        const serverId = msgData.serverId || 'global';
-        if (!user || !servers[serverId]) return;
+        const serverId = msgData.serverId;
+        const channelId = msgData.channelId || 'geral';
+        
+        if (!user || !servers[serverId] || !servers[serverId].channels[channelId]) return;
 
         const now = Date.now();
         socket.msgTimestamps.push(now);
         if (socket.msgTimestamps.length > 5) {
             socket.msgTimestamps.shift();
-            if (now - socket.msgTimestamps[0] < 2000) {
-                socket.emit('error message', 'Calma! Você está enviando mensagens muito rápido (Spam).');
-                return;
-            }
+            if (now - socket.msgTimestamps[0] < 2000) return socket.emit('error message', 'Spam detectado! Aguarde.');
         }
 
         const message = {
             id: Date.now().toString() + Math.random().toString(36).substring(7),
-            user: user,
-            text: msgData.text,
-            mediaUrl: msgData.mediaUrl,
-            mediaType: msgData.mediaType,
-            replyTo: msgData.replyTo,
-            timestamp: new Date().toISOString()
+            user: user, text: msgData.text, mediaUrl: msgData.mediaUrl, mediaType: msgData.mediaType, replyTo: msgData.replyTo, timestamp: new Date().toISOString()
         };
         
-        if (servers[serverId].messages.length > 200) servers[serverId].messages.shift();
-        servers[serverId].messages.push(message);
+        const ch = servers[serverId].channels[channelId];
+        if (ch.messages.length > 200) ch.messages.shift();
+        ch.messages.push(message);
 
-        io.to(serverId).emit('chat message', { serverId, message });
+        io.to(serverId).emit('chat message', { serverId, channelId, message });
     });
 
-    // --- PODERES DO ADMIN (dypz) ---
-    socket.on('delete message', ({ serverId, msgId }) => {
+    // --- WebRTC (VOZ E TELA) Sinalização ---
+    socket.on('join voice', ({ serverId, channelId }) => {
+        const room = `voice-${serverId}-${channelId}`;
+        socket.join(room);
+        socket.to(room).emit('user joined voice', socket.id); // Avisa os outros para iniciarem a conexão
+    });
+    socket.on('leave voice', ({ serverId, channelId }) => {
+        const room = `voice-${serverId}-${channelId}`;
+        socket.leave(room);
+        socket.to(room).emit('user left voice', socket.id);
+    });
+    socket.on('webrtc signal', (data) => {
+        // Encaminha ofertas, respostas e ICE candidates para o peer específico
+        io.to(data.target).emit('webrtc signal', { sender: socket.id, signal: data.signal });
+    });
+
+    // --- ADMIN DYPZ ---
+    socket.on('delete message', ({ serverId, channelId, msgId }) => {
         const user = activeUsers.get(socket.id);
-        if (user && user.name.toLowerCase() === 'dypz') {
-            if (servers[serverId]) {
-                servers[serverId].messages = servers[serverId].messages.filter(m => m.id !== msgId);
-                io.to(serverId).emit('message deleted', msgId);
-            }
+        if (user && user.name.toLowerCase() === 'dypz' && servers[serverId]) {
+            servers[serverId].channels[channelId].messages = servers[serverId].channels[channelId].messages.filter(m => m.id !== msgId);
+            io.to(serverId).emit('message deleted', { channelId, msgId });
         }
     });
 
@@ -181,18 +199,12 @@ io.on('connection', (socket) => {
         if (admin && admin.name.toLowerCase() === 'dypz') {
             const targetUser = activeUsers.get(targetSocketId);
             if (targetUser) {
-                bannedIPs.add(targetUser.ip); // BANIMENTO REAL DO IP
-                
-                // Emite evento para todos os sockets conectados com esse IP
+                bannedIPs.add(targetUser.ip); 
                 io.sockets.sockets.forEach((s) => {
                     const sIp = s.handshake.headers['x-forwarded-for'] || s.handshake.address;
                     let cleanIp = sIp.includes(',') ? sIp.split(',')[0].trim() : sIp;
-                    if (cleanIp === targetUser.ip) {
-                        s.emit('banned permanently');
-                        s.disconnect(true);
-                    }
+                    if (cleanIp === targetUser.ip) { s.emit('banned permanently'); s.disconnect(true); }
                 });
-                
                 io.emit('system message', `dypz acaba de banir ${targetUser.name} permanentemente.`);
             }
         }
@@ -203,18 +215,17 @@ io.on('connection', (socket) => {
         if (user) {
             activeUsers.delete(socket.id);
             io.emit('update users', Array.from(activeUsers.values()));
+            // Informa saída das calls
+            socket.broadcast.emit('user left voice', socket.id);
         }
     });
 
     function joinServer(socket, serverId) {
         Array.from(socket.rooms).forEach(room => {
-            if (room !== socket.id && room !== serverId) socket.leave(room);
+            if (room !== socket.id && room !== serverId && !room.startsWith('voice-')) socket.leave(room);
         });
         socket.join(serverId);
-        socket.emit('server data', {
-            server: servers[serverId],
-            history: servers[serverId].messages
-        });
+        socket.emit('server data', servers[serverId]);
     }
 });
 
