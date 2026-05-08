@@ -8,7 +8,7 @@ const fs = require('fs');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-    maxHttpBufferSize: 1e8 // Permite uploads grandes via socket se necessário (100MB)
+    maxHttpBufferSize: 1e9 // Permite uploads de até 100MB via socket
 });
 
 // Garante que a pasta de uploads exista
@@ -17,101 +17,140 @@ if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Configuração do Multer para salvar arquivos (sem limite de tamanho restrito pelo node, mas cuidado com a RAM do Render)
+// Configuração do Multer (Upload de arquivos sem restrição rígida de tamanho)
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir);
-    },
+    destination: (req, file, cb) => cb(null, uploadDir),
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         cb(null, uniqueSuffix + path.extname(file.originalname));
     }
 });
-const upload = multer({ 
-    storage: storage,
-    limits: { fileSize: 1000 * 1024 * 1024 } // Limite de 1GB para vídeos grandes
-});
+const upload = multer({ storage: storage, limits: { fileSize: 1000 * 1024 * 1024 } });
 
-// Serve os arquivos estáticos (o HTML, CSS e os uploads)
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
 // Rota de Upload
 app.post('/upload', upload.single('media'), (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ error: 'Nenhum arquivo enviado.' });
-    }
+    if (!req.file) return res.status(400).json({ error: 'Nenhum arquivo enviado.' });
     
-    // Identifica o tipo do arquivo
     const mime = req.file.mimetype;
     let type = 'file';
     if (mime.startsWith('image/')) type = 'image';
     if (mime.startsWith('video/')) type = 'video';
     if (mime.startsWith('audio/')) type = 'audio';
 
-    const fileUrl = `/uploads/${req.file.filename}`;
-    res.json({ url: fileUrl, type: type });
+    res.json({ url: `/uploads/${req.file.filename}`, type: type });
 });
 
-// Histórico em memória (em produção ideal usar banco de dados)
-const chatHistory = [];
+// --- SISTEMA MULTI-SERVIDORES (Em Memória) ---
 const activeUsers = new Map();
+// Servidor inicial padrão
+const servers = {
+    'global': { id: 'global', name: 'Danicord Global', icon: 'fa-globe', messages: [] }
+};
 
-// Gerenciamento do Socket.io (Tempo Real)
 io.on('connection', (socket) => {
     console.log('Um usuário conectou:', socket.id);
 
-    // Envia o histórico para o usuário que acabou de entrar
-    socket.emit('chat history', chatHistory);
-
-    // Quando um usuário entra no chat com seus dados
-    socket.on('user joined', (userData) => {
-        activeUsers.set(socket.id, userData);
-        io.emit('update users', Array.from(activeUsers.values()));
+    // Quando o usuário loga
+    socket.on('user joined', ({ user, inviteId }) => {
+        activeUsers.set(socket.id, user);
         
-        const joinMessage = {
-            type: 'system',
-            text: `${userData.name} entrou no Danicord!`,
-            timestamp: new Date().toISOString()
-        };
-        io.emit('chat message', joinMessage);
+        // Verifica se ele veio por um link de convite válido
+        let serverToJoin = 'global';
+        if (inviteId && servers[inviteId]) {
+            serverToJoin = inviteId;
+        }
+
+        joinServer(socket, serverToJoin);
+        io.emit('update users', Array.from(activeUsers.values()));
     });
 
-    // Quando o usuário envia uma mensagem ou mídia
+    // Criar um novo servidor
+    socket.on('create server', (data) => {
+        const newServerId = 'srv_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+        servers[newServerId] = {
+            id: newServerId,
+            name: data.name,
+            icon: 'fa-server',
+            messages: []
+        };
+        joinServer(socket, newServerId);
+    });
+
+    // Trocar de servidor
+    socket.on('join server', (serverId) => {
+        if (servers[serverId]) {
+            joinServer(socket, serverId);
+        } else {
+            socket.emit('error message', 'Servidor não encontrado ou convite expirou.');
+        }
+    });
+
+    // Atualizar o Perfil
+    socket.on('update profile', (newProfile) => {
+        activeUsers.set(socket.id, newProfile);
+        socket.emit('profile updated', newProfile);
+        io.emit('update users', Array.from(activeUsers.values()));
+    });
+
+    // Receber e enviar mensagem
     socket.on('chat message', (msgData) => {
+        const user = activeUsers.get(socket.id);
+        const serverId = msgData.serverId || 'global';
+        
+        if (!user || !servers[serverId]) return;
+
         const message = {
             id: Date.now().toString(),
-            user: activeUsers.get(socket.id) || msgData.user, // Fallback se o servidor reiniciar
+            user: user,
             text: msgData.text,
             mediaUrl: msgData.mediaUrl,
             mediaType: msgData.mediaType,
             timestamp: new Date().toISOString()
         };
         
-        // Mantém as últimas 100 mensagens para não pesar a RAM do Render
-        if (chatHistory.length > 100) chatHistory.shift();
-        chatHistory.push(message);
+        // Mantém as últimas 150 mensagens por sala
+        if (servers[serverId].messages.length > 150) servers[serverId].messages.shift();
+        servers[serverId].messages.push(message);
 
-        io.emit('chat message', message);
+        io.to(serverId).emit('chat message', { serverId, message });
     });
 
-    // Quando o usuário desconecta
     socket.on('disconnect', () => {
         const user = activeUsers.get(socket.id);
         if (user) {
-            const leaveMessage = {
-                type: 'system',
-                text: `${user.name} saiu do servidor.`,
-                timestamp: new Date().toISOString()
-            };
-            io.emit('chat message', leaveMessage);
             activeUsers.delete(socket.id);
             io.emit('update users', Array.from(activeUsers.values()));
         }
     });
+
+    // Função auxiliar para colocar o usuário numa sala
+    function joinServer(socket, serverId) {
+        // Sai das outras salas (exceto o próprio ID do socket)
+        Array.from(socket.rooms).forEach(room => {
+            if (room !== socket.id) socket.leave(room);
+        });
+
+        socket.join(serverId);
+        const user = activeUsers.get(socket.id);
+
+        socket.emit('server data', {
+            server: servers[serverId],
+            history: servers[serverId].messages
+        });
+
+        io.to(serverId).emit('chat message', {
+            serverId: serverId,
+            message: {
+                type: 'system',
+                text: `${user ? user.name : 'Alguém'} entrou no servidor!`,
+                timestamp: new Date().toISOString()
+            }
+        });
+    }
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`Danicord rodando na porta ${PORT}`);
-});
+server.listen(PORT, () => console.log(`Danicord rodando na porta ${PORT}`));
