@@ -8,7 +8,7 @@ const fs = require('fs');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-    maxHttpBufferSize: 1e9 // Limite aumentado para 1GB (1e9 bytes)
+    maxHttpBufferSize: 1e9 // Limite de 1GB
 });
 
 const uploadDir = path.join(__dirname, 'public', 'uploads');
@@ -16,7 +16,6 @@ if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Configuração do Multer para 1GB
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, uploadDir),
     filename: (req, file, cb) => {
@@ -41,84 +40,80 @@ app.post('/upload', upload.single('media'), (req, res) => {
     res.json({ url: `/uploads/${req.file.filename}`, type: type });
 });
 
-// --- SISTEMAS DE MODERAÇÃO E ESTADO ---
+// --- SISTEMAS DE MODERAÇÃO E ESTADO (MEMÓRIA) ---
 const activeUsers = new Map();
 const bannedIPs = new Set();
-const activeIPs = new Map(); // Rastreia qual IP está conectado (anti-alt)
+const ipToUser = new Map(); // Anti-Alt: Salva a conta original do IP
 
-// Servidor inicial padrão
 const servers = {
     'global': { id: 'global', name: 'Danicord Global', icon: 'fa-globe', type: 'public', messages: [] }
 };
 
 io.on('connection', (socket) => {
-    // Identificação de IP (suporta localhost e serviços de proxy como Render)
-    const clientIp = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
+    // Captura o IP real (funciona no Render.com)
+    let clientIp = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
+    if (clientIp.includes(',')) clientIp = clientIp.split(',')[0].trim();
 
-    // 1. Verificação de Banimento por IP
+    console.log('Tentativa de conexão:', socket.id, 'IP:', clientIp);
+
+    // 1. VERIFICAÇÃO DE BANIMENTO ABSOLUTO
     if (bannedIPs.has(clientIp)) {
-        socket.emit('error message', 'Seu IP foi banido do Danicord.');
+        socket.emit('banned permanently');
         socket.disconnect(true);
         return;
     }
 
-    // 2. Sistema Anti-Alt (1 conta por IP)
-    if (activeIPs.has(clientIp)) {
-        socket.emit('error message', 'Apenas uma conexão por IP é permitida. Feche as outras contas.');
-        socket.disconnect(true);
-        return;
+    // 2. FORÇA O LOGIN SE O IP JÁ TEM CONTA (Anti-Alt Implacável)
+    if (ipToUser.has(clientIp)) {
+        socket.emit('force login', ipToUser.get(clientIp));
     }
-    activeIPs.set(clientIp, socket.id);
 
-    console.log('Usuário conectou:', socket.id, 'IP:', clientIp);
-
-    // Variáveis anti-spam locais do socket
     socket.msgTimestamps = [];
 
-    // Login do Usuário
+    // Quando o usuário entra
     socket.on('user joined', ({ user, inviteId }) => {
-        // Vincula a ID do socket ao usuário para facilitar banimentos e DMs
+        if (bannedIPs.has(clientIp)) return;
+
+        // Se o IP já tem uma conta registrada, sobrepõe a tentativa do usuário (ele não pode criar alt)
+        if (ipToUser.has(clientIp)) {
+            user = ipToUser.get(clientIp);
+        } else {
+            // Primeiro acesso do IP, registra essa conta como a oficial dele
+            ipToUser.set(clientIp, user);
+        }
+
         user.socketId = socket.id;
+        user.ip = clientIp; // Salva o IP no objeto para o admin poder banir
         activeUsers.set(socket.id, user);
         
         let serverToJoin = 'global';
         if (inviteId && servers[inviteId]) serverToJoin = inviteId;
 
-        // Envia as salas públicas iniciais para a barra do usuário
         socket.emit('initial servers', Object.values(servers).filter(s => s.type === 'public'));
-        
         joinServer(socket, serverToJoin);
         io.emit('update users', Array.from(activeUsers.values()));
     });
 
-    // Criação de Servidores Customizados
+    // Criação de Servidores e Grupos
     socket.on('create server', (data) => {
         const newServerId = 'srv_' + Date.now().toString(36);
-        servers[newServerId] = {
-            id: newServerId, name: data.name, icon: 'fa-server', type: 'public', messages: []
-        };
-        // Envia para todos para aparecer na barra lateral
+        servers[newServerId] = { id: newServerId, name: data.name, icon: 'fa-server', type: 'public', messages: [] };
         io.emit('server created', servers[newServerId]); 
         joinServer(socket, newServerId);
     });
 
-    // Criação de Grupos / DMs
     socket.on('create group', (data) => {
         const newServerId = 'grp_' + Date.now().toString(36);
-        servers[newServerId] = {
-            id: newServerId, name: data.name, icon: 'fa-users', type: 'group', messages: []
-        };
+        servers[newServerId] = { id: newServerId, name: data.name, icon: 'fa-users', type: 'group', messages: [] };
 
-        // Adiciona o criador e os convidados ao grupo
         const membersToJoin = [...data.members, socket.id];
         membersToJoin.forEach(memberId => {
             const memberSocket = io.sockets.sockets.get(memberId);
             if (memberSocket) {
                 memberSocket.join(newServerId);
-                memberSocket.emit('server created', servers[newServerId]); // Atualiza sidebar deles
+                memberSocket.emit('server created', servers[newServerId]);
             }
         });
-        
         joinServer(socket, newServerId);
     });
 
@@ -126,23 +121,28 @@ io.on('connection', (socket) => {
         if (servers[serverId]) joinServer(socket, serverId);
     });
 
+    // Atualização de Perfil (Bio, Avatar, Cor)
     socket.on('update profile', (newProfile) => {
-        newProfile.socketId = socket.id; // Mantém o id seguro
-        activeUsers.set(socket.id, newProfile);
-        io.emit('update users', Array.from(activeUsers.values()));
+        const current = activeUsers.get(socket.id);
+        if (current) {
+            newProfile.socketId = socket.id;
+            newProfile.ip = current.ip;
+            activeUsers.set(socket.id, newProfile);
+            ipToUser.set(current.ip, newProfile); // Atualiza a conta oficial do IP
+            io.emit('update users', Array.from(activeUsers.values()));
+        }
     });
 
-    // Envio de Mensagem + Anti-Spam
+    // Chat e Anti-Spam
     socket.on('chat message', (msgData) => {
         const user = activeUsers.get(socket.id);
         const serverId = msgData.serverId || 'global';
         if (!user || !servers[serverId]) return;
 
-        // ANTI-SPAM: Checa as últimas 5 mensagens em um intervalo de 2 segundos
         const now = Date.now();
         socket.msgTimestamps.push(now);
         if (socket.msgTimestamps.length > 5) {
-            socket.msgTimestamps.shift(); // Mantém apenas as últimas 5
+            socket.msgTimestamps.shift();
             if (now - socket.msgTimestamps[0] < 2000) {
                 socket.emit('error message', 'Calma! Você está enviando mensagens muito rápido (Spam).');
                 return;
@@ -155,7 +155,7 @@ io.on('connection', (socket) => {
             text: msgData.text,
             mediaUrl: msgData.mediaUrl,
             mediaType: msgData.mediaType,
-            replyTo: msgData.replyTo, // Suporte a Resposta
+            replyTo: msgData.replyTo,
             timestamp: new Date().toISOString()
         };
         
@@ -165,7 +165,7 @@ io.on('connection', (socket) => {
         io.to(serverId).emit('chat message', { serverId, message });
     });
 
-    // --- PODERES DO ADMIN DYPZ ---
+    // --- PODERES DO ADMIN (dypz) ---
     socket.on('delete message', ({ serverId, msgId }) => {
         const user = activeUsers.get(socket.id);
         if (user && user.name.toLowerCase() === 'dypz') {
@@ -177,21 +177,28 @@ io.on('connection', (socket) => {
     });
 
     socket.on('ban user', (targetSocketId) => {
-        const user = activeUsers.get(socket.id);
-        if (user && user.name.toLowerCase() === 'dypz') {
-            const targetSocket = io.sockets.sockets.get(targetSocketId);
-            if (targetSocket) {
-                const targetIp = targetSocket.handshake.headers['x-forwarded-for'] || targetSocket.handshake.address;
-                bannedIPs.add(targetIp); // Bane o IP para sempre
-                targetSocket.emit('error message', 'Você foi banido permanentemente por dypz.');
-                targetSocket.disconnect(true);
-                io.emit('system message', `dypz acaba de banir alguém com a força do martelo.`);
+        const admin = activeUsers.get(socket.id);
+        if (admin && admin.name.toLowerCase() === 'dypz') {
+            const targetUser = activeUsers.get(targetSocketId);
+            if (targetUser) {
+                bannedIPs.add(targetUser.ip); // BANIMENTO REAL DO IP
+                
+                // Emite evento para todos os sockets conectados com esse IP
+                io.sockets.sockets.forEach((s) => {
+                    const sIp = s.handshake.headers['x-forwarded-for'] || s.handshake.address;
+                    let cleanIp = sIp.includes(',') ? sIp.split(',')[0].trim() : sIp;
+                    if (cleanIp === targetUser.ip) {
+                        s.emit('banned permanently');
+                        s.disconnect(true);
+                    }
+                });
+                
+                io.emit('system message', `dypz acaba de banir ${targetUser.name} permanentemente.`);
             }
         }
     });
 
     socket.on('disconnect', () => {
-        activeIPs.delete(clientIp); // Libera o IP
         const user = activeUsers.get(socket.id);
         if (user) {
             activeUsers.delete(socket.id);
@@ -200,14 +207,10 @@ io.on('connection', (socket) => {
     });
 
     function joinServer(socket, serverId) {
-        // Encontra os servidores atuais e sai (para limpar a view), exceto se for o próprio socket ID
         Array.from(socket.rooms).forEach(room => {
             if (room !== socket.id && room !== serverId) socket.leave(room);
         });
-
         socket.join(serverId);
-        const user = activeUsers.get(socket.id);
-
         socket.emit('server data', {
             server: servers[serverId],
             history: servers[serverId].messages
