@@ -15,26 +15,91 @@
         ::-webkit-scrollbar-thumb:hover { background: #111214; }
         .discord-input-placeholder::placeholder { color: #87898C; }
         .msg-ping { background-color: rgba(240, 178, 50, 0.1); border-left: 4px solid #F0B232; }
+        .msg-everyone { background-color: rgba(250, 166, 26, 0.1); border-left: 4px solid #FAA61A; }
     </style>
 </head>
 <body class="bg-[#313338] text-[#DBDEE1] h-screen w-screen overflow-hidden flex selection:bg-[#5865F2] selection:text-white relative">
+
+    <!-- TELA DE BANIMENTO (Escondida por padrão) -->
+    <div id="ban-screen" class="hidden fixed inset-0 bg-[#111214] z-[9999] flex-col items-center justify-center text-center p-6">
+        <i class="fa-solid fa-gavel text-red-500 text-7xl mb-6"></i>
+        <h1 class="text-5xl font-black text-white mb-4">VOCÊ FOI BANIDO</h1>
+        <p class="text-[#B5BAC1] text-lg max-w-md">Seu endereço de IP foi bloqueado permanentemente pelo administrador dypz. Você não pode mais acessar o Danicord.</p>
+    </div>
 
     <!-- Modal de Login -->
     <div id="login-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] backdrop-blur-sm transition-opacity">
         <div class="bg-[#313338] p-8 rounded-lg shadow-2xl w-full max-w-md">
             <h2 class="text-2xl font-bold text-center text-white mb-2" id="login-title">Bem-vindo ao Danicord!</h2>
-            <p class="text-center text-[#B5BAC1] text-sm mb-6" id="login-subtitle">Aviso: Apenas 1 conta por rede conectada.</p>
+            <p class="text-center text-[#B5BAC1] text-sm mb-6" id="login-subtitle">O seu IP ficará vinculado a esta conta.</p>
             <form id="login-form" class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Nome de Exibição <span class="text-red-500">*</span></label>
                     <input type="text" id="username" required class="w-full bg-[#1E1F22] text-white rounded p-2.5 focus:outline-none focus:ring-1 focus:ring-[#5865F2]">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">URL da Foto (Opcional)</label>
+                    <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">URL da Foto / GIF (Opcional)</label>
                     <input type="url" id="avatar" class="w-full bg-[#1E1F22] text-white rounded p-2.5 focus:outline-none focus:ring-1 focus:ring-[#5865F2]">
                 </div>
-                <button type="submit" class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-semibold py-2.5 rounded mt-4">Entrar</button>
+                <button type="submit" class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-semibold py-2.5 rounded mt-4 transition">Entrar</button>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal Customizar Perfil (Completo) -->
+    <div id="profile-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[70] backdrop-blur-sm">
+        <div class="bg-[#313338] rounded-lg shadow-2xl w-full max-w-md overflow-hidden border border-[#1E1F22]">
+            <div id="profile-banner-preview" class="h-24 bg-[#5865F2] w-full transition-colors"></div>
+            <div class="p-6 relative">
+                <div class="absolute -top-12 left-6 border-[6px] border-[#313338] rounded-full">
+                    <img id="profile-avatar-preview" src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-20 h-20 rounded-full object-cover bg-[#1E1F22]">
+                </div>
+                <div class="mt-10 space-y-4">
+                    <h3 class="text-xl font-bold text-white mb-4">Seu Perfil do Danicord</h3>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Nome</label>
+                        <input type="text" id="prof-name" class="w-full bg-[#1E1F22] text-white rounded p-2 focus:outline-none focus:ring-1 focus:ring-[#5865F2]">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Sobre Mim (Bio)</label>
+                        <textarea id="prof-bio" rows="3" class="w-full bg-[#1E1F22] text-white rounded p-2 focus:outline-none focus:ring-1 focus:ring-[#5865F2] text-sm resize-none" placeholder="Conte mais sobre você..."></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Cor do Banner</label>
+                            <input type="color" id="prof-color" class="w-full h-10 bg-[#1E1F22] rounded cursor-pointer border-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">URL Avatar (GIF/PNG)</label>
+                            <input type="url" id="prof-avatar" class="w-full bg-[#1E1F22] text-white rounded p-2 focus:outline-none focus:ring-1 focus:ring-[#5865F2] text-sm">
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2 justify-end mt-6 pt-4 border-t border-[#1E1F22]">
+                        <button onclick="closeProfile()" class="px-4 py-2 hover:underline text-white">Cancelar</button>
+                        <button onclick="saveProfile()" class="bg-[#5865F2] hover:bg-[#4752C4] text-white px-4 py-2 rounded font-medium transition">Salvar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popout do Usuário (Mostra ao clicar na foto de alguém) -->
+    <div id="user-popout" class="hidden absolute z-[80] bg-[#111214] rounded-lg shadow-2xl w-[300px] overflow-hidden border border-[#1E1F22]">
+        <div id="popout-banner" class="h-16 w-full bg-[#5865F2]"></div>
+        <div class="p-4 relative">
+            <div class="absolute -top-10 left-4 border-[6px] border-[#111214] rounded-full">
+                <img id="popout-avatar" src="" class="w-[72px] h-[72px] rounded-full object-cover bg-[#1E1F22]">
+            </div>
+            <div class="mt-8 bg-[#2B2D31] rounded-lg p-3">
+                <h4 id="popout-name" class="text-lg font-bold text-white mb-2 truncate">Nome</h4>
+                <div class="w-full h-[1px] bg-[#1E1F22] mb-2"></div>
+                <h5 class="text-[10px] font-bold text-[#B5BAC1] uppercase mb-1">Sobre mim</h5>
+                <p id="popout-bio" class="text-sm text-[#DBDEE1] break-words whitespace-pre-wrap">Nenhuma bio.</p>
+            </div>
         </div>
     </div>
 
@@ -59,7 +124,6 @@
         
         <!-- Barra de Servidores (Esquerda Dinâmica) -->
         <nav class="w-[72px] bg-[#1E1F22] h-full flex flex-col items-center py-3 gap-2 flex-shrink-0 overflow-y-auto z-10" id="server-sidebar">
-            <!-- Servidores aparecerão aqui -->
             <div class="w-8 h-[2px] bg-[#313338] rounded-full my-1 mt-auto" id="server-separator"></div>
             <div onclick="createServer()" class="w-12 h-12 bg-[#313338] text-[#23A559] hover:bg-[#23A559] hover:text-white rounded-[24px] hover:rounded-xl flex items-center justify-center cursor-pointer transition-all" title="Criar Servidor Público">
                 <i class="fa-solid fa-plus text-xl"></i>
@@ -84,18 +148,18 @@
 
             <!-- Painel do Usuário -->
             <div class="h-[52px] bg-[#232428] flex items-center px-2 gap-2">
-                <div class="relative p-1 rounded flex-1 flex items-center gap-2 overflow-hidden">
+                <div class="relative cursor-pointer hover:bg-[#3F4147] p-1 rounded flex-1 flex items-center gap-2 overflow-hidden transition" onclick="openProfile()">
                     <img id="my-avatar-display" src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-8 h-8 rounded-full object-cover border border-[#1E1F22]">
                     <div class="flex flex-col min-w-0">
                         <span id="my-name-display" class="text-sm font-semibold text-white leading-tight truncate">Usuário</span>
-                        <span class="text-[10px] text-[#23A559] leading-tight font-bold">Online</span>
+                        <span class="text-[10px] text-[#23A559] leading-tight font-bold">Configurar Perfil</span>
                     </div>
                 </div>
             </div>
         </aside>
 
         <!-- Área de Chat -->
-        <main class="flex-1 flex flex-col bg-[#313338] relative min-w-0">
+        <main class="flex-1 flex flex-col bg-[#313338] relative min-w-0" onclick="closeUserPopout()">
             <header class="h-12 border-b border-[#1E1F22] flex items-center px-4 font-semibold text-white shadow-sm gap-2">
                 <i class="fa-solid fa-hashtag text-[#87898C] text-xl"></i>
                 <span id="chat-header-name">geral</span>
@@ -105,7 +169,6 @@
 
             <div class="px-4 pb-6 pt-2">
                 <div class="bg-[#383A40] rounded-lg flex flex-col">
-                    
                     <!-- Area de Resposta (Reply Banner) -->
                     <div id="reply-banner" class="hidden bg-[#2B2D31] px-4 py-2 flex items-center justify-between border-b border-[#1E1F22] rounded-t-lg">
                         <div class="flex items-center gap-2 text-sm text-[#B5BAC1]">
@@ -129,7 +192,7 @@
                     <div class="flex items-center px-4 py-2 min-h-[44px]">
                         <input type="file" id="file-input" class="hidden" onchange="handleFiles(event.target.files)">
                         <button onclick="document.getElementById('file-input').click()" class="text-[#B5BAC1] hover:text-[#DBDEE1] bg-[#2B2D31] w-6 h-6 rounded-full flex items-center justify-center hover:bg-[#4E5058] mr-4 transition"><i class="fa-solid fa-plus text-sm"></i></button>
-                        <input type="text" id="message-input" placeholder="Conversar..." class="flex-1 bg-transparent border-none outline-none text-[#DBDEE1] discord-input-placeholder py-1">
+                        <input type="text" id="message-input" placeholder="Conversar... (Use @everyone para notificar todos)" class="flex-1 bg-transparent border-none outline-none text-[#DBDEE1] discord-input-placeholder py-1">
                     </div>
                 </div>
             </div>
@@ -146,26 +209,48 @@
     </div>
 
     <script>
-        let currentUser = { name: '', avatar: '', color: '#5865F2', socketId: null };
+        let currentUser = { name: '', avatar: '', color: '#5865F2', bio: '', socketId: null };
         let currentServerId = 'global';
         let selectedFile = null, isUploading = false, replyingTo = null;
-        let onlineUsersData = []; // Armazena usuários para o modal de grupo
-        let myServers = new Map(); // Servidores que o UI conhece
+        let onlineUsersData = []; 
+        let myServers = new Map(); 
 
         let socket = null;
         try { socket = io(); } catch(e) { console.warn("Socket.io inativo."); }
 
-        // --- SISTEMA DE LOGIN E INICIALIZAÇÃO ---
         const urlParams = new URLSearchParams(window.location.search);
         const inviteCode = urlParams.get('invite');
+        if (inviteCode) {
+            document.getElementById('login-title').innerText = "Você foi convidado!";
+        }
+
+        // --- SISTEMA DE BANIMENTO CLIENT-SIDE ---
+        if (socket) {
+            socket.on('banned permanently', () => {
+                document.getElementById('ban-screen').classList.remove('hidden');
+                document.getElementById('ban-screen').classList.add('flex');
+                document.getElementById('login-modal').style.display = 'none';
+                document.getElementById('app-container').style.display = 'none';
+            });
+
+            // Anti-alt: Força o usuário a usar a conta vinculada ao IP
+            socket.on('force login', (forcedUser) => {
+                currentUser = forcedUser;
+                updateUIProfile();
+                document.getElementById('login-modal').style.display = 'none';
+                document.getElementById('app-container').classList.remove('hidden');
+                socket.emit('user joined', { user: currentUser, inviteId: inviteCode });
+            });
+        }
 
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
             currentUser.name = document.getElementById('username').value.trim();
             currentUser.avatar = document.getElementById('avatar').value.trim() || `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random() * 5)}.png`;
+            currentUser.color = '#5865F2';
+            currentUser.bio = '';
             
-            document.getElementById('my-name-display').innerText = currentUser.name;
-            document.getElementById('my-avatar-display').src = currentUser.avatar;
+            updateUIProfile();
 
             document.getElementById('login-modal').style.display = 'none';
             document.getElementById('app-container').classList.remove('hidden');
@@ -173,12 +258,62 @@
             if(socket) socket.emit('user joined', { user: currentUser, inviteId: inviteCode });
         });
 
-        // --- BARRA DE SERVIDORES DINÂMICA ---
+        // --- CUSTOMIZAÇÃO DE PERFIL ---
+        function updateUIProfile() {
+            document.getElementById('my-name-display').innerText = currentUser.name;
+            document.getElementById('my-avatar-display').src = currentUser.avatar;
+            document.getElementById('prof-name').value = currentUser.name;
+            document.getElementById('prof-avatar').value = currentUser.avatar;
+            document.getElementById('prof-color').value = currentUser.color || '#5865F2';
+            document.getElementById('prof-bio').value = currentUser.bio || '';
+            document.getElementById('profile-avatar-preview').src = currentUser.avatar;
+            document.getElementById('profile-banner-preview').style.backgroundColor = currentUser.color || '#5865F2';
+        }
+
+        function openProfile() { 
+            updateUIProfile();
+            document.getElementById('profile-modal').classList.remove('hidden'); 
+        }
+        function closeProfile() { document.getElementById('profile-modal').classList.add('hidden'); }
+        function saveProfile() {
+            currentUser.name = document.getElementById('prof-name').value;
+            currentUser.avatar = document.getElementById('prof-avatar').value || `https://cdn.discordapp.com/embed/avatars/0.png`;
+            currentUser.color = document.getElementById('prof-color').value;
+            currentUser.bio = document.getElementById('prof-bio').value;
+            updateUIProfile();
+            closeProfile();
+            if(socket) socket.emit('update profile', currentUser);
+        }
+
+        // Previews ao vivo no painel de edição
+        document.getElementById('prof-color').addEventListener('input', e => document.getElementById('profile-banner-preview').style.backgroundColor = e.target.value);
+        document.getElementById('prof-avatar').addEventListener('input', e => document.getElementById('profile-avatar-preview').src = e.target.value || 'https://cdn.discordapp.com/embed/avatars/0.png');
+
+        // --- POPOUT DE USUÁRIO (CARD) ---
+        function showUserPopout(event, socketId) {
+            event.stopPropagation(); // Evita fechar imediatamente
+            const user = onlineUsersData.find(u => u.socketId === socketId);
+            if(!user) return;
+
+            const popout = document.getElementById('user-popout');
+            document.getElementById('popout-banner').style.backgroundColor = user.color || '#5865F2';
+            document.getElementById('popout-avatar').src = user.avatar;
+            document.getElementById('popout-name').innerText = user.name;
+            document.getElementById('popout-name').style.color = user.color || 'white';
+            document.getElementById('popout-bio').innerText = user.bio || 'Este usuário prefere manter o mistério.';
+
+            // Posiciona o card perto do clique
+            popout.style.top = Math.min(event.clientY, window.innerHeight - 300) + 'px';
+            popout.style.left = Math.min(event.clientX + 20, window.innerWidth - 320) + 'px';
+            popout.classList.remove('hidden');
+        }
+        function closeUserPopout() { document.getElementById('user-popout').classList.add('hidden'); }
+
+        // --- BARRA DE SERVIDORES ---
         function renderSidebar() {
             const sidebar = document.getElementById('server-sidebar');
             const sep = document.getElementById('server-separator');
             
-            // Remove antigos botões (preservando o separador e o botão de add)
             Array.from(sidebar.children).forEach(child => {
                 if(child.id !== 'server-separator' && !child.innerHTML.includes('fa-plus')) {
                     sidebar.removeChild(child);
@@ -187,7 +322,6 @@
 
             myServers.forEach(srv => {
                 const div = document.createElement('div');
-                // Se for o servidor atual, fica mais quadrado, senão é redondo
                 const isActive = srv.id === currentServerId;
                 const radius = isActive ? 'rounded-[16px]' : 'rounded-[24px]';
                 const bg = isActive ? 'bg-[#5865F2]' : 'bg-[#313338] hover:bg-[#5865F2]';
@@ -201,17 +335,17 @@
             });
         }
 
-        // --- GRUPOS E DMs ---
+        // --- GRUPOS & SERVIDORES & CONVITES ---
         function openGroupModal() {
             const list = document.getElementById('group-users-list');
             list.innerHTML = '';
             onlineUsersData.forEach(u => {
-                if (u.name === currentUser.name) return; // não mostra a si mesmo
+                if (u.socketId === currentUser.socketId) return;
                 list.innerHTML += `
                     <label class="flex items-center gap-3 p-2 rounded hover:bg-[#3F4147] cursor-pointer transition">
                         <input type="checkbox" value="${u.socketId}" class="group-checkbox w-4 h-4 rounded text-[#5865F2] bg-[#1E1F22] border-none focus:ring-0 cursor-pointer">
                         <img src="${u.avatar}" class="w-6 h-6 rounded-full object-cover">
-                        <span class="text-white text-sm">${u.name}</span>
+                        <span class="text-white text-sm" style="color: ${u.color || 'white'}">${u.name}</span>
                     </label>
                 `;
             });
@@ -240,10 +374,10 @@
                 const temp = document.createElement("input"); temp.value = link;
                 document.body.appendChild(temp); temp.select(); document.execCommand("copy"); document.body.removeChild(temp);
             });
-            alert("Link copiado: " + link);
+            alert("Link de convite copiado!\n\n" + link);
         }
 
-        // --- RESPOSTAS E ARQUIVOS ---
+        // --- ARQUIVOS E RESPOSTAS ---
         function handleFiles(files) {
             if (files[0]) {
                 selectedFile = files[0];
@@ -262,12 +396,12 @@
         }
         function cancelReply() { replyingTo = null; document.getElementById('reply-banner').classList.add('hidden'); }
 
-        // --- SISTEMA DE ADMIN DYPZ ---
+        // --- PODERES DO ADMIN ---
         function deleteMsg(msgId) {
             if (confirm("Deletar mensagem para todos?")) socket.emit('delete message', { serverId: currentServerId, msgId });
         }
         function banUser(socketId) {
-            if (confirm("Banir este usuário pelo IP para sempre?")) socket.emit('ban user', socketId);
+            if (confirm("Banir este usuário pelo IP para sempre? Ele não poderá mais voltar.")) socket.emit('ban user', socketId);
         }
 
         // --- MENSAGENS UI ---
@@ -279,13 +413,18 @@
             div.id = `msg-${msg.id}`;
             const isDypz = currentUser.name.toLowerCase() === 'dypz';
             
-            // Highlight se for pingado
-            const isMentioned = msg.text && msg.text.includes(`@${currentUser.name}`);
-            const baseClass = isMentioned ? 'msg-ping' : 'hover:bg-[#2E3035]';
+            // Lógica de Pings e @everyone
+            let safeText = msg.text || '';
+            const isEveryone = safeText.includes('@everyone');
+            const isMentioned = safeText.includes(`@${currentUser.name}`);
+            
+            let baseClass = 'hover:bg-[#2E3035]';
+            if (isEveryone) baseClass = 'msg-everyone';
+            else if (isMentioned) baseClass = 'msg-ping';
 
             div.className = `flex gap-4 py-1 px-4 -mx-4 transition group relative ${baseClass}`;
             
-            // Admin ou Menu (Botões escondidos até o hover)
+            // Menu da Mensagem
             let menuHtml = `<div class="absolute top-0 right-4 hidden group-hover:flex items-center bg-[#313338] border border-[#1E1F22] rounded shadow-md overflow-hidden z-10">`;
             menuHtml += `<button onclick="setReply('${msg.id}', '${msg.user.name}', '${msg.text ? msg.text.replace(/'/g, "\\'") : 'Mídia'}')" class="p-2 text-[#B5BAC1] hover:bg-[#404249] hover:text-white" title="Responder"><i class="fa-solid fa-reply"></i></button>`;
             
@@ -302,27 +441,27 @@
                 if (msg.mediaType === 'image') mediaHtml = `<img src="${msg.mediaUrl}" class="max-w-sm max-h-80 rounded mt-2 border border-[#1E1F22]">`;
                 else if (msg.mediaType === 'video') mediaHtml = `<video src="${msg.mediaUrl}" controls class="max-w-md rounded mt-2 bg-black border border-[#1E1F22]"></video>`;
                 else if (msg.mediaType === 'audio') mediaHtml = `<audio src="${msg.mediaUrl}" controls class="mt-2 w-full max-w-sm"></audio>`;
-                else mediaHtml = `<a href="${msg.mediaUrl}" target="_blank" class="mt-2 inline-flex items-center gap-2 bg-[#2B2D31] p-3 rounded text-[#00A8FC] hover:underline"><i class="fa-solid fa-download"></i> Arquivo</a>`;
+                else mediaHtml = `<a href="${msg.mediaUrl}" target="_blank" class="mt-2 inline-flex items-center gap-2 bg-[#2B2D31] p-3 rounded text-[#00A8FC] hover:underline"><i class="fa-solid fa-download"></i> Baixar Arquivo</a>`;
             }
 
             if (msg.replyTo) {
                 replyHtml = `<div class="text-[#B5BAC1] text-xs flex items-center gap-2 mb-1 opacity-70 before:content-[''] before:w-6 before:h-[1px] before:bg-[#4E5058]"><img src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-3 h-3 rounded-full"> <span class="font-bold">@${msg.replyTo.name}</span>: ${msg.replyTo.text}</div>`;
             }
 
-            // Destaca a menção no texto
-            let safeText = msg.text || '';
-            if (isMentioned) {
-                const regex = new RegExp(`@${currentUser.name}`, 'g');
-                safeText = safeText.replace(regex, `<span class="bg-[#5865F2]/30 text-[#C9CDD6] font-medium px-1 rounded">@${currentUser.name}</span>`);
-            }
+            // Destaca os @
+            if (isEveryone) safeText = safeText.replace(/@everyone/g, `<span class="bg-[#FAA61A]/30 text-[#FEE75C] font-medium px-1 rounded">@everyone</span>`);
+            if (isMentioned) safeText = safeText.replace(new RegExp(`@${currentUser.name}`, 'g'), `<span class="bg-[#5865F2]/30 text-[#C9CDD6] font-medium px-1 rounded">@${currentUser.name}</span>`);
 
             div.innerHTML = `
                 ${menuHtml}
-                <img src="${msg.user.avatar}" class="w-10 h-10 rounded-full object-cover mt-1 cursor-pointer">
+                <div class="relative flex-shrink-0 cursor-pointer" onclick="showUserPopout(event, '${msg.user.socketId}')">
+                    <img src="${msg.user.avatar}" class="w-10 h-10 rounded-full object-cover mt-1">
+                    <div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-[#313338] bg-[#23A559]"></div>
+                </div>
                 <div class="flex flex-col min-w-0 flex-1">
                     ${replyHtml}
                     <div class="flex items-baseline gap-2">
-                        <span class="font-medium text-white hover:underline cursor-pointer">${msg.user.name}</span>
+                        <span class="font-medium text-white hover:underline cursor-pointer" style="color: ${msg.user.color || 'white'}" onclick="showUserPopout(event, '${msg.user.socketId}')">${msg.user.name}</span>
                         <span class="text-xs text-[#87898C]">${new Date(msg.timestamp).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</span>
                     </div>
                     <p class="text-[#DBDEE1] whitespace-pre-wrap leading-tight mt-0.5">${safeText}</p>
@@ -345,12 +484,12 @@
             if (selectedFile) {
                 const formData = new FormData();
                 formData.append('media', selectedFile);
-                messageInput.placeholder = "Enviando (pode demorar para arquivos grandes)...";
+                messageInput.placeholder = "Enviando arquivo...";
                 try {
                     const res = await fetch('/upload', { method: 'POST', body: formData });
                     const data = await res.json();
                     if (data.url) { mediaUrl = data.url; mediaType = data.type; }
-                } catch (e) { alert("Erro ao enviar arquivo (talvez excedeu o limite do host)."); }
+                } catch (e) { alert("Erro no upload."); }
             }
 
             if (socket) socket.emit('chat message', { serverId: currentServerId, text, mediaUrl, mediaType, replyTo: replyingTo });
@@ -360,13 +499,13 @@
             cancelReply();
             isUploading = false;
             messageInput.disabled = false;
-            messageInput.placeholder = "Conversar...";
+            messageInput.placeholder = "Conversar... (Use @everyone para notificar todos)";
             messageInput.focus();
         }
 
         messageInput.addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }});
 
-        // --- EVENTOS DE SOCKET ---
+        // --- EVENTOS DO SOCKET ---
         if (socket) {
             socket.on('initial servers', (srvs) => {
                 srvs.forEach(s => myServers.set(s.id, s));
@@ -387,11 +526,12 @@
                 chatMessages.innerHTML = `
                     <div class="mt-8 mb-6">
                         <div class="w-16 h-16 bg-[#5865F2] rounded-full flex items-center justify-center mb-4"><i class="fa-solid ${data.server.icon} text-white text-3xl"></i></div>
-                        <h1 class="text-white text-3xl font-bold mb-2">Início do Chat</h1>
+                        <h1 class="text-white text-3xl font-bold mb-2">Bem-vindo(a) a ${data.server.name}</h1>
+                        <p class="text-[#B5BAC1]">Envie um link de convite (Invite) para seus amigos entrarem.</p>
                     </div>
                 `;
                 data.history.forEach(appendMessage);
-                renderSidebar(); // Atualiza highlight da sidebar
+                renderSidebar(); 
             });
 
             socket.on('chat message', (data) => {
@@ -411,15 +551,23 @@
                 users.forEach(u => {
                     const isDypz = u.name.toLowerCase() === 'dypz' ? '<i class="fa-solid fa-crown text-[#F0B232] text-[10px] ml-1" title="Admin"></i>' : '';
                     ml.innerHTML += `
-                        <div class="flex items-center gap-3 p-1.5 rounded hover:bg-[#35373C] cursor-pointer group transition" onclick="messageInput.value += ' @${u.name} '; messageInput.focus();">
+                        <div class="flex items-center gap-3 p-1.5 rounded hover:bg-[#35373C] cursor-pointer group transition" onclick="showUserPopout(event, '${u.socketId}')">
                             <div class="relative">
                                 <img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover">
                                 <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-[#2B2D31] rounded-full bg-[#23A559]"></div>
                             </div>
-                            <span class="text-[#87898C] group-hover:text-[#DBDEE1] font-medium truncate flex-1 flex items-center">${u.name} ${isDypz}</span>
+                            <span class="text-[#87898C] group-hover:text-[#DBDEE1] font-medium truncate flex-1 flex items-center" style="color: ${u.color || ''}">${u.name} ${isDypz}</span>
                         </div>
                     `;
                 });
+            });
+
+            socket.on('system message', (msg) => {
+                const div = document.createElement('div');
+                div.className = 'text-[#F0B232] text-sm py-2 font-bold text-center my-2 bg-[#F0B232]/10 border border-[#F0B232]/20 rounded';
+                div.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-2"></i> ${msg}`;
+                chatMessages.appendChild(div);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
             });
 
             socket.on('error message', alert);
