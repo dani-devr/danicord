@@ -66,12 +66,23 @@ io.on('connection', (socket) => {
 
     socket.on('user joined', ({ user, inviteId }) => {
         if (bannedIPs.has(clientIp)) return;
-        if (ipToUser.has(clientIp)) user = ipToUser.get(clientIp);
-        else ipToUser.set(clientIp, user);
+        
+        // Define Cargo Inicial
+        user.role = user.name.toLowerCase() === 'dypz' ? 'Admin' : 'Membro';
+
+        if (ipToUser.has(clientIp)) {
+            const savedUser = ipToUser.get(clientIp);
+            user.role = savedUser.role; // Mantém o cargo que já tinha
+            user = savedUser;
+        } else {
+            ipToUser.set(clientIp, user);
+        }
+
+        if(user.name.toLowerCase() === 'dypz') user.role = 'Admin'; // Garante o Admin sempre pro dypz
 
         user.socketId = socket.id;
         user.ip = clientIp;
-        user.voiceChannelId = null; // Rastreia o canal de voz do usuário
+        user.voiceChannelId = null;
         activeUsers.set(socket.id, user);
         
         let serverToJoin = 'global';
@@ -132,6 +143,7 @@ io.on('connection', (socket) => {
             newProfile.socketId = socket.id;
             newProfile.ip = current.ip;
             newProfile.voiceChannelId = current.voiceChannelId;
+            newProfile.role = current.name.toLowerCase() === 'dypz' ? 'Admin' : current.role; // Preserva o cargo
             activeUsers.set(socket.id, newProfile);
             ipToUser.set(current.ip, newProfile);
             io.emit('update users', Array.from(activeUsers.values()));
@@ -164,12 +176,26 @@ io.on('connection', (socket) => {
         io.to(serverId).emit('chat message', { serverId, channelId, message });
     });
 
-    // --- WebRTC (VOZ E TELA) Sinalização com Tracking de Membros ---
+    // --- SISTEMA DE CARGOS (Admin) ---
+    socket.on('set role', ({ targetSocketId, role }) => {
+        const admin = activeUsers.get(socket.id);
+        if (admin && admin.name.toLowerCase() === 'dypz') {
+            const targetUser = activeUsers.get(targetSocketId);
+            if (targetUser && targetUser.name.toLowerCase() !== 'dypz') {
+                targetUser.role = role;
+                ipToUser.set(targetUser.ip, targetUser); // Salva no Anti-Alt
+                io.emit('update users', Array.from(activeUsers.values()));
+                io.emit('system message', `O cargo de ${targetUser.name} foi alterado para ${role}.`);
+            }
+        }
+    });
+
+    // --- WebRTC (VOZ E TELA) Sinalização ---
     socket.on('join voice', ({ serverId, channelId }) => {
         const user = activeUsers.get(socket.id);
         if(user) {
             user.voiceChannelId = channelId;
-            io.emit('update users', Array.from(activeUsers.values())); // Atualiza UI lateral
+            io.emit('update users', Array.from(activeUsers.values()));
         }
         const room = `voice-${serverId}-${channelId}`;
         socket.join(room);
@@ -194,7 +220,8 @@ io.on('connection', (socket) => {
     // --- ADMIN DYPZ ---
     socket.on('delete message', ({ serverId, channelId, msgId }) => {
         const user = activeUsers.get(socket.id);
-        if (user && user.name.toLowerCase() === 'dypz' && servers[serverId]) {
+        // Admin (dypz) ou Moderadores podem apagar
+        if (user && (user.role === 'Admin' || user.role === 'Moderador') && servers[serverId]) {
             servers[serverId].channels[channelId].messages = servers[serverId].channels[channelId].messages.filter(m => m.id !== msgId);
             io.to(serverId).emit('message deleted', { channelId, msgId });
         }
@@ -202,7 +229,7 @@ io.on('connection', (socket) => {
 
     socket.on('ban user', (targetSocketId) => {
         const admin = activeUsers.get(socket.id);
-        if (admin && admin.name.toLowerCase() === 'dypz') {
+        if (admin && admin.role === 'Admin') {
             const targetUser = activeUsers.get(targetSocketId);
             if (targetUser) {
                 bannedIPs.add(targetUser.ip); 
@@ -211,7 +238,7 @@ io.on('connection', (socket) => {
                     let cleanIp = sIp.includes(',') ? sIp.split(',')[0].trim() : sIp;
                     if (cleanIp === targetUser.ip) { s.emit('banned permanently'); s.disconnect(true); }
                 });
-                io.emit('system message', `dypz acaba de banir ${targetUser.name} permanentemente.`);
+                io.emit('system message', `dypz baniu ${targetUser.name} permanentemente através do Painel de Controle.`);
             }
         }
     });
