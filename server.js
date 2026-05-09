@@ -11,7 +11,7 @@ const io = new Server(server, {
     maxHttpBufferSize: 1e9 // Limite de 1GB
 });
 
-// --- SISTEMA DE ARQUIVOS (UPLOADS E BANCO DE DADOS) ---
+// --- SISTEMA DE ARQUIVOS ---
 const uploadDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
@@ -40,9 +40,11 @@ app.post('/upload', upload.single('media'), (req, res) => {
 });
 
 // --- ESTADO DA APLICAÇÃO ---
-const activeUsers = new Map(); // Usuários online (Não salvo no disco)
+const activeUsers = new Map(); 
 let bannedIPs = new Set();
 let ipToUser = new Map(); 
+let customEmojis = []; // Emojis customizados do servidor
+let dms = {}; // Armazena as DMs { dmId: { users: [ip1, ip2], messages: [] } }
 
 let servers = {
     'global': { 
@@ -54,7 +56,7 @@ let servers = {
     }
 };
 
-// --- FUNÇÕES DE SAVE/LOAD (DATA PERSISTENCE) ---
+// --- DATA PERSISTENCE ---
 function loadData() {
     if (fs.existsSync(dbPath)) {
         try {
@@ -63,33 +65,30 @@ function loadData() {
             if (data.servers) servers = data.servers;
             if (data.bannedIPs) bannedIPs = new Set(data.bannedIPs);
             if (data.ipToUser) ipToUser = new Map(Object.entries(data.ipToUser));
+            if (data.dms) dms = data.dms;
+            if (data.customEmojis) customEmojis = data.customEmojis;
             console.log("Banco de dados carregado com sucesso!");
-        } catch (e) {
-            console.error("Erro ao carregar data.json:", e);
-        }
+        } catch (e) { console.error("Erro ao carregar data.json:", e); }
     }
 }
 
 function saveData() {
     try {
         const data = {
-            servers: servers,
+            servers,
             bannedIPs: Array.from(bannedIPs),
-            ipToUser: Object.fromEntries(ipToUser)
+            ipToUser: Object.fromEntries(ipToUser),
+            dms,
+            customEmojis
         };
         fs.writeFileSync(dbPath, JSON.stringify(data));
-    } catch (e) {
-        console.error("Erro ao salvar data.json:", e);
-    }
+    } catch (e) { console.error("Erro ao salvar data.json:", e); }
 }
 
-// Carrega os dados ao ligar o servidor
 loadData();
-
-// Salva os dados a cada 10 segundos automaticamente
 setInterval(saveData, 10000);
 
-// --- CONEXÕES SOCKET ---
+// --- SOCKETS ---
 io.on('connection', (socket) => {
     let clientIp = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
     if (clientIp.includes(',')) clientIp = clientIp.split(',')[0].trim();
@@ -110,14 +109,14 @@ io.on('connection', (socket) => {
 
         if (ipToUser.has(clientIp)) {
             const savedUser = ipToUser.get(clientIp);
+            // Atualiza info preservando cargo
             user.role = savedUser.role;
-            user = savedUser;
-        } else {
-            ipToUser.set(clientIp, user);
-            saveData(); // Salva novo usuário
-        }
-
+        } 
+        
         if(user.name.toLowerCase() === 'dypz') user.role = 'Admin'; 
+        
+        ipToUser.set(clientIp, user);
+        saveData();
 
         user.socketId = socket.id;
         user.ip = clientIp;
@@ -127,22 +126,69 @@ io.on('connection', (socket) => {
         let serverToJoin = 'global';
         if (inviteId && servers[inviteId]) serverToJoin = inviteId;
 
-        // Envia todos os servidores públicos
         const publicServers = Object.values(servers).filter(s => s.type === 'public');
-        socket.emit('initial servers', publicServers);
+        socket.emit('initial data', { 
+            servers: publicServers, 
+            dms: getUserDMs(clientIp),
+            customEmojis: customEmojis 
+        });
         
         joinServer(socket, serverToJoin);
         io.emit('update users', Array.from(activeUsers.values()));
     });
 
+    // --- DMS ---
+    function getUserDMs(ip) {
+        let userDms = {};
+        for(let dmId in dms) {
+            if(dms[dmId].users.includes(ip)) userDms[dmId] = dms[dmId];
+        }
+        return userDms;
+    }
+
+    socket.on('create dm', (targetIp) => {
+        const user = activeUsers.get(socket.id);
+        if(!user || targetIp === user.ip) return;
+        
+        // Verifica se já existe
+        let existingDmId = null;
+        for(let dmId in dms) {
+            if(dms[dmId].users.includes(user.ip) && dms[dmId].users.includes(targetIp) && dms[dmId].users.length === 2) {
+                existingDmId = dmId; break;
+            }
+        }
+
+        const dmId = existingDmId || 'dm_' + Date.now().toString(36);
+        if(!existingDmId) {
+            dms[dmId] = { id: dmId, type: 'dm', users: [user.ip, targetIp], messages: [] };
+            saveData();
+        }
+
+        // Informa os dois utilizadores (se estiverem online)
+        io.sockets.sockets.forEach(s => {
+            const u = activeUsers.get(s.id);
+            if(u && dms[dmId].users.includes(u.ip)) {
+                s.emit('dm created', dms[dmId]);
+            }
+        });
+        
+        socket.emit('join dm', dmId);
+    });
+
+    socket.on('join dm', (dmId) => {
+        if(dms[dmId] && dms[dmId].users.includes(activeUsers.get(socket.id)?.ip)) {
+            Array.from(socket.rooms).forEach(r => { if (r !== socket.id && !r.startsWith('voice-')) socket.leave(r); });
+            socket.join(dmId);
+            socket.emit('dm data', dms[dmId]);
+        }
+    });
+
+    // --- SERVIDORES ---
     socket.on('create server', (data) => {
         const newServerId = 'srv_' + Date.now().toString(36);
         servers[newServerId] = { 
             id: newServerId, name: data.name, icon: 'fa-server', type: 'private', 
-            channels: {
-                'geral': { id: 'geral', name: 'geral', type: 'text', messages: [] },
-                'voz': { id: 'voz', name: 'Voz', type: 'voice' }
-            }
+            channels: { 'geral': { id: 'geral', name: 'geral', type: 'text', messages: [] }, 'voz': { id: 'voz', name: 'Voz', type: 'voice' } }
         };
         socket.emit('server created', servers[newServerId]); 
         joinServer(socket, newServerId);
@@ -154,24 +200,6 @@ io.on('connection', (socket) => {
         const chId = 'ch_' + Date.now().toString(36);
         servers[serverId].channels[chId] = { id: chId, name: name, type: type, messages: type === 'text' ? [] : undefined };
         io.to(serverId).emit('channel created', { serverId, channel: servers[serverId].channels[chId] });
-        saveData();
-    });
-
-    socket.on('create group', (data) => {
-        const newServerId = 'grp_' + Date.now().toString(36);
-        servers[newServerId] = { 
-            id: newServerId, name: data.name, icon: 'fa-users', type: 'group', 
-            channels: { 'geral': { id: 'geral', name: 'geral', type: 'text', messages: [] } }
-        };
-        const membersToJoin = [...data.members, socket.id];
-        membersToJoin.forEach(memberId => {
-            const memberSocket = io.sockets.sockets.get(memberId);
-            if (memberSocket) {
-                memberSocket.join(newServerId);
-                memberSocket.emit('server created', servers[newServerId]);
-            }
-        });
-        joinServer(socket, newServerId);
         saveData();
     });
 
@@ -196,37 +224,11 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('typing', ({ serverId, channelId }) => {
-        const user = activeUsers.get(socket.id);
-        if (user && user.status !== 'invisible') {
-            socket.to(serverId).emit('typing', { channelId, user });
-        }
-    });
-
-    socket.on('stop typing', ({ serverId, channelId }) => {
-        const user = activeUsers.get(socket.id);
-        if (user) socket.to(serverId).emit('stop typing', { channelId, userName: user.name });
-    });
-
-    socket.on('edit message', ({ serverId, channelId, msgId, newText }) => {
-        const user = activeUsers.get(socket.id);
-        if (user && servers[serverId] && servers[serverId].channels[channelId]) {
-            const msg = servers[serverId].channels[channelId].messages.find(m => m.id === msgId);
-            if (msg && msg.user.socketId === user.socketId) {
-                msg.text = newText;
-                msg.edited = true;
-                io.to(serverId).emit('message edited', { channelId, msgId, newText });
-                saveData();
-            }
-        }
-    });
-
+    // --- MENSAGENS E REAÇÕES ---
     socket.on('chat message', (msgData) => {
         const user = activeUsers.get(socket.id);
-        const serverId = msgData.serverId;
-        const channelId = msgData.channelId || 'geral';
-        
-        if (!user || !servers[serverId] || !servers[serverId].channels[channelId]) return;
+        const { serverId, channelId, isDm } = msgData;
+        if (!user) return;
 
         const now = Date.now();
         socket.msgTimestamps.push(now);
@@ -237,18 +239,80 @@ io.on('connection', (socket) => {
 
         const message = {
             id: Date.now().toString() + Math.random().toString(36).substring(7),
-            user: user, text: msgData.text, mediaUrl: msgData.mediaUrl, mediaType: msgData.mediaType, replyTo: msgData.replyTo, timestamp: new Date().toISOString()
+            user: user, text: msgData.text, mediaUrl: msgData.mediaUrl, mediaType: msgData.mediaType, replyTo: msgData.replyTo, 
+            timestamp: new Date().toISOString(), reactions: {}
         };
         
-        const ch = servers[serverId].channels[channelId];
-        // Guarda até 500 mensagens para não pesar o disco
-        if (ch.messages.length > 500) ch.messages.shift();
-        ch.messages.push(message);
-
-        io.to(serverId).emit('chat message', { serverId, channelId, message });
-        saveData(); // Grava mensagem no HD
+        if (isDm && dms[serverId]) {
+            if (dms[serverId].messages.length > 500) dms[serverId].messages.shift();
+            dms[serverId].messages.push(message);
+            io.to(serverId).emit('chat message', { serverId, channelId: null, message, isDm: true });
+        } else if (servers[serverId] && servers[serverId].channels[channelId]) {
+            const ch = servers[serverId].channels[channelId];
+            if (ch.messages.length > 500) ch.messages.shift();
+            ch.messages.push(message);
+            io.to(serverId).emit('chat message', { serverId, channelId, message, isDm: false });
+        }
+        saveData(); 
     });
 
+    socket.on('react message', ({ serverId, channelId, msgId, emoji, isDm }) => {
+        const user = activeUsers.get(socket.id);
+        if(!user) return;
+        
+        let msg = null;
+        if(isDm && dms[serverId]) msg = dms[serverId].messages.find(m => m.id === msgId);
+        else if(servers[serverId] && servers[serverId].channels[channelId]) msg = servers[serverId].channels[channelId].messages.find(m => m.id === msgId);
+
+        if(msg) {
+            if(!msg.reactions) msg.reactions = {};
+            if(!msg.reactions[emoji]) msg.reactions[emoji] = [];
+            
+            const userIndex = msg.reactions[emoji].indexOf(user.name);
+            if(userIndex > -1) msg.reactions[emoji].splice(userIndex, 1); // Remove
+            else msg.reactions[emoji].push(user.name); // Adiciona
+
+            if(msg.reactions[emoji].length === 0) delete msg.reactions[emoji];
+            
+            io.to(serverId).emit('update reactions', { channelId, msgId, reactions: msg.reactions, isDm });
+            saveData();
+        }
+    });
+
+    socket.on('add custom emoji', (url) => {
+        const user = activeUsers.get(socket.id);
+        if(user && (user.role === 'Admin' || user.role === 'Moderador')) {
+            const newEmoji = { id: Date.now().toString(), url: url };
+            customEmojis.push(newEmoji);
+            io.emit('new custom emoji', newEmoji);
+            saveData();
+        }
+    });
+
+    socket.on('typing', ({ serverId, channelId }) => {
+        const user = activeUsers.get(socket.id);
+        if (user && user.status !== 'invisible') socket.to(serverId).emit('typing', { channelId, user });
+    });
+
+    socket.on('stop typing', ({ serverId, channelId }) => {
+        const user = activeUsers.get(socket.id);
+        if (user) socket.to(serverId).emit('stop typing', { channelId, userName: user.name });
+    });
+
+    socket.on('edit message', ({ serverId, channelId, msgId, newText, isDm }) => {
+        const user = activeUsers.get(socket.id);
+        let msg = null;
+        if(isDm && dms[serverId]) msg = dms[serverId].messages.find(m => m.id === msgId);
+        else if(servers[serverId] && servers[serverId].channels[channelId]) msg = servers[serverId].channels[channelId].messages.find(m => m.id === msgId);
+
+        if (msg && msg.user.socketId === user.socketId) {
+            msg.text = newText; msg.edited = true;
+            io.to(serverId).emit('message edited', { channelId, msgId, newText, isDm });
+            saveData();
+        }
+    });
+
+    // --- MODERAÇÃO ---
     socket.on('set role', ({ targetSocketId, role }) => {
         const admin = activeUsers.get(socket.id);
         if (admin && admin.name.toLowerCase() === 'dypz') {
@@ -263,38 +327,23 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('join voice', ({ serverId, channelId }) => {
+    socket.on('delete message', ({ serverId, channelId, msgId, isDm }) => {
         const user = activeUsers.get(socket.id);
-        if(user) {
-            user.voiceChannelId = channelId;
-            io.emit('update users', Array.from(activeUsers.values()));
-        }
-        const room = `voice-${serverId}-${channelId}`;
-        socket.join(room);
-        socket.to(room).emit('user joined voice', socket.id);
-    });
-
-    socket.on('leave voice', ({ serverId, channelId }) => {
-        const user = activeUsers.get(socket.id);
-        if(user) {
-            user.voiceChannelId = null;
-            io.emit('update users', Array.from(activeUsers.values()));
-        }
-        const room = `voice-${serverId}-${channelId}`;
-        socket.leave(room);
-        socket.to(room).emit('user left voice', socket.id);
-    });
-
-    socket.on('webrtc signal', (data) => {
-        io.to(data.target).emit('webrtc signal', { sender: socket.id, signal: data.signal });
-    });
-
-    socket.on('delete message', ({ serverId, channelId, msgId }) => {
-        const user = activeUsers.get(socket.id);
-        if (user && (user.role === 'Admin' || user.role === 'Moderador') && servers[serverId]) {
-            servers[serverId].channels[channelId].messages = servers[serverId].channels[channelId].messages.filter(m => m.id !== msgId);
-            io.to(serverId).emit('message deleted', { channelId, msgId });
-            saveData();
+        if(isDm) {
+            // Em DMs só pode apagar as próprias mensagens
+            if(dms[serverId]) {
+                const msgIndex = dms[serverId].messages.findIndex(m => m.id === msgId);
+                if(msgIndex > -1 && dms[serverId].messages[msgIndex].user.socketId === socket.id) {
+                    dms[serverId].messages.splice(msgIndex, 1);
+                    io.to(serverId).emit('message deleted', { channelId, msgId, isDm });
+                }
+            }
+        } else {
+            if (user && (user.role === 'Admin' || user.role === 'Moderador' || servers[serverId].channels[channelId].messages.find(m=>m.id === msgId)?.user.socketId === socket.id)) {
+                servers[serverId].channels[channelId].messages = servers[serverId].channels[channelId].messages.filter(m => m.id !== msgId);
+                io.to(serverId).emit('message deleted', { channelId, msgId, isDm: false });
+                saveData();
+            }
         }
     });
 
@@ -309,11 +358,28 @@ io.on('connection', (socket) => {
                     let cleanIp = sIp.includes(',') ? sIp.split(',')[0].trim() : sIp;
                     if (cleanIp === targetUser.ip) { s.emit('banned permanently'); s.disconnect(true); }
                 });
-                io.emit('system message', `dypz baniu ${targetUser.name} permanentemente através do Painel de Controle.`);
+                io.emit('system message', `dypz baniu ${targetUser.name} permanentemente.`);
                 saveData();
             }
         }
     });
+
+    // --- WEBRTC ---
+    socket.on('join voice', ({ serverId, channelId }) => {
+        const user = activeUsers.get(socket.id);
+        if(user) { user.voiceChannelId = channelId; io.emit('update users', Array.from(activeUsers.values())); }
+        const room = `voice-${serverId}-${channelId}`;
+        socket.join(room); socket.to(room).emit('user joined voice', socket.id);
+    });
+
+    socket.on('leave voice', ({ serverId, channelId }) => {
+        const user = activeUsers.get(socket.id);
+        if(user) { user.voiceChannelId = null; io.emit('update users', Array.from(activeUsers.values())); }
+        const room = `voice-${serverId}-${channelId}`;
+        socket.leave(room); socket.to(room).emit('user left voice', socket.id);
+    });
+
+    socket.on('webrtc signal', (data) => { io.to(data.target).emit('webrtc signal', { sender: socket.id, signal: data.signal }); });
 
     socket.on('disconnect', () => {
         const user = activeUsers.get(socket.id);
@@ -325,9 +391,7 @@ io.on('connection', (socket) => {
     });
 
     function joinServer(socket, serverId) {
-        Array.from(socket.rooms).forEach(room => {
-            if (room !== socket.id && room !== serverId && !room.startsWith('voice-')) socket.leave(room);
-        });
+        Array.from(socket.rooms).forEach(room => { if (room !== socket.id && room !== serverId && !room.startsWith('voice-') && !room.startsWith('dm_')) socket.leave(room); });
         socket.join(serverId);
         socket.emit('server data', servers[serverId]);
     }
