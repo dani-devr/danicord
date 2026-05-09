@@ -373,44 +373,44 @@
                     </div>
                     
                     <div id="attachment-preview" class="hidden p-4 border-b border-[#2B2D31] flex items-center gap-4 relative">
-                        <div class="bg-black/20 p-3 rounded-lg flex items-center gap-3 border border-white/5">
+                        <div class="bg-[#2B2D31] p-3 rounded-lg flex items-center gap-3 border border-[#1E1F22]">
                             <i class="fa-solid fa-file-circle-check text-3xl text-[#5865F2]"></i>
-                            <span id="attachment-name" class="text-sm font-semibold text-white max-w-[150px] sm:max-w-[250px] truncate">arquivo</span>
+                            <span id="attachment-name" class="text-sm font-semibold text-white max-w-[250px] truncate">arquivo</span>
                         </div>
-                        <button onclick="removeAttachment()" class="absolute top-2 right-2 text-[#87898C] hover:text-red-500 transition bg-black/40 rounded-full w-6 h-6 flex items-center justify-center"><i class="fa-solid fa-trash text-xs"></i></button>
+                        <button onclick="removeAttachment()" class="absolute top-2 right-2 text-[#87898C] hover:text-red-500 transition"><i class="fa-solid fa-trash"></i></button>
                     </div>
                     
                     <div id="typing-indicator" class="hidden px-4 text-xs font-bold text-[#B5BAC1] mt-2 h-4 truncate"></div>
 
-                    <div class="flex items-center px-4 py-3 min-h-[52px] gap-3 relative">
+                    <!-- Emoji / GIF Picker e Mentions (Movidos para dentro do input para evitar cortes na barra lateral) -->
+                    <div id="emoji-picker" class="hidden absolute bottom-[110%] right-0 mb-2 w-72 sm:w-80 h-80 sm:h-96 glass-panel rounded-2xl shadow-2xl z-[100] flex flex-col overflow-hidden border border-white/10">
+                        <div class="flex bg-black/40 p-2 gap-2 border-b border-white/10">
+                            <button onclick="switchPicker('emoji')" id="tab-emoji" class="flex-1 py-1.5 rounded-lg bg-white/10 text-white font-bold text-sm smooth-hover">Emojis</button>
+                            <button onclick="switchPicker('gif')" id="tab-gif" class="flex-1 py-1.5 rounded-lg hover:bg-white/5 text-[#B5BAC1] font-bold text-sm smooth-hover">GIFs</button>
+                        </div>
+                        <div id="picker-content" class="flex-1 overflow-y-auto p-3 custom-scrollbar content-start"></div>
+                        <div id="custom-emoji-admin" class="hidden p-2 bg-black/40 border-t border-white/10">
+                            <button onclick="uploadCustomEmoji()" class="w-full text-xs text-[#23A559] hover:text-white font-bold p-1"><i class="fa-solid fa-plus mr-1"></i>Adicionar Emoji Customizado</button>
+                        </div>
+                    </div>
+
+                    <div id="mention-popover" class="hidden absolute bottom-[110%] left-0 mb-2 w-60 glass-panel rounded-xl shadow-xl z-[100] overflow-hidden border border-white/10 py-1">
+                        <ul id="mention-list" class="max-h-40 overflow-y-auto custom-scrollbar"></ul>
+                    </div>
+
+                    <div class="flex items-center px-4 py-2 min-h-[44px] relative">
                         <input type="file" id="file-input" class="hidden" onchange="handleFiles(event.target.files)">
-                        <button onclick="document.getElementById('file-input').click()" class="text-[#B5BAC1] hover:text-[#DBDEE1] bg-black/20 w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#5865F2] hover:text-white transition flex-shrink-0 shadow-sm"><i class="fa-solid fa-plus text-sm"></i></button>
+                        <button onclick="document.getElementById('file-input').click()" class="text-[#B5BAC1] hover:text-[#DBDEE1] bg-[#2B2D31] w-6 h-6 rounded-full flex items-center justify-center hover:bg-[#4E5058] mr-4 transition"><i class="fa-solid fa-plus text-sm"></i></button>
                         
-                        <input type="text" id="message-input" placeholder="Mensagem..." class="flex-1 bg-transparent border-none outline-none text-[#DBDEE1] discord-input-placeholder py-1 min-w-0 text-[15px]" autocomplete="off">
+                        <input type="text" id="message-input" placeholder="Conversar... (@everyone notifica todos)" class="flex-1 bg-transparent border-none outline-none text-[#DBDEE1] discord-input-placeholder py-1" autocomplete="off">
                         
-                        <!-- BOTÃO DE EMOJI/GIF -->
-                        <button onclick="toggleEmojiPicker(event)" class="text-[#B5BAC1] hover:text-white transition text-xl flex-shrink-0" title="Emojis e GIFs"><i class="fa-solid fa-face-smile"></i></button>
+                        <button onclick="toggleEmojiPicker(event)" class="text-[#B5BAC1] hover:text-white transition text-xl flex-shrink-0 ml-2" title="Emojis e GIFs"><i class="fa-solid fa-face-smile"></i></button>
                     </div>
                 </div>
             </div>
         </main>
 
-        <aside id="right-sidebar" class="fixed inset-y-0 right-0 z-50 w-64 bg-[#2B2D31] flex flex-col transform translate-x-full transition-transform duration-300 md:relative md:translate-x-0 shadow-2xl md:shadow-none border-l border-transparent md:border-white/5">
-            <div class="px-5 py-5 border-b border-[#1E1F22] md:border-none flex justify-between items-center">
-                <span class="font-bold text-xs text-[#87898C] uppercase tracking-wider">Membros Online</span>
-                <button class="md:hidden text-[#B5BAC1] text-xl" onclick="toggleRightSidebar()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div id="members-list" class="flex-1 overflow-y-auto px-3 space-y-[2px] mt-2 md:mt-0"></div>
-        </aside>
-    </div>
-
-    <script>
-        // --- UTILITÁRIOS E VARIÁVEIS ---
-        function toggleLeftSidebar() { const s = document.getElementById('left-sidebars'), o = document.getElementById('mobile-overlay-left'); if (s.classList.contains('-translate-x-full')) { s.classList.remove('-translate-x-full'); o.classList.remove('hidden'); } else { s.classList.add('-translate-x-full'); o.classList.add('hidden'); } }
-        function toggleRightSidebar() { const s = document.getElementById('right-sidebar'), o = document.getElementById('mobile-overlay-right'); if (s.classList.contains('translate-x-full')) { s.classList.remove('translate-x-full'); o.classList.remove('hidden'); } else { s.classList.add('translate-x-full'); o.classList.add('hidden'); } }
-        function closeAllSidebarsOnMobile() { if (window.innerWidth < 768) { document.getElementById('left-sidebars').classList.add('-translate-x-full'); document.getElementById('mobile-overlay-left').classList.add('hidden'); document.getElementById('right-sidebar').classList.add('translate-x-full'); document.getElementById('mobile-overlay-right').classList.add('hidden'); } }
-        function closeAllPopovers() { document.getElementById('emoji-picker').classList.add('hidden'); document.getElementById('mention-popover').classList.add('hidden'); closeUserPopout(); }
-
+        <aside class="w-60 bg-[#2B2D31] flex-shrink-0 hidden md:flex flex-col pb-4">
         function playPing() {
             if (currentUser.status === 'dnd') return; 
             try {
