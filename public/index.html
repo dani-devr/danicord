@@ -31,12 +31,36 @@
         @keyframes floatBubbles { 0% { transform: translateY(100px) scale(0.5); opacity: 0; } 50% { opacity: 0.8; } 100% { transform: translateY(-20px) scale(1.5); opacity: 0; } }
         @keyframes fallNeon { 0% { transform: translateY(-20px); opacity: 1; } 100% { transform: translateY(120px); opacity: 0; } }
 
+        /* Temas (Themes) */
+        body.theme-light .bg-\\[\\#313338\\] { background-color: #FFFFFF !important; }
+        body.theme-light .bg-\\[\\#2B2D31\\] { background-color: #F2F3F5 !important; }
+        body.theme-light .bg-\\[\\#1E1F22\\] { background-color: #E3E5E8 !important; }
+        body.theme-light .bg-\\[\\#232428\\] { background-color: #EBEDEF !important; }
+        body.theme-light .text-\\[\\#DBDEE1\\] { color: #060607 !important; }
+        body.theme-light .text-white { color: #060607 !important; }
+        body.theme-ocean .bg-\\[\\#313338\\] { background-color: #0F172A !important; }
+        body.theme-ocean .bg-\\[\\#2B2D31\\] { background-color: #1E293B !important; }
+        body.theme-ocean .bg-\\[\\#1E1F22\\] { background-color: #0B1120 !important; }
+        body.theme-ocean .bg-\\[\\#232428\\] { background-color: #020617 !important; }
+        body.theme-forest .bg-\\[\\#313338\\] { background-color: #14532D !important; }
+        body.theme-forest .bg-\\[\\#2B2D31\\] { background-color: #166534 !important; }
+        body.theme-forest .bg-\\[\\#1E1F22\\] { background-color: #064E3B !important; }
+        body.theme-forest .bg-\\[\\#232428\\] { background-color: #022C22 !important; }
+
         /* Decorações do Avatar (PFP Effects) */
         .decor-glow { box-shadow: 0 0 15px currentColor; border: 2px solid currentColor; }
         .decor-spin { border: 3px dashed currentColor; animation: spin 4s linear infinite; }
         .decor-pulse { border: 3px solid currentColor; animation: pop 1.5s ease-in-out infinite alternate; }
+        .decor-rainbow { border: 3px solid transparent; background: linear-gradient(#1E1F22, #1E1F22) padding-box, linear-gradient(45deg, red, orange, yellow, green, blue, purple) border-box; animation: spin 3s linear infinite; }
+        .decor-glitch { border: 3px solid currentColor; box-shadow: 2px 0 red, -2px 0 cyan; animation: pop 0.2s infinite; }
+        .decor-fire-ring { border: 3px solid #FF4500; box-shadow: 0 0 10px #FF8C00, inset 0 0 10px #FF0000; animation: pop 1s infinite alternate; }
+        
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes pop { 0% { box-shadow: 0 0 0 0 currentColor; } 100% { box-shadow: 0 0 0 10px transparent; } }
+
+        /* Typing Dots */
+        .typing-dots::after { content: '.'; animation: typing 1.5s steps(4, end) infinite; }
+        @keyframes typing { 0%, 100% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } }
 
         .video-box-transition { transition: all 0.3s ease-in-out; }
     </style>
@@ -98,11 +122,23 @@
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="col-span-2"><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Decoração do Avatar (Novo!)</label>
+                        <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Decoração do Avatar</label>
                             <select id="prof-pfp-decor" class="w-full bg-[#1E1F22] text-white rounded p-2 border-none outline-none">
                                 <option value="none">Padrão</option><option value="glow">Brilho Intenso</option><option value="spin">Círculo Giratório</option><option value="pulse">Pulso Sônico</option>
+                                <option value="rainbow">Arco-Íris Mágico</option><option value="glitch">Glitch Cyberpunk</option><option value="fire-ring">Anel de Fogo</option>
                             </select>
                         </div>
+                        <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Status de Presença</label>
+                            <select id="prof-status" class="w-full bg-[#1E1F22] text-white rounded p-2 border-none outline-none">
+                                <option value="online">🟢 Online</option><option value="idle">🌙 Ausente</option><option value="dnd">🔴 Não Incomodar</option><option value="invisible">⚪ Invisível</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-2"><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Tema da Aplicação (Visual)</label>
+                        <select id="prof-theme" class="w-full bg-[#1E1F22] text-white rounded p-2 border-none outline-none">
+                            <option value="dark">🌙 Escuro (Padrão)</option><option value="light">☀️ Claro</option><option value="ocean">🌊 Oceano</option><option value="forest">🌲 Floresta</option>
+                        </select>
                     </div>
 
                     <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Imagem do Banner (URL / GIF)</label><input type="url" id="prof-banner-url" placeholder="Deixe vazio para usar a cor" class="w-full bg-[#1E1F22] text-white rounded p-2 text-sm"></div>
@@ -237,24 +273,30 @@
                         </div>
                         <button onclick="removeAttachment()" class="absolute top-2 right-2 text-[#87898C] hover:text-red-500 transition"><i class="fa-solid fa-trash"></i></button>
                     </div>
+                    
+                    <div id="typing-indicator" class="hidden px-4 text-xs font-bold text-[#B5BAC1] mt-2 h-4 truncate"></div>
+
                     <div class="flex items-center px-4 py-2 min-h-[44px]">
                         <input type="file" id="file-input" class="hidden" onchange="handleFiles(event.target.files)">
-                        <button onclick="document.getElementById('file-input').click()" class="text-[#B5BAC1] hover:text-[#DBDEE1] bg-[#2B2D31] w-6 h-6 rounded-full flex items-center justify-center hover:bg-[#4E5058] mr-4 transition"><i class="fa-solid fa-plus text-sm"></i></button>
-                        <input type="text" id="message-input" placeholder="Conversar... (@everyone notifica todos)" class="flex-1 bg-transparent border-none outline-none text-[#DBDEE1] discord-input-placeholder py-1">
+            <div class="h-[52px] bg-[#232428] flex items-center px-2 gap-2 flex-shrink-0">
+                <div class="relative cursor-pointer hover:bg-[#3F4147] p-1 rounded flex-1 flex items-center gap-2 overflow-hidden transition" onclick="openProfile()">
+                    <div id="my-avatar-mini-container" class="relative">
+                        <img id="my-avatar-display" src="" class="w-8 h-8 rounded-full object-cover">
+                        <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-[#232428] rounded-full bg-[#23A559]"></div>
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                        <span id="my-name-display" class="text-sm font-semibold text-white truncate">Usuário</span>
+                        <span id="my-activity-display" class="text-[10px] text-[#B5BAC1] truncate">Configurar</span>
                     </div>
                 </div>
             </div>
-        </main>
-
-        <aside class="w-60 bg-[#2B2D31] flex-shrink-0 hidden md:flex flex-col pb-4">
-            <div class="px-4 py-4"><span class="font-bold text-xs text-[#87898C] uppercase tracking-wide">Membros</span></div>
-            <div id="members-list" class="flex-1 overflow-y-auto px-2 space-y-[2px]"></div>
         </aside>
     </div>
 
     <script>
         // --- GERADOR DE SOM (Plin!) SEM ARQUIVOS EXTERNOS ---
         function playPing() {
+            if (currentUser.status === 'dnd') return; // Respeita o "Não Incomodar"
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
                 const osc = ctx.createOscillator();
@@ -268,7 +310,7 @@
         }
 
         // --- ESTADOS ---
-        let currentUser = { name: '', avatar: '', color: '#5865F2', bio: '', particles: 'none', bannerUrl: '', decor: 'none', activity: '', socketId: null, role: 'Membro' };
+        let currentUser = { name: '', avatar: '', color: '#5865F2', bio: '', particles: 'none', bannerUrl: '', decor: 'none', activity: '', socketId: null, role: 'Membro', status: 'online', theme: 'dark' };
         let currentServer = null, currentTextChannelId = 'geral', currentVoiceChannelId = null;
         let selectedFile = null, isUploading = false, replyingTo = null;
         let onlineUsersData = [], myServers = new Map(), unreadServers = new Set(); 
@@ -279,12 +321,19 @@
         const urlParams = new URLSearchParams(window.location.search);
         const inviteCode = urlParams.get('invite');
 
-        // --- CORES DE CARGOS ---
+        // --- CORES DE CARGOS E STATUS ---
         function getRoleColor(role, baseColor) {
             if(role === 'Admin') return '#F0B232'; // Ouro
             if(role === 'Moderador') return '#23A559'; // Verde
             if(role === 'VIP') return '#EB459E'; // Rosa
             return baseColor || 'white';
+        }
+
+        function getStatusColor(status) {
+            if(status === 'idle') return '#F0B232'; // Amarelo
+            if(status === 'dnd') return '#F23F42'; // Vermelho
+            if(status === 'invisible') return '#80848E'; // Cinza
+            return '#23A559'; // Verde (Online)
         }
 
         if (socket) {
@@ -304,7 +353,7 @@
             e.preventDefault();
             currentUser.name = document.getElementById('username').value.trim();
             currentUser.avatar = document.getElementById('avatar').value.trim() || `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random()*5)}.png`;
-            currentUser.color = '#5865F2'; currentUser.bio = ''; currentUser.particles = 'none'; currentUser.activity = ''; currentUser.bannerUrl = ''; currentUser.decor = 'none';
+            currentUser.color = '#5865F2'; currentUser.bio = ''; currentUser.particles = 'none'; currentUser.activity = ''; currentUser.bannerUrl = ''; currentUser.decor = 'none'; currentUser.status = 'online'; currentUser.theme = 'dark';
             updateUIProfile();
             document.getElementById('login-modal').style.display = 'none';
             document.getElementById('app-container').classList.remove('hidden');
@@ -382,8 +431,11 @@
             document.getElementById('my-name-display').innerText = currentUser.name;
             document.getElementById('my-name-display').style.color = getRoleColor(currentUser.role, currentUser.color);
             document.getElementById('my-avatar-display').src = currentUser.avatar;
-            document.getElementById('my-activity-display').innerText = currentUser.activity || 'Online';
+            document.getElementById('my-activity-display').innerText = currentUser.activity || (currentUser.status === 'invisible' ? 'Invisível' : 'Online');
             
+            const myDot = document.getElementById('my-avatar-mini-container').querySelector('.absolute');
+            if(myDot) myDot.style.backgroundColor = getStatusColor(currentUser.status);
+
             document.getElementById('prof-name').value = currentUser.name;
             document.getElementById('prof-avatar').value = currentUser.avatar;
             document.getElementById('prof-color').value = currentUser.color || '#5865F2';
@@ -392,10 +444,17 @@
             document.getElementById('prof-particles').value = currentUser.particles || 'none';
             document.getElementById('prof-banner-url').value = currentUser.bannerUrl || '';
             document.getElementById('prof-pfp-decor').value = currentUser.decor || 'none';
+            document.getElementById('prof-status').value = currentUser.status || 'online';
+            document.getElementById('prof-theme').value = currentUser.theme || 'dark';
             
             document.getElementById('profile-avatar-preview').src = currentUser.avatar;
             updateBannerVisuals(document.getElementById('profile-banner-preview'), currentUser.color, currentUser.bannerUrl, currentUser.particles);
             applyPfpDecor('profile-avatar-container', currentUser.decor, currentUser.color);
+            applyTheme(currentUser.theme);
+        }
+
+        function applyTheme(theme) {
+            document.body.className = `bg-[#313338] text-[#DBDEE1] h-screen w-screen overflow-hidden flex selection:bg-[#5865F2] selection:text-white relative theme-${theme}`;
         }
 
         function updateBannerVisuals(element, color, url, particles) {
@@ -415,6 +474,8 @@
             currentUser.particles = document.getElementById('prof-particles').value;
             currentUser.bannerUrl = document.getElementById('prof-banner-url').value;
             currentUser.decor = document.getElementById('prof-pfp-decor').value;
+            currentUser.status = document.getElementById('prof-status').value;
+            currentUser.theme = document.getElementById('prof-theme').value;
             updateUIProfile(); closeProfile();
             if(socket) socket.emit('update profile', currentUser);
         }
@@ -439,6 +500,13 @@
             
             document.getElementById('popout-avatar').src = user.avatar;
             applyPfpDecor('popout-avatar-container', user.decor, user.color);
+            
+            let popoutDot = document.getElementById('popout-status-dot');
+            if(!popoutDot) {
+                popoutDot = document.createElement('div'); popoutDot.id = 'popout-status-dot'; popoutDot.className = 'absolute -bottom-1 -right-1 w-5 h-5 border-[4px] border-[#111214] rounded-full';
+                document.getElementById('popout-avatar-container').appendChild(popoutDot);
+            }
+            popoutDot.style.backgroundColor = getStatusColor(user.status);
 
             document.getElementById('popout-name').innerText = user.name;
             document.getElementById('popout-name').style.color = getRoleColor(user.role, user.color);
@@ -542,40 +610,31 @@
             const ch = currentServer.channels[chId];
             document.getElementById('chat-header-name').innerText = ch.name;
             document.getElementById('chat-messages').innerHTML = `
-                <div class="mt-8 mb-6">
-                    <div class="w-16 h-16 bg-[#5865F2] rounded-full flex items-center justify-center mb-4"><i class="fa-solid fa-hashtag text-white text-3xl"></i></div>
-                    <h1 class="text-white text-3xl font-bold mb-2">Bem-vindo(a) a #${ch.name}</h1>
-                </div>`;
-            if (ch.messages) ch.messages.forEach(appendMessage);
-            renderChannels();
+        function setReply(id, name, text) {
+            replyingTo = { id, name, text: text.substring(0, 50) + (text.length > 50 ? '...' : '') };
+            document.getElementById('reply-banner').classList.remove('hidden');
+            document.getElementById('reply-text').innerText = `Respondendo a @${name}`;
+            document.getElementById('message-input').focus();
         }
-
-        function openChannelModal() { document.getElementById('channel-modal').classList.remove('hidden'); }
-        function closeChannelModal() { document.getElementById('channel-modal').classList.add('hidden'); }
-        function submitChannel() {
-            const name = document.getElementById('channel-name').value.trim().replace(/\s+/g, '-').toLowerCase();
-            const type = document.querySelector('input[name="channel-type"]:checked').value;
-            if(name && currentServer) socket.emit('create channel', { serverId: currentServer.id, name, type });
-            closeChannelModal();
-        }
-
-        function createServer() { const name = prompt("Nome do Servidor:"); if(name) socket.emit('create server', { name }); }
-        function copyInviteLink() {
-            if(!currentServer) return;
-            const link = window.location.origin + window.location.pathname + '?invite=' + currentServer.id;
-            navigator.clipboard.writeText(link).catch(() => { const t=document.createElement("input"); t.value=link; document.body.appendChild(t); t.select(); document.execCommand("copy"); document.body.removeChild(t); });
-            alert("Link copiado: " + link);
-        }
-
-        // --- MENSAGENS E PINGS ---
-        function setReply(id, name, text) { replyingTo = { id, name, text: text.substring(0, 50) + (text.length > 50 ? '...' : '') }; document.getElementById('reply-banner').classList.remove('hidden'); document.getElementById('reply-text').innerText = `Respondendo a @${name}`; document.getElementById('message-input').focus(); }
         function cancelReply() { replyingTo = null; document.getElementById('reply-banner').classList.add('hidden'); }
         function deleteMsg(msgId) { if(confirm("Deletar mensagem para todos?")) socket.emit('delete message', { serverId: currentServer.id, channelId: currentTextChannelId, msgId }); }
+        function banUser(socketId) { if(confirm("Banir este IP permanentemente?")) socket.emit('ban user', socketId); }
+
+        function editMsg(msgId) {
+            const msgEl = document.getElementById(`msg-text-${msgId}`);
+            if(!msgEl) return;
+            const oldText = msgEl.getAttribute('data-raw');
+            const newText = prompt("Edite a sua mensagem:", oldText);
+            if(newText !== null && newText.trim() !== '' && newText !== oldText) {
+                socket.emit('edit message', { serverId: currentServer.id, channelId: currentTextChannelId, msgId, newText: newText.trim() });
+            }
+        }
 
         function appendMessage(msg) {
             const div = document.createElement('div'); div.id = `msg-${msg.id}`;
             const isDypz = currentUser.role === 'Admin';
             const isMod = currentUser.role === 'Moderador';
+            const isMine = msg.user.socketId === currentUser.socketId;
             
             let safeText = msg.text || '';
             const isEv = safeText.includes('@everyone'), isMen = safeText.includes(`@${currentUser.name}`);
@@ -584,11 +643,17 @@
             div.className = `flex gap-4 py-1 px-4 -mx-4 transition group relative ${baseClass}`;
             
             let menuHtml = `<div class="absolute top-0 right-4 hidden group-hover:flex items-center bg-[#313338] border border-[#1E1F22] rounded shadow z-10">`;
-            menuHtml += `<button onclick="setReply('${msg.id}', '${msg.user.name}', '${msg.text ? msg.text.replace(/'/g, "\\'") : 'Mídia'}')" class="p-2 text-[#B5BAC1] hover:bg-[#404249]"><i class="fa-solid fa-reply"></i></button>`;
+            menuHtml += `<button onclick="setReply('${msg.id}', '${msg.user.name}', '${msg.text ? msg.text.replace(/'/g, "\\'") : 'Mídia'}')" class="p-2 text-[#B5BAC1] hover:bg-[#404249]" title="Responder"><i class="fa-solid fa-reply"></i></button>`;
             
-            // Admin ou Moderador apagam
-            if(isDypz || isMod) {
-                menuHtml += `<button onclick="deleteMsg('${msg.id}')" class="p-2 text-red-500 hover:bg-[#404249]"><i class="fa-solid fa-trash"></i></button>`;
+            if(isMine) {
+                menuHtml += `<button onclick="editMsg('${msg.id}')" class="p-2 text-[#B5BAC1] hover:bg-[#404249]" title="Editar"><i class="fa-solid fa-pencil"></i></button>`;
+            }
+
+            if(isDypz || isMod || isMine) {
+                menuHtml += `<button onclick="deleteMsg('${msg.id}')" class="p-2 text-red-500 hover:bg-[#404249]" title="Apagar"><i class="fa-solid fa-trash"></i></button>`;
+            }
+            if(isDypz && !isMine) {
+                menuHtml += `<button onclick="banUser('${msg.user.socketId}')" class="p-2 text-red-500 hover:bg-[#404249]" title="Banir IP"><i class="fa-solid fa-gavel"></i></button>`;
             }
             menuHtml += `</div>`;
 
@@ -600,11 +665,14 @@
                 else mediaHtml = `<a href="${msg.mediaUrl}" target="_blank" class="mt-2 inline-flex items-center gap-2 bg-[#2B2D31] p-3 rounded text-[#00A8FC] hover:underline"><i class="fa-solid fa-download"></i> Arquivo</a>`;
             }
             if(msg.replyTo) replyHtml = `<div class="text-[#B5BAC1] text-xs flex items-center gap-2 mb-1 opacity-70 before:content-[''] before:w-6 before:h-[1px] before:bg-[#4E5058]"><img src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-3 h-3 rounded-full"> <span class="font-bold">@${msg.replyTo.name}</span>: ${msg.replyTo.text}</div>`;
+            
+            const rawText = safeText.replace(/"/g, '&quot;');
+
             if(isEv) safeText = safeText.replace(/@everyone/g, `<span class="bg-[#FAA61A]/30 text-[#FEE75C] font-medium px-1 rounded">@everyone</span>`);
             if(isMen) safeText = safeText.replace(new RegExp(`@${currentUser.name}`, 'g'), `<span class="bg-[#5865F2]/30 text-[#C9CDD6] font-medium px-1 rounded">@${currentUser.name}</span>`);
 
-            // Cor baseada no Cargo
             const titleColor = getRoleColor(msg.user.role, msg.user.color || 'white');
+            const editedSpan = msg.edited ? `<span class="text-[10px] text-[#87898C] ml-1">(editado)</span>` : '';
 
             div.innerHTML = `${menuHtml}
                 <div class="relative flex-shrink-0 cursor-pointer" onclick="showUserPopout(event, '${msg.user.socketId}')">
@@ -613,28 +681,34 @@
                 <div class="flex flex-col min-w-0 flex-1">
                     ${replyHtml}
                     <div class="flex items-baseline gap-2"><span class="font-medium hover:underline cursor-pointer" style="color: ${titleColor}" onclick="showUserPopout(event, '${msg.user.socketId}')">${msg.user.name}</span><span class="text-xs text-[#87898C]">${new Date(msg.timestamp).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span></div>
-                    <p class="text-[#DBDEE1] whitespace-pre-wrap leading-tight mt-0.5">${safeText}</p>${mediaHtml}
+                    <p id="msg-text-${msg.id}" data-raw="${rawText}" class="text-[#DBDEE1] whitespace-pre-wrap leading-tight mt-0.5">${safeText}${editedSpan}</p>${mediaHtml}
                 </div>`;
             const chatBox = document.getElementById('chat-messages');
             chatBox.appendChild(div); chatBox.scrollTop = chatBox.scrollHeight;
         }
 
         async function sendMessage() {
-            if (isUploading || !currentServer) return;
-            const text = document.getElementById('message-input').value.trim();
-            if (!text && !selectedFile) return;
-            isUploading = true; document.getElementById('message-input').disabled = true;
-            let mediaUrl = null, mediaType = null;
-            if(selectedFile) {
-                const fd = new FormData(); fd.append('media', selectedFile);
-                document.getElementById('message-input').placeholder = "Enviando...";
-                try { const res = await fetch('/upload', {method:'POST', body:fd}); const data = await res.json(); if(data.url) {mediaUrl=data.url; mediaType=data.type;} } catch(e) {}
-            }
-            if(socket) socket.emit('chat message', { serverId: currentServer.id, channelId: currentTextChannelId, text, mediaUrl, mediaType, replyTo: replyingTo });
-            document.getElementById('message-input').value = ''; removeAttachment(); cancelReply();
-            isUploading = false; document.getElementById('message-input').disabled = false; document.getElementById('message-input').placeholder = "Conversar..."; document.getElementById('message-input').focus();
+            isUploading = false; document.getElementById('message-input').disabled = false; document.getElementById('message-input').placeholder = "Conversar... (@everyone notifica todos)"; document.getElementById('message-input').focus();
         }
         document.getElementById('message-input').addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }});
+
+        let typingTimeout;
+        document.getElementById('message-input').addEventListener('input', () => {
+            if (!currentServer) return;
+            socket.emit('typing', { serverId: currentServer.id, channelId: currentTextChannelId });
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => { socket.emit('stop typing', { serverId: currentServer.id, channelId: currentTextChannelId }); }, 2000);
+        });
+
+        let typingUsers = new Set();
+        function updateTypingIndicator() {
+            const ind = document.getElementById('typing-indicator');
+            if (typingUsers.size === 0) ind.classList.add('hidden');
+            else {
+                ind.classList.remove('hidden');
+                ind.innerHTML = `<strong>${Array.from(typingUsers).join(', ')}</strong> está a escrever<span class="typing-dots"></span>`;
+            }
+        }
 
         // --- EVENTOS SOCKET UI ---
         if(socket) {
@@ -675,19 +749,50 @@
 
             socket.on('message deleted', ({ channelId, msgId }) => { if(channelId === currentTextChannelId) { const el = document.getElementById(`msg-${msgId}`); if(el) el.remove(); } });
 
+            socket.on('message edited', ({ channelId, msgId, newText }) => {
+                if(channelId === currentTextChannelId) {
+                    const msgEl = document.getElementById(`msg-text-${msgId}`);
+                    if(msgEl) {
+                        msgEl.setAttribute('data-raw', newText.replace(/"/g, '&quot;'));
+                        let safeText = newText;
+                        if(safeText.includes('@everyone')) safeText = safeText.replace(/@everyone/g, `<span class="bg-[#FAA61A]/30 text-[#FEE75C] font-medium px-1 rounded">@everyone</span>`);
+                        if(safeText.includes(`@${currentUser.name}`)) safeText = safeText.replace(new RegExp(`@${currentUser.name}`, 'g'), `<span class="bg-[#5865F2]/30 text-[#C9CDD6] font-medium px-1 rounded">@${currentUser.name}</span>`);
+                        msgEl.innerHTML = `${safeText} <span class="text-[10px] text-[#87898C] ml-1">(editado)</span>`;
+                    }
+                }
+            });
+
+            socket.on('typing', ({ channelId, user }) => {
+                if(channelId === currentTextChannelId && user.name !== currentUser.name) {
+                    typingUsers.add(user.name); updateTypingIndicator();
+                }
+            });
+
+            socket.on('stop typing', ({ channelId, userName }) => {
+                if(channelId === currentTextChannelId) {
+                    typingUsers.delete(userName); updateTypingIndicator();
+                }
+            });
+
             socket.on('update users', (users) => {
                 onlineUsersData = users;
                 const ml = document.getElementById('members-list'); ml.innerHTML = '';
                 
+                // Filtra invisíveis
+                const visibleUsers = users.filter(u => u.status !== 'invisible' || u.socketId === currentUser.socketId);
+                
                 // Ordena: Admin > Moderador > VIP > Membro
                 const roleOrder = { 'Admin': 1, 'Moderador': 2, 'VIP': 3, 'Membro': 4 };
-                users.sort((a,b) => roleOrder[a.role] - roleOrder[b.role]);
+                visibleUsers.sort((a,b) => roleOrder[a.role] - roleOrder[b.role]);
 
-                users.forEach(u => {
+                visibleUsers.forEach(u => {
                     const icon = u.role === 'Admin' ? '<i class="fa-solid fa-crown text-[#F0B232] text-[10px] ml-1"></i>' : (u.role === 'Moderador' ? '<i class="fa-solid fa-shield text-[#23A559] text-[10px] ml-1"></i>' : '');
                     ml.innerHTML += `
                         <div class="flex items-center gap-3 p-1.5 rounded hover:bg-[#35373C] cursor-pointer group" onclick="showUserPopout(event, '${u.socketId}')">
-                            <img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover">
+                            <div class="relative">
+                                <img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover">
+                                <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-[#2B2D31] rounded-full" style="background-color: ${getStatusColor(u.status)}"></div>
+                            </div>
                             <div class="flex flex-col min-w-0">
                                 <span class="group-hover:text-[#DBDEE1] font-medium truncate" style="color:${getRoleColor(u.role, u.color)}">${u.name} ${icon}</span>
                                 ${u.activity ? `<span class="text-[10px] text-[#B5BAC1] truncate">${u.activity}</span>` : ''}
