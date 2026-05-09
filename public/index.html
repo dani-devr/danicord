@@ -609,7 +609,33 @@
             currentTextChannelId = chId;
             const ch = currentServer.channels[chId];
             document.getElementById('chat-header-name').innerText = ch.name;
+            document.getElementById('header-channel-icon').className = 'fa-solid fa-hashtag text-[#87898C] text-xl';
             document.getElementById('chat-messages').innerHTML = `
+                <div class="mt-8 mb-6">
+                    <div class="w-16 h-16 bg-[#5865F2] rounded-full flex items-center justify-center mb-4"><i class="fa-solid fa-hashtag text-white text-3xl"></i></div>
+                    <h1 class="text-white text-3xl font-bold mb-2">Bem-vindo(a) a #${ch.name}</h1>
+                </div>`;
+            if (ch.messages) ch.messages.forEach(appendMessage);
+            renderChannels();
+        }
+
+        function openChannelModal() { document.getElementById('channel-modal').classList.remove('hidden'); }
+        function closeChannelModal() { document.getElementById('channel-modal').classList.add('hidden'); }
+        function submitChannel() {
+            const name = document.getElementById('channel-name').value.trim().replace(/\s+/g, '-').toLowerCase();
+            const type = document.querySelector('input[name="channel-type"]:checked').value;
+            if(name && currentServer) socket.emit('create channel', { serverId: currentServer.id, name, type });
+            closeChannelModal();
+        }
+
+        function createServer() { const name = prompt("Nome do Servidor:"); if(name) socket.emit('create server', { name }); }
+        function copyInviteLink() {
+            if(!currentServer) return;
+            const link = window.location.origin + window.location.pathname + '?invite=' + currentServer.id;
+            navigator.clipboard.writeText(link).catch(() => { const t=document.createElement("input"); t.value=link; document.body.appendChild(t); t.select(); document.execCommand("copy"); document.body.removeChild(t); });
+            alert("Link copiado: " + link);
+        }
+
         function setReply(id, name, text) {
             replyingTo = { id, name, text: text.substring(0, 50) + (text.length > 50 ? '...' : '') };
             document.getElementById('reply-banner').classList.remove('hidden');
