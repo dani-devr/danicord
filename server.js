@@ -41,7 +41,6 @@ const activeUsers = new Map();
 const bannedIPs = new Set();
 const ipToUser = new Map(); 
 
-// Nova Estrutura de Servidores com Canais
 const servers = {
     'global': { 
         id: 'global', name: 'Danicord Global', icon: 'fa-globe', type: 'public', 
@@ -65,7 +64,6 @@ io.on('connection', (socket) => {
     if (ipToUser.has(clientIp)) socket.emit('force login', ipToUser.get(clientIp));
     socket.msgTimestamps = [];
 
-    // Login
     socket.on('user joined', ({ user, inviteId }) => {
         if (bannedIPs.has(clientIp)) return;
         if (ipToUser.has(clientIp)) user = ipToUser.get(clientIp);
@@ -73,18 +71,17 @@ io.on('connection', (socket) => {
 
         user.socketId = socket.id;
         user.ip = clientIp;
+        user.voiceChannelId = null; // Rastreia o canal de voz do usuário
         activeUsers.set(socket.id, user);
         
         let serverToJoin = 'global';
         if (inviteId && servers[inviteId]) serverToJoin = inviteId;
 
-        // Envia apenas o Global inicialmente
         socket.emit('initial servers', [servers['global']]);
         joinServer(socket, serverToJoin);
         io.emit('update users', Array.from(activeUsers.values()));
     });
 
-    // Criação de Servidores e Canais
     socket.on('create server', (data) => {
         const newServerId = 'srv_' + Date.now().toString(36);
         servers[newServerId] = { 
@@ -94,7 +91,6 @@ io.on('connection', (socket) => {
                 'voz': { id: 'voz', name: 'Voz', type: 'voice' }
             }
         };
-        // Emite apenas para quem criou (Privacidade)
         socket.emit('server created', servers[newServerId]); 
         joinServer(socket, newServerId);
     });
@@ -125,24 +121,23 @@ io.on('connection', (socket) => {
 
     socket.on('join server', (serverId) => {
         if (servers[serverId]) {
-            socket.emit('server created', servers[serverId]); // Adiciona à UI caso seja por invite
+            socket.emit('server created', servers[serverId]);
             joinServer(socket, serverId);
         }
     });
 
-    // Perfil Avançado
     socket.on('update profile', (newProfile) => {
         const current = activeUsers.get(socket.id);
         if (current) {
             newProfile.socketId = socket.id;
             newProfile.ip = current.ip;
+            newProfile.voiceChannelId = current.voiceChannelId;
             activeUsers.set(socket.id, newProfile);
             ipToUser.set(current.ip, newProfile);
             io.emit('update users', Array.from(activeUsers.values()));
         }
     });
 
-    // Sistema de Mensagens (agora por Canal)
     socket.on('chat message', (msgData) => {
         const user = activeUsers.get(socket.id);
         const serverId = msgData.serverId;
@@ -169,19 +164,30 @@ io.on('connection', (socket) => {
         io.to(serverId).emit('chat message', { serverId, channelId, message });
     });
 
-    // --- WebRTC (VOZ E TELA) Sinalização ---
+    // --- WebRTC (VOZ E TELA) Sinalização com Tracking de Membros ---
     socket.on('join voice', ({ serverId, channelId }) => {
+        const user = activeUsers.get(socket.id);
+        if(user) {
+            user.voiceChannelId = channelId;
+            io.emit('update users', Array.from(activeUsers.values())); // Atualiza UI lateral
+        }
         const room = `voice-${serverId}-${channelId}`;
         socket.join(room);
-        socket.to(room).emit('user joined voice', socket.id); // Avisa os outros para iniciarem a conexão
+        socket.to(room).emit('user joined voice', socket.id);
     });
+
     socket.on('leave voice', ({ serverId, channelId }) => {
+        const user = activeUsers.get(socket.id);
+        if(user) {
+            user.voiceChannelId = null;
+            io.emit('update users', Array.from(activeUsers.values()));
+        }
         const room = `voice-${serverId}-${channelId}`;
         socket.leave(room);
         socket.to(room).emit('user left voice', socket.id);
     });
+
     socket.on('webrtc signal', (data) => {
-        // Encaminha ofertas, respostas e ICE candidates para o peer específico
         io.to(data.target).emit('webrtc signal', { sender: socket.id, signal: data.signal });
     });
 
@@ -215,7 +221,6 @@ io.on('connection', (socket) => {
         if (user) {
             activeUsers.delete(socket.id);
             io.emit('update users', Array.from(activeUsers.values()));
-            // Informa saída das calls
             socket.broadcast.emit('user left voice', socket.id);
         }
     });
