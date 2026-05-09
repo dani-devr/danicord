@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -70,7 +70,7 @@
         body.theme-forest .border-\[\#1E1F22\] { border-color: #064E3B !important; }
         body.theme-forest .border-\[\#2B2D31\] { border-color: #14532D !important; }
 
-        /* AVATAR DECORATIONS PREMIUM (REFEITOS COM PSEUDO-ELEMENTOS) */
+        /* AVATAR DECORATIONS PREMIUM */
         .decor-container { position: relative; z-index: 10; }
         .decor-glow::before { content: ''; position: absolute; inset: -3px; border-radius: 50%; box-shadow: 0 0 12px var(--decor-color), inset 0 0 10px var(--decor-color); border: 2px solid var(--decor-color); z-index: -1; }
         .decor-spin::before { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 3px dashed var(--decor-color); animation: spin 4s linear infinite; z-index: -1; }
@@ -93,13 +93,13 @@
 
     <div id="drag-overlay" class="hidden absolute inset-0 bg-[#5865F2]/90 backdrop-blur-sm flex-col items-center justify-center text-white border-8 border-dashed border-white m-4 rounded-3xl transition-all smooth-hover z-[9999]">
         <i class="fa-solid fa-file-arrow-up text-7xl mb-4"></i>
-        <h2 class="text-4xl font-bold text-center">Solte o arquivo aqui!</h2>
+        <h2 class="text-4xl font-bold text-center">Larga o ficheiro aqui!</h2>
     </div>
 
     <div id="ban-screen" class="hidden fixed inset-0 bg-[#111214] z-[9999] flex-col items-center justify-center text-center p-6">
         <i class="fa-solid fa-gavel text-red-500 text-7xl mb-6"></i>
-        <h1 class="text-5xl font-black text-white mb-4">VOCÊ FOI BANIDO</h1>
-        <p class="text-[#B5BAC1] text-lg max-w-md">Seu IP foi bloqueado permanentemente pelo Administrador do Danicord.</p>
+        <h1 class="text-5xl font-black text-white mb-4">FOSTE BANIDO</h1>
+        <p class="text-[#B5BAC1] text-lg max-w-md">O teu IP foi bloqueado permanentemente pelo Administrador do Danicord.</p>
     </div>
 
     <!-- MODAL LOGIN (AVANÇADO) -->
@@ -117,7 +117,7 @@
                             <div class="absolute -bottom-1 -right-1 w-5 h-5 border-[4px] border-[#111214] rounded-full bg-[#23A559] z-20"></div>
                         </div>
                         <div class="mt-10 bg-black/40 rounded-xl p-4 border border-white/5">
-                            <h4 id="setup-name-preview" class="text-xl font-black text-white truncate">Novo Usuário</h4>
+                            <h4 id="setup-name-preview" class="text-xl font-black text-white truncate">Novo Utilizador</h4>
                             <div class="w-full h-[1px] bg-white/10 mb-3 mt-3"></div>
                             <h5 class="text-[10px] font-bold text-[#B5BAC1] uppercase mb-1">Sobre mim</h5>
                             <p class="text-sm text-[#DBDEE1]">Pronto para entrar no Danicord!</p>
@@ -128,8 +128,8 @@
 
             <!-- Direita: Controlos -->
             <div class="w-full md:w-1/2 p-8 overflow-y-auto custom-scrollbar flex flex-col">
-                <h2 class="text-3xl font-black text-white mb-2" id="login-title">Construa o seu Perfil</h2>
-                <p class="text-[#B5BAC1] text-sm mb-6" id="login-subtitle">Como quer ser visto pelos seus amigos?</p>
+                <h2 class="text-3xl font-black text-white mb-2" id="login-title">Constrói o teu Perfil</h2>
+                <p class="text-[#B5BAC1] text-sm mb-6" id="login-subtitle">Como queres ser visto pelos teus amigos?</p>
                 
                 <form id="login-form" class="space-y-4 flex-1">
                     <div>
@@ -165,26 +165,7 @@
         </div>
     </div>
 
-    <!-- MODAL CUSTOMIZAR PERFIL -->
-    <div id="profile-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[70] backdrop-blur-sm p-4">
-    <!-- Emoji / GIF Picker -->
-    <div id="emoji-picker" class="hidden absolute bottom-20 right-4 w-80 h-96 glass-panel rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden border border-white/10">
-        <div class="flex bg-black/40 p-2 gap-2 border-b border-white/10">
-            <button onclick="switchPicker('emoji')" id="tab-emoji" class="flex-1 py-1.5 rounded-lg bg-white/10 text-white font-bold text-sm smooth-hover">Emojis</button>
-            <button onclick="switchPicker('gif')" id="tab-gif" class="flex-1 py-1.5 rounded-lg hover:bg-white/5 text-[#B5BAC1] font-bold text-sm smooth-hover">GIFs</button>
-        </div>
-        <div id="picker-content" class="flex-1 overflow-y-auto p-3 custom-scrollbar content-start"></div>
-        <div id="custom-emoji-admin" class="hidden p-2 bg-black/40 border-t border-white/10">
-            <button onclick="uploadCustomEmoji()" class="w-full text-xs text-[#23A559] hover:text-white font-bold p-1"><i class="fa-solid fa-plus mr-1"></i>Adicionar Emoji Customizado</button>
-        </div>
-    </div>
-
-    <!-- Autocomplete de Menções -->
-    <div id="mention-popover" class="hidden absolute bottom-16 left-4 w-60 glass-panel rounded-xl shadow-xl z-50 overflow-hidden border border-white/10 py-1">
-        <ul id="mention-list" class="max-h-40 overflow-y-auto custom-scrollbar"></ul>
-    </div>
-
-    <!-- MODAL CUSTOMIZAR PERFIL (DENTRO DA APP) -->
+    <!-- MODAL CUSTOMIZAR PERFIL INTERNO -->
     <div id="profile-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[70] backdrop-blur-md p-4">
         <div class="glass-panel rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-white/10">
             <div id="profile-banner-preview" class="h-28 bg-[#5865F2] w-full relative overflow-hidden transition-colors bg-cover bg-center"></div>
@@ -249,7 +230,6 @@
             <div class="absolute -top-10 left-5 border-[6px] border-transparent rounded-full decor-container" id="popout-avatar-container">
                 <img id="popout-avatar" src="" class="w-[72px] h-[72px] rounded-full object-cover bg-[#1E1F22] z-10 relative shadow-xl">
             </div>
-            
             <div class="mt-10 bg-black/40 rounded-xl p-4 border border-white/5 shadow-inner">
                 <h4 id="popout-name" class="text-xl font-black text-white truncate flex items-center gap-1">Nome</h4>
                 <p id="popout-role-badge" class="text-[10px] font-bold text-white uppercase px-2 py-0.5 rounded shadow-sm inline-block mt-1 hidden"></p>
@@ -259,6 +239,7 @@
                 <p id="popout-bio" class="text-sm text-[#DBDEE1] break-words whitespace-pre-wrap leading-relaxed">Nenhuma bio.</p>
             </div>
 
+            <!-- PAINEL EXCLUSIVO DO DYPZ -->
             <div id="admin-tools-panel" class="hidden mt-4 pt-3 border-t border-white/10">
                 <h5 class="text-[10px] font-bold text-red-400 uppercase mb-2"><i class="fa-solid fa-screwdriver-wrench"></i> Admin Tools</h5>
                 <select id="admin-role-select" class="w-full bg-black/40 text-white rounded-lg p-2 mb-3 text-xs border border-transparent outline-none smooth-hover hover:bg-black/60">
@@ -373,16 +354,16 @@
                     </div>
                     
                     <div id="attachment-preview" class="hidden p-4 border-b border-[#2B2D31] flex items-center gap-4 relative">
-                        <div class="bg-[#2B2D31] p-3 rounded-lg flex items-center gap-3 border border-[#1E1F22]">
+                        <div class="bg-black/20 p-3 rounded-lg flex items-center gap-3 border border-white/5">
                             <i class="fa-solid fa-file-circle-check text-3xl text-[#5865F2]"></i>
-                            <span id="attachment-name" class="text-sm font-semibold text-white max-w-[250px] truncate">arquivo</span>
+                            <span id="attachment-name" class="text-sm font-semibold text-white max-w-[150px] sm:max-w-[250px] truncate">arquivo</span>
                         </div>
-                        <button onclick="removeAttachment()" class="absolute top-2 right-2 text-[#87898C] hover:text-red-500 transition"><i class="fa-solid fa-trash"></i></button>
+                        <button onclick="removeAttachment()" class="absolute top-2 right-2 text-[#87898C] hover:text-red-500 transition bg-black/40 rounded-full w-6 h-6 flex items-center justify-center"><i class="fa-solid fa-trash text-xs"></i></button>
                     </div>
                     
                     <div id="typing-indicator" class="hidden px-4 text-xs font-bold text-[#B5BAC1] mt-2 h-4 truncate"></div>
 
-                    <!-- Emoji / GIF Picker e Mentions (Movidos para dentro do input para evitar cortes na barra lateral) -->
+                    <!-- Emoji / GIF Picker e Mentions Moveram-se para aqui -->
                     <div id="emoji-picker" class="hidden absolute bottom-[110%] right-0 mb-2 w-72 sm:w-80 h-80 sm:h-96 glass-panel rounded-2xl shadow-2xl z-[100] flex flex-col overflow-hidden border border-white/10">
                         <div class="flex bg-black/40 p-2 gap-2 border-b border-white/10">
                             <button onclick="switchPicker('emoji')" id="tab-emoji" class="flex-1 py-1.5 rounded-lg bg-white/10 text-white font-bold text-sm smooth-hover">Emojis</button>
@@ -398,11 +379,11 @@
                         <ul id="mention-list" class="max-h-40 overflow-y-auto custom-scrollbar"></ul>
                     </div>
 
-                    <div class="flex items-center px-4 py-2 min-h-[44px] relative">
+                    <div class="flex items-center px-4 py-3 min-h-[52px] gap-3 relative">
                         <input type="file" id="file-input" class="hidden" onchange="handleFiles(event.target.files)">
-                        <button onclick="document.getElementById('file-input').click()" class="text-[#B5BAC1] hover:text-[#DBDEE1] bg-[#2B2D31] w-6 h-6 rounded-full flex items-center justify-center hover:bg-[#4E5058] mr-4 transition"><i class="fa-solid fa-plus text-sm"></i></button>
+                        <button onclick="document.getElementById('file-input').click()" class="text-[#B5BAC1] hover:text-[#DBDEE1] bg-black/20 w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#5865F2] hover:text-white transition flex-shrink-0 shadow-sm"><i class="fa-solid fa-plus text-sm"></i></button>
                         
-                        <input type="text" id="message-input" placeholder="Conversar... (@everyone notifica todos)" class="flex-1 bg-transparent border-none outline-none text-[#DBDEE1] discord-input-placeholder py-1" autocomplete="off">
+                        <input type="text" id="message-input" placeholder="Mensagem..." class="flex-1 bg-transparent border-none outline-none text-[#DBDEE1] discord-input-placeholder py-1 min-w-0 text-[15px]" autocomplete="off">
                         
                         <button onclick="toggleEmojiPicker(event)" class="text-[#B5BAC1] hover:text-white transition text-xl flex-shrink-0 ml-2" title="Emojis e GIFs"><i class="fa-solid fa-face-smile"></i></button>
                     </div>
@@ -410,7 +391,24 @@
             </div>
         </main>
 
-        <aside class="w-60 bg-[#2B2D31] flex-shrink-0 hidden md:flex flex-col pb-4">
+        <aside id="right-sidebar" class="fixed inset-y-0 right-0 z-50 w-64 bg-[#2B2D31] flex flex-col transform translate-x-full transition-transform duration-300 md:relative md:translate-x-0 shadow-2xl md:shadow-none border-l border-transparent md:border-white/5">
+            <div class="px-5 py-5 border-b border-[#1E1F22] md:border-none flex justify-between items-center">
+                <span class="font-bold text-xs text-[#87898C] uppercase tracking-wider">Membros Online</span>
+                <button class="md:hidden text-[#B5BAC1] text-xl" onclick="toggleRightSidebar()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="members-list" class="flex-1 overflow-y-auto px-3 space-y-[2px] mt-2 md:mt-0"></div>
+        </aside>
+    </div>
+
+    <script>
+        // ==========================================
+        // UTILITÁRIOS E VARIÁVEIS GLOBAIS
+        // ==========================================
+        function toggleLeftSidebar() { const s = document.getElementById('left-sidebars'), o = document.getElementById('mobile-overlay-left'); if (s.classList.contains('-translate-x-full')) { s.classList.remove('-translate-x-full'); o.classList.remove('hidden'); } else { s.classList.add('-translate-x-full'); o.classList.add('hidden'); } }
+        function toggleRightSidebar() { const s = document.getElementById('right-sidebar'), o = document.getElementById('mobile-overlay-right'); if (s.classList.contains('translate-x-full')) { s.classList.remove('translate-x-full'); o.classList.remove('hidden'); } else { s.classList.add('translate-x-full'); o.classList.add('hidden'); } }
+        function closeAllSidebarsOnMobile() { if (window.innerWidth < 768) { document.getElementById('left-sidebars').classList.add('-translate-x-full'); document.getElementById('mobile-overlay-left').classList.add('hidden'); document.getElementById('right-sidebar').classList.add('translate-x-full'); document.getElementById('mobile-overlay-right').classList.add('hidden'); } }
+        function closeAllPopovers() { document.getElementById('emoji-picker').classList.add('hidden'); document.getElementById('mention-popover').classList.add('hidden'); closeUserPopout(); }
+
         function playPing() {
             if (currentUser.status === 'dnd') return; 
             try {
@@ -439,16 +437,18 @@
         function getRoleColor(role, baseColor) { if(role === 'Admin') return '#F0B232'; if(role === 'Moderador') return '#23A559'; if(role === 'VIP') return '#EB459E'; return baseColor || 'white'; }
         function getStatusColor(status) { if(status === 'idle') return '#F0B232'; if(status === 'dnd') return '#F23F42'; if(status === 'invisible') return '#80848E'; return '#23A559'; }
 
-        // Mantém foco na barra
+        // Foco na barra
         document.getElementById('chat-messages').addEventListener('click', (e) => {
             const sel = window.getSelection(); 
             if(sel.toString().length === 0 && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'I') document.getElementById('message-input').focus();
         });
 
-        // --- SISTEMA DE LOGIN ---
+        // ==========================================
+        // SISTEMA DE LOGIN & UPLOADS LOCAIS
+        // ==========================================
         let tempAvatarFile = null, tempBannerFile = null;
         
-        document.getElementById('setup-name').addEventListener('input', e => { document.getElementById('setup-name-preview').innerText = e.target.value || 'Novo Usuário'; });
+        document.getElementById('setup-name').addEventListener('input', e => { document.getElementById('setup-name-preview').innerText = e.target.value || 'Novo Utilizador'; });
         document.getElementById('setup-color').addEventListener('input', e => { updateBannerVisuals(document.getElementById('setup-banner-preview'), e.target.value, tempBannerFile ? URL.createObjectURL(tempBannerFile) : '', document.getElementById('setup-particles').value); });
         document.getElementById('setup-particles').addEventListener('change', e => { applyParticles(document.getElementById('setup-banner-preview'), e.target.value); });
         
@@ -458,13 +458,6 @@
         document.getElementById('setup-banner-file').addEventListener('change', e => {
             if(e.target.files[0]) { tempBannerFile = e.target.files[0]; updateBannerVisuals(document.getElementById('setup-banner-preview'), document.getElementById('setup-color').value, URL.createObjectURL(tempBannerFile), document.getElementById('setup-particles').value); }
         });
-
-        if (socket) {
-            socket.on('banned permanently', () => { document.getElementById('ban-screen').classList.replace('hidden', 'flex'); document.getElementById('login-modal').classList.add('hidden'); });
-            socket.on('force login', (forcedUser) => {
-                currentUser = forcedUser; updateUIProfile(); document.getElementById('login-modal').classList.add('hidden'); document.getElementById('app-container').classList.remove('hidden'); socket.emit('user joined', { user: currentUser, inviteId: inviteCode }); requestNotificationPermission();
-            });
-        }
 
         function requestNotificationPermission() { if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") Notification.requestPermission(); }
 
@@ -505,6 +498,9 @@
             document.getElementById('message-input').focus();
         });
 
+        // ==========================================
+        // ARRASTAR E LARGAR (DRAG & DROP)
+        // ==========================================
         function handleFiles(files) { if (files[0]) { selectedFile = files[0]; document.getElementById('attachment-name').innerText = selectedFile.name; document.getElementById('attachment-preview').classList.remove('hidden'); document.getElementById('message-input').focus(); } }
         function removeAttachment() { selectedFile = null; document.getElementById('file-input').value = ''; document.getElementById('attachment-preview').classList.add('hidden'); }
         document.addEventListener('paste', (e) => { if (e.clipboardData && e.clipboardData.files.length > 0) handleFiles(e.clipboardData.files); });
@@ -515,6 +511,9 @@
         document.addEventListener('dragover', e => e.preventDefault());
         document.addEventListener('drop', (e) => { e.preventDefault(); dragCounter = 0; dragOverlay.classList.replace('flex', 'hidden'); if (e.dataTransfer && e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files); });
 
+        // ==========================================
+        // PARTÍCULAS, DECORAÇÕES E TEMAS
+        // ==========================================
         function applyParticles(element, type) { 
             element.innerHTML = ''; if (type === 'none') return;
             if (type === 'lightning') { for(let i=0; i<3; i++) { const p = document.createElement('div'); p.className = 'particle'; p.style.width = '3px'; p.style.height = '100%'; p.style.background = 'white'; p.style.left = Math.random() * 100 + '%'; p.style.top = '0'; p.style.animation = `flashLightning ${Math.random()*3 + 1}s infinite`; element.appendChild(p); } const flash = document.createElement('div'); flash.className = 'absolute inset-0 bg-white opacity-0'; flash.style.animation = `flashLightning 4s infinite`; element.appendChild(flash); return; }
@@ -533,6 +532,7 @@
             if(decorType === 'none') { el.classList.add('border-[6px]', 'border-transparent'); return; } 
             if(decorType === 'glow') el.classList.add('decor-glow'); if(decorType === 'spin') el.classList.add('decor-spin'); if(decorType === 'pulse') el.classList.add('decor-pulse'); if(decorType === 'rainbow') el.classList.add('decor-rainbow'); if(decorType === 'glitch') el.classList.add('decor-glitch'); if(decorType === 'fire-ring') el.classList.add('decor-fire-ring'); 
         }
+
         function applyTheme(theme) { document.body.className = `bg-[#313338] text-[#DBDEE1] h-screen w-screen overflow-hidden flex selection:bg-[#5865F2] selection:text-white relative theme-${theme}`; }
 
         function updateUIProfile() { 
@@ -555,7 +555,9 @@
         document.getElementById('prof-particles').addEventListener('change', e => { applyParticles(document.getElementById('profile-banner-preview'), e.target.value); });
         document.getElementById('prof-pfp-decor').addEventListener('change', e => { applyPfpDecor('profile-avatar-container', e.target.value, document.getElementById('prof-color').value); });
 
-        // --- POPOUTS, SIDEBARS & MENUS ---
+        // ==========================================
+        // CARTÃO DE UTILIZADOR E ADMIN TOOLS
+        // ==========================================
         let currentPopoutTargetId = null;
         function showUserPopout(event, socketId) { 
             event.stopPropagation(); closeAllPopovers(); const user = onlineUsersData.find(u => u.socketId === socketId); if(!user) return; currentPopoutTargetId = socketId; 
@@ -567,14 +569,14 @@
 
             document.getElementById('popout-name').innerText = user.name; document.getElementById('popout-name').style.color = getRoleColor(user.role, user.color); 
             const badge = document.getElementById('popout-role-badge'); if (user.role !== 'Membro') { badge.innerText = user.role; badge.style.backgroundColor = getRoleColor(user.role, '#5865F2'); badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); } 
-            document.getElementById('popout-bio').innerText = user.bio || 'Este usuário prefere manter o mistério.'; 
+            document.getElementById('popout-bio').innerText = user.bio || 'Este utilizador prefere manter o mistério.'; 
             const act = document.getElementById('popout-activity'); if(user.activity) { act.innerText = user.activity; act.classList.remove('hidden'); } else { act.classList.add('hidden'); } 
 
             const adminPanel = document.getElementById('admin-tools-panel'); 
             if (currentUser.role === 'Admin' && user.socketId !== currentUser.socketId) { adminPanel.classList.remove('hidden'); document.getElementById('admin-role-select').value = user.role; } else { adminPanel.classList.add('hidden'); } 
             
             document.getElementById('admin-role-select').onchange = (e) => { socket.emit('set role', { targetSocketId: currentPopoutTargetId, role: e.target.value }); }; 
-            document.getElementById('admin-ban-btn').onclick = () => { if(confirm(`Banir IP do(a) ${user.name} permanentemente?`)) { socket.emit('ban user', currentPopoutTargetId); closeUserPopout(); } }; 
+            document.getElementById('admin-ban-btn').onclick = () => { if(confirm(`Banir IP de ${user.name} permanentemente?`)) { socket.emit('ban user', currentPopoutTargetId); closeUserPopout(); } }; 
             
             let topPos = event.clientY; let leftPos = event.clientX + 20; if (window.innerWidth < 768) { leftPos = 10; topPos = Math.max(10, Math.min(topPos, window.innerHeight - 450)); } else { topPos = Math.min(topPos, window.innerHeight - 400); leftPos = Math.min(leftPos, window.innerWidth - 350); } 
             popout.style.top = topPos + 'px'; popout.style.left = leftPos + 'px'; 
@@ -583,6 +585,9 @@
         }
         function closeUserPopout() { const popout = document.getElementById('user-popout'); popout.classList.remove('scale-100', 'opacity-100'); popout.classList.add('scale-95', 'opacity-0'); setTimeout(() => { popout.classList.add('hidden'); }, 200); }
 
+        // ==========================================
+        // DMs E SERVIDORES
+        // ==========================================
         function openHomeDMs() {
             isDmMode = true; currentServer = null; currentVoiceChannelId = null;
             document.getElementById('current-server-name').innerText = "Mensagens Diretas";
@@ -592,7 +597,7 @@
             renderSidebar(); renderDMList();
             document.getElementById('chat-header-name').innerText = "Amigos";
             document.getElementById('header-channel-icon').className = 'fa-solid fa-at text-[#87898C] text-2xl hidden sm:block';
-            document.getElementById('chat-messages').innerHTML = `<div class="flex flex-col items-center justify-center h-full text-center opacity-50"><i class="fa-solid fa-user-group text-6xl mb-4"></i><h2 class="text-2xl font-bold">Início</h2><p>Selecione um amigo para conversar.</p></div>`;
+            document.getElementById('chat-messages').innerHTML = `<div class="flex flex-col items-center justify-center h-full text-center opacity-50"><i class="fa-solid fa-user-group text-6xl mb-4"></i><h2 class="text-2xl font-bold">Início</h2><p>Seleciona um amigo para conversar.</p></div>`;
             document.getElementById('message-input').disabled = true;
             document.getElementById('video-grid').classList.replace('flex', 'hidden');
         }
@@ -667,7 +672,9 @@
         function copyInviteLink() { if(!currentServer) return; const link = window.location.origin + window.location.pathname + '?invite=' + currentServer.id; navigator.clipboard.writeText(link).catch(() => { const t=document.createElement("input"); t.value=link; document.body.appendChild(t); t.select(); document.execCommand("copy"); document.body.removeChild(t); }); alert("Link copiado: " + link); }
         function handleSidebarPlus() { if(isDmMode) createDM(); else openChannelModal(); }
 
-        // --- PINGS, EMOJIS & GIFS ---
+        // ==========================================
+        // EMOJIS, GIFS E MENÇÕES (PINGS)
+        // ==========================================
         const msgInput = document.getElementById('message-input');
         const mentionPopover = document.getElementById('mention-popover');
         const mentionList = document.getElementById('mention-list');
@@ -689,14 +696,14 @@
             const content = document.getElementById('picker-content'); const adminPanel = document.getElementById('custom-emoji-admin'); content.innerHTML = '';
             if (type === 'emoji') {
                 if(serverEmojis.length > 0) { content.innerHTML += `<div class="text-xs font-bold text-[#87898C] uppercase mb-2">Servidor</div><div class="flex flex-wrap gap-2 mb-4" id="custom-emojis-grid"></div>`; const grid = content.querySelector('#custom-emojis-grid'); serverEmojis.forEach(ce => { const img = document.createElement('img'); img.src = ce.url; img.className = "w-8 h-8 object-contain cursor-pointer hover:scale-110 transition"; img.onclick = () => { msgInput.value += ` :img_${ce.id}: `; msgInput.focus(); }; grid.appendChild(img); }); }
-                adminPanel.classList.remove('hidden');
+                if(currentUser.role === 'Admin' || currentUser.role === 'Moderador') adminPanel.classList.remove('hidden'); else adminPanel.classList.add('hidden');
                 content.innerHTML += `<div class="text-xs font-bold text-[#87898C] uppercase mb-2">Padrão</div><div class="flex flex-wrap gap-1" id="std-emojis-grid"></div>`; const grid2 = content.querySelector('#std-emojis-grid'); emojiList.forEach(em => { const btn = document.createElement('button'); btn.className = "w-8 h-8 text-xl hover:bg-white/10 rounded transition"; btn.innerText = em; btn.onclick = () => { msgInput.value += em; msgInput.focus(); }; grid2.appendChild(btn); });
             } else {
-                adminPanel.classList.add('hidden'); content.innerHTML = `<div class="flex flex-col h-full justify-center items-center text-center opacity-70"><i class="fa-solid fa-bolt text-4xl mb-4 text-[#F0B232]"></i><p class="text-sm text-white font-bold mb-2">Adicionar GIF Mágico</p><input type="url" id="gif-fast-url" placeholder="Cole o link do GIF aqui..." class="w-full bg-black/40 rounded p-2 text-xs text-white outline-none mb-2"><button onclick="sendFastGif()" class="bg-[#5865F2] w-full p-2 rounded text-white text-xs font-bold hover:bg-[#4752C4]">ENVIAR GIF</button></div>`;
+                adminPanel.classList.add('hidden'); content.innerHTML = `<div class="flex flex-col h-full justify-center items-center text-center opacity-70"><i class="fa-solid fa-bolt text-4xl mb-4 text-[#F0B232]"></i><p class="text-sm text-white font-bold mb-2">Adicionar GIF Rápido</p><input type="url" id="gif-fast-url" placeholder="Cola o link do GIF..." class="w-full bg-black/40 rounded p-2 text-xs text-white outline-none mb-2"><button onclick="sendFastGif()" class="bg-[#5865F2] w-full p-2 rounded text-white text-xs font-bold hover:bg-[#4752C4]">ENVIAR GIF</button></div>`;
             }
         }
         function sendFastGif() { const url = document.getElementById('gif-fast-url').value.trim(); if(url) { const targetId = isDmMode ? currentDmId : currentServer.id; socket.emit('chat message', { serverId: targetId, channelId: currentTextChannelId, text: '', mediaUrl: url, mediaType: 'image', replyTo: replyingTo, isDm: isDmMode }); cancelReply(); document.getElementById('emoji-picker').classList.add('hidden'); } }
-        async function uploadCustomEmoji() { if(currentUser.role !== 'Admin' && currentUser.role !== 'Moderador') return alert("Apenas Moderadores podem adicionar emojis!"); const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.onchange = async (e) => { if(e.target.files[0]) { const fd = new FormData(); fd.append('media', e.target.files[0]); const res = await fetch('/upload', {method:'POST', body:fd}); const data = await res.json(); if(data.url) socket.emit('add custom emoji', data.url); } }; input.click(); }
+        async function uploadCustomEmoji() { if(currentUser.role !== 'Admin' && currentUser.role !== 'Moderador') return alert("Apenas Administradores podem adicionar emojis!"); const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.onchange = async (e) => { if(e.target.files[0]) { const fd = new FormData(); fd.append('media', e.target.files[0]); const res = await fetch('/upload', {method:'POST', body:fd}); const data = await res.json(); if(data.url) socket.emit('add custom emoji', data.url); } }; input.click(); }
 
         let targetMsgIdForReaction = null;
         function openReactionPicker(msgId, e) {
@@ -705,6 +712,9 @@
             const customs = picker.querySelectorAll('#custom-emojis-grid img'); if(customs) { customs.forEach((img, idx) => { img.onclick = () => { const targetId = isDmMode ? currentDmId : currentServer.id; socket.emit('react message', { serverId: targetId, channelId: currentTextChannelId, msgId: targetMsgIdForReaction, emoji: `img_${serverEmojis[idx].id}`, isDm: isDmMode }); picker.classList.add('hidden'); setTimeout(()=> { switchPicker('emoji'); }, 500); } }); }
         }
 
+        // ==========================================
+        // MENSAGENS E CHAT
+        // ==========================================
         function setReply(id, name, text) { replyingTo = { id, name, text: text.substring(0, 50) + (text.length > 50 ? '...' : '') }; document.getElementById('reply-banner').classList.remove('hidden'); document.getElementById('reply-text').innerText = `Respondendo a @${name}`; document.getElementById('message-input').focus(); }
         function cancelReply() { replyingTo = null; document.getElementById('reply-banner').classList.add('hidden'); }
         function deleteMsg(msgId) { if(confirm("Deletar mensagem para todos?")) { const targetId = isDmMode ? currentDmId : currentServer.id; socket.emit('delete message', { serverId: targetId, channelId: currentTextChannelId, msgId, isDm: isDmMode }); } }
@@ -779,8 +789,10 @@
             if (!text && !selectedFile) return; 
             isUploading = true; document.getElementById('message-input').disabled = true; let mediaUrl = null, mediaType = null;
             if(selectedFile) { const fd = new FormData(); fd.append('media', selectedFile); document.getElementById('message-input').placeholder = "A enviar..."; try { const res = await fetch('/upload', {method:'POST', body:fd}); const data = await res.json(); if(data.url) {mediaUrl=data.url; mediaType=data.type;} } catch(e) {} }
+            
             const targetId = isDmMode ? currentDmId : currentServer.id;
             if(socket) socket.emit('chat message', { serverId: targetId, channelId: currentTextChannelId, text, mediaUrl, mediaType, replyTo: replyingTo, isDm: isDmMode });
+            
             document.getElementById('message-input').value = ''; removeAttachment(); cancelReply(); isUploading = false; document.getElementById('message-input').disabled = false; document.getElementById('message-input').placeholder = "Mensagem..."; document.getElementById('message-input').focus(); document.getElementById('mention-popover').classList.add('hidden');
         }
         document.getElementById('message-input').addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }});
@@ -803,22 +815,69 @@
         let typingUsers = new Set(); 
         function updateTypingIndicator() { const ind = document.getElementById('typing-indicator'); if (typingUsers.size === 0) ind.classList.add('hidden'); else { ind.classList.remove('hidden'); ind.innerHTML = `<strong>${Array.from(typingUsers).join(', ')}</strong> está a escrever<span class="typing-dots"></span>`; } }
 
+        // ==========================================
+        // SOCKET LISTENERS DA INTERFACE
+        // ==========================================
         if(socket) {
-            socket.on('initial data', (data) => { data.servers.forEach(s => myServers.set(s.id, s)); userDMs = data.dms; serverEmojis = data.customEmojis; openHomeDMs(); }); 
+            socket.on('initial data', (data) => { 
+                data.servers.forEach(s => myServers.set(s.id, s)); 
+                userDMs = data.dms; serverEmojis = data.customEmojis;
+                openHomeDMs();
+            }); 
+            
             socket.on('server created', (srv) => { myServers.set(srv.id, srv); renderSidebar(); });
             socket.on('dm created', (dm) => { userDMs[dm.id] = dm; renderDMList(); });
-            socket.on('server data', (data) => { isDmMode = false; currentServer = data; document.getElementById('current-server-name').innerText = data.name; document.getElementById('sidebar-category-name').innerHTML = `<i class="fa-solid fa-chevron-down text-[10px] mr-1"></i> Canais`; document.getElementById('btn-invite-copy').classList.remove('hidden'); document.getElementById('btn-sidebar-plus').onclick = openChannelModal; unreadServers.delete(data.id); const textChannels = Object.values(data.channels).filter(c=>c.type==='text'); if(textChannels.length > 0) switchTextChannel(textChannels[0].id); renderChannels(); renderSidebar(); document.getElementById('message-input').disabled = false; });
-            socket.on('dm data', (dm) => { isDmMode = true; currentDmId = dm.id; unreadServers.delete(dm.id); const otherIp = dm.users.find(ip => ip !== currentUser.ip); let otherName = "Amigo"; const otherUserObj = onlineUsersData.find(u => u.ip === otherIp); if(otherUserObj) otherName = otherUserObj.name; document.getElementById('chat-header-name').innerText = otherName; document.getElementById('header-channel-icon').className = 'fa-solid fa-at text-[#87898C] text-2xl hidden sm:block'; document.getElementById('chat-messages').innerHTML = `<div class="mt-10 mb-8 px-4"><div class="w-16 h-16 bg-[#5865F2] rounded-full flex items-center justify-center mb-4 shadow-lg"><i class="fa-solid fa-user text-white text-3xl"></i></div><h1 class="text-white text-4xl font-black mb-2">Mensagens Diretas com ${otherName}</h1></div>`; if (dm.messages) dm.messages.forEach(m => appendMessage(m, true)); document.getElementById('message-input').disabled = false; renderDMList(); });
+            
+            socket.on('server data', (data) => { 
+                isDmMode = false; currentServer = data; document.getElementById('current-server-name').innerText = data.name; document.getElementById('sidebar-category-name').innerHTML = `<i class="fa-solid fa-chevron-down text-[10px] mr-1"></i> Canais`; document.getElementById('btn-invite-copy').classList.remove('hidden'); document.getElementById('btn-sidebar-plus').onclick = openChannelModal; unreadServers.delete(data.id); const textChannels = Object.values(data.channels).filter(c=>c.type==='text'); if(textChannels.length > 0) switchTextChannel(textChannels[0].id); renderChannels(); renderSidebar(); document.getElementById('message-input').disabled = false;
+            });
+
+            socket.on('dm data', (dm) => {
+                isDmMode = true; currentDmId = dm.id; unreadServers.delete(dm.id);
+                const otherIp = dm.users.find(ip => ip !== currentUser.ip);
+                let otherName = "Amigo"; const otherUserObj = onlineUsersData.find(u => u.ip === otherIp); if(otherUserObj) otherName = otherUserObj.name;
+                document.getElementById('chat-header-name').innerText = otherName; document.getElementById('header-channel-icon').className = 'fa-solid fa-at text-[#87898C] text-2xl hidden sm:block';
+                document.getElementById('chat-messages').innerHTML = `<div class="mt-10 mb-8 px-4"><div class="w-16 h-16 bg-[#5865F2] rounded-full flex items-center justify-center mb-4 shadow-lg"><i class="fa-solid fa-user text-white text-3xl"></i></div><h1 class="text-white text-4xl font-black mb-2">Mensagens Diretas com ${otherName}</h1></div>`; 
+                if (dm.messages) dm.messages.forEach(m => appendMessage(m, true)); 
+                document.getElementById('message-input').disabled = false; renderDMList();
+            });
+
             socket.on('channel created', ({ serverId, channel }) => { if(currentServer && currentServer.id === serverId) { currentServer.channels[channel.id] = channel; renderChannels(); } });
             
             socket.on('chat message', (data) => {
-                if (data.isDm) { userDMs[data.serverId].messages.push(data.message); if(isDmMode && currentDmId === data.serverId) appendMessage(data.message, true); else { unreadServers.add(data.serverId); renderSidebar(); renderDMList(); } } 
-                else { if(currentServer && data.serverId === currentServer.id) { if(currentServer.channels[data.channelId]) currentServer.channels[data.channelId].messages.push(data.message); if(data.channelId === currentTextChannelId && !isDmMode) appendMessage(data.message, false); } else { unreadServers.add(data.serverId); renderSidebar(); } }
-                if (document.hidden || (data.isDm ? currentDmId !== data.serverId : currentServer?.id !== data.serverId)) { playPing(); if ("Notification" in window && Notification.permission === "granted") { if(data.message.user.socketId !== currentUser.socketId) { new Notification(data.message.user.name, { body: data.message.text || 'Enviou uma mídia', icon: data.message.user.avatar }); } } }
+                if (data.isDm) {
+                    userDMs[data.serverId].messages.push(data.message);
+                    if(isDmMode && currentDmId === data.serverId) appendMessage(data.message, true); else { unreadServers.add(data.serverId); renderSidebar(); renderDMList(); }
+                } else {
+                    if(currentServer && data.serverId === currentServer.id) { if(currentServer.channels[data.channelId]) currentServer.channels[data.channelId].messages.push(data.message); if(data.channelId === currentTextChannelId && !isDmMode) appendMessage(data.message, false); } else { unreadServers.add(data.serverId); renderSidebar(); }
+                }
+                
+                if (document.hidden || (data.isDm ? currentDmId !== data.serverId : currentServer?.id !== data.serverId)) {
+                    playPing(); if ("Notification" in window && Notification.permission === "granted") { if(data.message.user.socketId !== currentUser.socketId) { new Notification(data.message.user.name, { body: data.message.text || 'Enviou uma mídia', icon: data.message.user.avatar }); } }
+                }
             });
 
-            socket.on('update reactions', ({ channelId, msgId, reactions, isDm }) => { if((isDm && isDmMode) || (!isDm && channelId === currentTextChannelId)) { const msgEl = document.getElementById(`msg-${msgId}`); if(msgEl) { const box = msgEl.querySelector(`#react-box-${msgId}`); if(box) box.remove(); if(Object.keys(reactions).length > 0) { let reactionsHtml = `<div class="flex flex-wrap gap-1 mt-2" id="react-box-${msgId}">`; for(let emoji in reactions) { const count = reactions[emoji].length; const iReacted = reactions[emoji].includes(currentUser.name); const bgR = iReacted ? 'bg-[#5865F2]/30 border-[#5865F2]' : 'bg-white/5 border-transparent hover:bg-white/10'; let displayEmoji = emoji; if(emoji.startsWith('img_')) { const ce = serverEmojis.find(e => e.id === emoji.replace('img_','')); if(ce) displayEmoji = `<img src="${ce.url}" class="w-4 h-4 inline-block object-contain">`; } reactionsHtml += `<button onclick="socket.emit('react message', {serverId:'${isDm ? currentDmId : currentServer.id}', channelId:'${currentTextChannelId}', msgId:'${msgId}', emoji:'${emoji}', isDm:${isDm}})" class="flex items-center gap-1.5 px-2 py-0.5 rounded-lg border ${bgR} text-xs font-bold transition text-white" title="${reactions[emoji].join(', ')}">${displayEmoji} <span>${count}</span></button>`; } reactionsHtml += `</div>`; msgEl.querySelector('.flex-col').insertAdjacentHTML('beforeend', reactionsHtml); } } } });
+            socket.on('update reactions', ({ channelId, msgId, reactions, isDm }) => {
+                if((isDm && isDmMode) || (!isDm && channelId === currentTextChannelId)) {
+                    const msgEl = document.getElementById(`msg-${msgId}`);
+                    if(msgEl) {
+                        const box = msgEl.querySelector(`#react-box-${msgId}`);
+                        if(box) box.remove(); 
+                        if(Object.keys(reactions).length > 0) {
+                            let reactionsHtml = `<div class="flex flex-wrap gap-1 mt-2" id="react-box-${msgId}">`;
+                            for(let emoji in reactions) {
+                                const count = reactions[emoji].length; const iReacted = reactions[emoji].includes(currentUser.name); const bgR = iReacted ? 'bg-[#5865F2]/30 border-[#5865F2]' : 'bg-white/5 border-transparent hover:bg-white/10'; let displayEmoji = emoji; if(emoji.startsWith('img_')) { const ce = serverEmojis.find(e => e.id === emoji.replace('img_','')); if(ce) displayEmoji = `<img src="${ce.url}" class="w-4 h-4 inline-block object-contain">`; }
+                                reactionsHtml += `<button onclick="socket.emit('react message', {serverId:'${isDm ? currentDmId : currentServer.id}', channelId:'${currentTextChannelId}', msgId:'${msgId}', emoji:'${emoji}', isDm:${isDm}})" class="flex items-center gap-1.5 px-2 py-0.5 rounded-lg border ${bgR} text-xs font-bold transition text-white" title="${reactions[emoji].join(', ')}">${displayEmoji} <span>${count}</span></button>`;
+                            }
+                            reactionsHtml += `</div>`;
+                            msgEl.querySelector('.flex-col').insertAdjacentHTML('beforeend', reactionsHtml);
+                        }
+                    }
+                }
+            });
+
             socket.on('new custom emoji', (ce) => { serverEmojis.push(ce); });
+
             socket.on('message deleted', ({ channelId, msgId, isDm }) => { if((isDm && isDmMode) || (!isDm && channelId === currentTextChannelId)) { const el = document.getElementById(`msg-${msgId}`); if(el) el.remove(); } });
             socket.on('message edited', ({ channelId, msgId, newText, isDm }) => { if((isDm && isDmMode) || (!isDm && channelId === currentTextChannelId)) { const msgEl = document.getElementById(`msg-text-${msgId}`); if(msgEl) { msgEl.setAttribute('data-raw', newText.replace(/"/g, '&quot;')); let safeText = newText; if(safeText.includes('@everyone')) safeText = safeText.replace(/@everyone/g, `<span class="bg-[#FAA61A]/30 text-[#FEE75C] font-medium px-1 rounded">@everyone</span>`); if(safeText.includes(`@${currentUser.name}`)) safeText = safeText.replace(new RegExp(`@${currentUser.name}`, 'g'), `<span class="bg-[#5865F2]/30 text-[#C9CDD6] font-medium px-1 rounded">@${currentUser.name}</span>`); msgEl.innerHTML = `${safeText} <span class="text-[10px] text-[#87898C] ml-1">(editado)</span>`; } } });
             socket.on('typing', ({ channelId, user }) => { if(channelId === currentTextChannelId && user.name !== currentUser.name) { typingUsers.add(user.name); updateTypingIndicator(); } });
@@ -829,25 +888,166 @@
                 onlineUsersData = users; const ml = document.getElementById('members-list'); ml.innerHTML = ''; 
                 const visibleUsers = users.filter(u => u.status !== 'invisible' || u.socketId === currentUser.socketId); 
                 const roleOrder = { 'Admin': 1, 'Moderador': 2, 'VIP': 3, 'Membro': 4 }; visibleUsers.sort((a,b) => roleOrder[a.role] - roleOrder[b.role]); 
-                visibleUsers.forEach(u => { const icon = u.role === 'Admin' ? '<i class="fa-solid fa-crown text-[#F0B232] text-[10px] ml-1"></i>' : (u.role === 'Moderador' ? '<i class="fa-solid fa-shield text-[#23A559] text-[10px] ml-1"></i>' : ''); ml.innerHTML += `<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer group smooth-hover" onclick="showUserPopout(event, '${u.socketId}')"><div class="relative"><img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover shadow-sm"><div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-[#2B2D31] rounded-full" style="background-color: ${getStatusColor(u.status)}"></div></div><div class="flex flex-col min-w-0"><span class="group-hover:text-white font-bold truncate text-[13px]" style="color:${getRoleColor(u.role, u.color)}">${u.name} ${icon}</span>${u.activity ? `<span class="text-[10px] text-[#B5BAC1] truncate font-medium">${u.activity}</span>` : ''}</div></div>`; }); 
+                visibleUsers.forEach(u => { const icon = u.role === 'Admin' ? '<i class="fa-solid fa-crown text-[#F0B232] text-[10px] ml-1"></i>' : (u.role === 'Moderador' ? '<i class="fa-solid fa-shield text-[#23A559] text-[10px] ml-1"></i>' : ''); ml.innerHTML += `<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-black/10 cursor-pointer group smooth-hover" onclick="showUserPopout(event, '${u.socketId}')"><div class="relative"><img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover shadow-sm"><div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-[#2B2D31] rounded-full" style="background-color: ${getStatusColor(u.status)}"></div></div><div class="flex flex-col min-w-0"><span class="group-hover:text-white font-bold truncate text-[13px]" style="color:${getRoleColor(u.role, u.color)}">${u.name} ${icon}</span>${u.activity ? `<span class="text-[10px] text-[#B5BAC1] truncate font-medium">${u.activity}</span>` : ''}</div></div>`; }); 
                 renderChannels(); 
             });
             socket.on('system message', (msg) => { const div = document.createElement('div'); div.className = 'text-[#23A559] text-sm py-3 font-bold text-center bg-[#23A559]/10 rounded-lg border border-[#23A559]/30 mx-4 mt-2 shadow-sm'; div.innerHTML = msg; document.getElementById('chat-messages').appendChild(div); chatMessages.scrollTop = chatMessages.scrollHeight; });
         }
 
-        // --- WEBRTC ---
+        // ==========================================
+        // WEBRTC (CÂMERA / TELA)
+        // ==========================================
         let localStream = null, screenStream = null, peerConnections = {}; const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
-        async function joinVoiceChannel(chId) { if(currentVoiceChannelId) leaveVoice(); currentVoiceChannelId = chId; document.getElementById('voice-connection-panel').classList.remove('hidden'); document.getElementById('video-grid').classList.replace('hidden', 'grid'); socket.emit('join voice', { serverId: currentServer.id, channelId: chId }); try { localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false }); addVideoBox(socket.id, localStream, currentUser.name, currentUser.avatar, true); } catch(e) { addVideoBox(socket.id, null, currentUser.name, currentUser.avatar, true); } }
-        function leaveVoice() { if(!currentVoiceChannelId) return; socket.emit('leave voice', { serverId: currentServer.id, channelId: currentVoiceChannelId }); currentVoiceChannelId = null; if(localStream) localStream.getTracks().forEach(t => t.stop()); if(screenStream) screenStream.getTracks().forEach(t => t.stop()); localStream = null; screenStream = null; Object.values(peerConnections).forEach(pc => pc.close()); peerConnections = {}; document.getElementById('voice-connection-panel').classList.add('hidden'); document.getElementById('video-grid').classList.replace('grid', 'hidden'); document.getElementById('video-grid').innerHTML = ''; renderChannels(); document.getElementById('btn-mic').innerHTML = '<i class="fa-solid fa-microphone"></i>'; document.getElementById('btn-cam').innerHTML = '<i class="fa-solid fa-video"></i>'; document.getElementById('btn-screen').innerHTML = '<i class="fa-solid fa-desktop"></i>'; document.getElementById('btn-mic').classList.remove('text-red-500'); }
-        function addVideoBox(id, stream, name, avatarUrl, isLocal=false) { let box = document.getElementById(`vidbox-${id}`); if(!box) { box = document.createElement('div'); box.id = `vidbox-${id}`; box.className = 'video-box-transition relative bg-black/60 rounded-xl overflow-hidden border border-white/10 flex-1 min-w-[150px] max-w-full aspect-video flex items-center justify-center group shadow-lg'; box.innerHTML = `<img src="${avatarUrl}" class="absolute w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover z-0 shadow-2xl opacity-80" id="vid-avatar-${id}"><video id="vid-${id}" class="w-full h-full object-contain relative z-10 hidden" autoplay playsinline ${isLocal ? 'muted' : ''}></video><div class="absolute bottom-2 left-2 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-bold text-white z-20 truncate max-w-[80%] border border-white/10">${name}</div><button onclick="toggleFullscreenBox('${id}')" class="absolute top-2 right-2 bg-black/80 backdrop-blur-md p-2 rounded-lg text-white z-20 opacity-0 group-hover:opacity-100 transition hover:bg-black border border-white/10"><i class="fa-solid fa-expand" id="icon-expand-${id}"></i></button>`; document.getElementById('video-grid').appendChild(box); } const vid = document.getElementById(`vid-${id}`), av = document.getElementById(`vid-avatar-${id}`); if(stream && stream.getVideoTracks().length > 0) { if(vid.srcObject !== stream) vid.srcObject = stream; vid.classList.remove('hidden'); av.classList.add('hidden'); } else { vid.srcObject = null; vid.classList.add('hidden'); av.classList.remove('hidden'); } }
+        
+        async function joinVoiceChannel(chId) { 
+            if(currentVoiceChannelId) leaveVoice(); 
+            currentVoiceChannelId = chId; 
+            document.getElementById('voice-connection-panel').classList.remove('hidden'); 
+            document.getElementById('video-grid').classList.replace('hidden', 'grid'); 
+            socket.emit('join voice', { serverId: currentServer.id, channelId: chId }); 
+            try { 
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false }); 
+                addVideoBox(socket.id, localStream, currentUser.name, currentUser.avatar, true); 
+            } catch(e) { 
+                addVideoBox(socket.id, null, currentUser.name, currentUser.avatar, true); 
+            } 
+        }
+        
+        function leaveVoice() { 
+            if(!currentVoiceChannelId) return; 
+            socket.emit('leave voice', { serverId: currentServer.id, channelId: currentVoiceChannelId }); 
+            currentVoiceChannelId = null; 
+            if(localStream) localStream.getTracks().forEach(t => t.stop()); 
+            if(screenStream) screenStream.getTracks().forEach(t => t.stop()); 
+            localStream = null; screenStream = null; 
+            Object.values(peerConnections).forEach(pc => pc.close()); peerConnections = {}; 
+            document.getElementById('voice-connection-panel').classList.add('hidden'); 
+            document.getElementById('video-grid').classList.replace('grid', 'hidden'); document.getElementById('video-grid').innerHTML = ''; 
+            renderChannels(); 
+            document.getElementById('btn-mic').innerHTML = '<i class="fa-solid fa-microphone"></i>'; document.getElementById('btn-cam').innerHTML = '<i class="fa-solid fa-video"></i>'; document.getElementById('btn-screen').innerHTML = '<i class="fa-solid fa-desktop"></i>'; document.getElementById('btn-mic').classList.remove('text-red-500'); 
+        }
+        
+        function addVideoBox(id, stream, name, avatarUrl, isLocal=false) { 
+            let box = document.getElementById(`vidbox-${id}`); 
+            if(!box) { 
+                box = document.createElement('div'); box.id = `vidbox-${id}`; 
+                box.className = 'video-box-transition relative bg-black/60 rounded-xl overflow-hidden border border-white/10 flex-1 min-w-[150px] max-w-full aspect-video flex items-center justify-center group shadow-lg'; 
+                box.innerHTML = `
+                    <img src="${avatarUrl}" class="absolute w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover z-0 shadow-2xl opacity-80" id="vid-avatar-${id}">
+                    <video id="vid-${id}" class="w-full h-full object-contain relative z-10 hidden" autoplay playsinline ${isLocal ? 'muted' : ''}></video>
+                    <div class="absolute bottom-2 left-2 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-bold text-white z-20 truncate max-w-[80%] border border-white/10">${name}</div>
+                    <button onclick="toggleFullscreenBox('${id}')" class="absolute top-2 right-2 bg-black/80 backdrop-blur-md p-2 rounded-lg text-white z-20 opacity-0 group-hover:opacity-100 transition hover:bg-black border border-white/10"><i class="fa-solid fa-expand" id="icon-expand-${id}"></i></button>`; 
+                document.getElementById('video-grid').appendChild(box); 
+            } 
+            const vid = document.getElementById(`vid-${id}`), av = document.getElementById(`vid-avatar-${id}`); 
+            if(stream && stream.getVideoTracks().length > 0) { 
+                if(vid.srcObject !== stream) vid.srcObject = stream; 
+                vid.classList.remove('hidden'); av.classList.add('hidden'); 
+            } else { 
+                vid.srcObject = null; vid.classList.add('hidden'); av.classList.remove('hidden'); 
+            } 
+        }
+        
         function removeVideoBox(id) { const box = document.getElementById(`vidbox-${id}`); if(box) box.remove(); }
-        function toggleFullscreenBox(id) { const box = document.getElementById(`vidbox-${id}`); const icon = document.getElementById(`icon-expand-${id}`); if (box.classList.contains('fixed')) { box.classList.remove('fixed', 'inset-4', 'z-[100]', 'shadow-[0_0_50px_rgba(0,0,0,0.5)]'); box.classList.add('relative', 'flex-1', 'min-w-[150px]', 'aspect-video'); icon.classList.replace('fa-compress', 'fa-expand'); } else { box.classList.add('fixed', 'inset-4', 'z-[100]', 'shadow-[0_0_50px_rgba(0,0,0,0.5)]'); box.classList.remove('relative', 'flex-1', 'min-w-[150px]', 'aspect-video'); icon.classList.replace('fa-expand', 'fa-compress'); } }
-        function toggleMic() { if(!localStream) return; const track = localStream.getAudioTracks()[0]; if(track) { track.enabled = !track.enabled; const btn = document.getElementById('btn-mic'); btn.innerHTML = track.enabled ? '<i class="fa-solid fa-microphone"></i>' : '<i class="fa-solid fa-microphone-slash"></i>'; btn.classList.toggle('text-red-500', !track.enabled); } }
-        async function toggleCam() { if(!localStream) localStream = new MediaStream(); const btn = document.getElementById('btn-cam'); const videoTrack = localStream.getVideoTracks()[0]; if(videoTrack) { videoTrack.stop(); localStream.removeTrack(videoTrack); btn.classList.remove('text-[#23A559]'); updateAllPeerTracks(); } else { try { const vs = await navigator.mediaDevices.getUserMedia({ video: true }); localStream.addTrack(vs.getVideoTracks()[0]); btn.classList.add('text-[#23A559]'); updateAllPeerTracks(); } catch(e) { alert("Câmera indisponível."); } } }
-        async function toggleScreen() { const btn = document.getElementById('btn-screen'); if(screenStream) { screenStream.getTracks().forEach(t=>t.stop()); screenStream = null; btn.classList.remove('text-[#23A559]'); updateAllPeerTracks(); } else { try { screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true }); screenStream.getVideoTracks()[0].onended = () => toggleScreen(); btn.classList.add('text-[#23A559]'); updateAllPeerTracks(); } catch(e) {} } }
-        function updateAllPeerTracks() { const streamToRender = screenStream || localStream; addVideoBox(socket.id, streamToRender, currentUser.name, currentUser.avatar, true); Object.values(peerConnections).forEach(pc => { const senders = pc.getSenders(); const vTrack = streamToRender ? streamToRender.getVideoTracks()[0] : null; const aTrack = localStream ? localStream.getAudioTracks()[0] : null; const vSender = senders.find(s => s.track && s.track.kind === 'video'); if(vTrack && vSender) vSender.replaceTrack(vTrack); else if(vTrack && !vSender) pc.addTrack(vTrack, streamToRender); else if(!vTrack && vSender) pc.removeTrack(vSender); const aSender = senders.find(s => s.track && s.track.kind === 'audio'); if(aTrack && aSender) aSender.replaceTrack(aTrack); }); }
-        function createPeerConnection(peerId, initiate) { const pc = new RTCPeerConnection(rtcConfig); peerConnections[peerId] = pc; const streamToSend = screenStream || localStream; if (streamToSend) streamToSend.getTracks().forEach(t => pc.addTrack(t, streamToSend)); pc.onicecandidate = (event) => { if(event.candidate) socket.emit('webrtc signal', { target: peerId, signal: { type: 'ice', candidate: event.candidate } }); }; pc.ontrack = (event) => { const peerUser = onlineUsersData.find(u => u.socketId === peerId); addVideoBox(peerId, event.streams[0], peerUser ? peerUser.name : 'Membro', peerUser ? peerUser.avatar : 'https://cdn.discordapp.com/embed/avatars/0.png'); }; if(initiate) { pc.createOffer().then(offer => { pc.setLocalDescription(offer); socket.emit('webrtc signal', { target: peerId, signal: offer }); }); } return pc; }
-        if(socket) { socket.on('user joined voice', (peerId) => { if(currentVoiceChannelId) createPeerConnection(peerId, true); }); socket.on('user left voice', (peerId) => { if(peerConnections[peerId]) { peerConnections[peerId].close(); delete peerConnections[peerId]; } removeVideoBox(peerId); }); socket.on('webrtc signal', async (data) => { if(!currentVoiceChannelId) return; const peerId = data.sender; let pc = peerConnections[peerId]; if(data.signal.type === 'offer') { if(!pc) pc = createPeerConnection(peerId, false); await pc.setRemoteDescription(new RTCSessionDescription(data.signal)); const answer = await pc.createAnswer(); await pc.setLocalDescription(answer); socket.emit('webrtc signal', { target: peerId, signal: answer }); } else if(data.signal.type === 'answer') { if(pc) await pc.setRemoteDescription(new RTCSessionDescription(data.signal)); } else if(data.signal.type === 'ice') { if(pc) pc.addIceCandidate(new RTCIceCandidate(data.signal.candidate)); } }); }
+        
+        function toggleFullscreenBox(id) { 
+            const box = document.getElementById(`vidbox-${id}`); const icon = document.getElementById(`icon-expand-${id}`); 
+            if (box.classList.contains('fixed')) { 
+                box.classList.remove('fixed', 'inset-4', 'z-[100]', 'shadow-[0_0_50px_rgba(0,0,0,0.5)]'); box.classList.add('relative', 'flex-1', 'min-w-[150px]', 'aspect-video'); icon.classList.replace('fa-compress', 'fa-expand'); 
+            } else { 
+                box.classList.add('fixed', 'inset-4', 'z-[100]', 'shadow-[0_0_50px_rgba(0,0,0,0.5)]'); box.classList.remove('relative', 'flex-1', 'min-w-[150px]', 'aspect-video'); icon.classList.replace('fa-expand', 'fa-compress'); 
+            } 
+        }
+        
+        function toggleMic() { 
+            if(!localStream) return; const track = localStream.getAudioTracks()[0]; 
+            if(track) { 
+                track.enabled = !track.enabled; const btn = document.getElementById('btn-mic'); 
+                btn.innerHTML = track.enabled ? '<i class="fa-solid fa-microphone"></i>' : '<i class="fa-solid fa-microphone-slash"></i>'; 
+                btn.classList.toggle('text-red-500', !track.enabled); 
+            } 
+        }
+        
+        async function toggleCam() { 
+            if(!localStream) localStream = new MediaStream(); 
+            const btn = document.getElementById('btn-cam'); const videoTrack = localStream.getVideoTracks()[0]; 
+            if(videoTrack) { 
+                videoTrack.stop(); localStream.removeTrack(videoTrack); btn.classList.remove('text-[#23A559]'); updateAllPeerTracks(); 
+            } else { 
+                try { 
+                    const vs = await navigator.mediaDevices.getUserMedia({ video: true }); 
+                    localStream.addTrack(vs.getVideoTracks()[0]); btn.classList.add('text-[#23A559]'); updateAllPeerTracks(); 
+                } catch(e) { alert("Câmera indisponível."); } 
+            } 
+        }
+        
+        async function toggleScreen() { 
+            const btn = document.getElementById('btn-screen'); 
+            if(screenStream) { 
+                screenStream.getTracks().forEach(t=>t.stop()); screenStream = null; btn.classList.remove('text-[#23A559]'); updateAllPeerTracks(); 
+            } else { 
+                try { 
+                    screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true }); 
+                    screenStream.getVideoTracks()[0].onended = () => toggleScreen(); btn.classList.add('text-[#23A559]'); updateAllPeerTracks(); 
+                } catch(e) {} 
+            } 
+        }
+        
+        function updateAllPeerTracks() { 
+            const streamToRender = screenStream || localStream; 
+            addVideoBox(socket.id, streamToRender, currentUser.name, currentUser.avatar, true); 
+            Object.values(peerConnections).forEach(pc => { 
+                const senders = pc.getSenders(); 
+                const vTrack = streamToRender ? streamToRender.getVideoTracks()[0] : null; 
+                const aTrack = localStream ? localStream.getAudioTracks()[0] : null; 
+                
+                const vSender = senders.find(s => s.track && s.track.kind === 'video'); 
+                if(vTrack && vSender) vSender.replaceTrack(vTrack); 
+                else if(vTrack && !vSender) pc.addTrack(vTrack, streamToRender); 
+                else if(!vTrack && vSender) pc.removeTrack(vSender); 
+                
+                const aSender = senders.find(s => s.track && s.track.kind === 'audio'); 
+                if(aTrack && aSender) aSender.replaceTrack(aTrack); 
+            }); 
+        }
+        
+        function createPeerConnection(peerId, initiate) { 
+            const pc = new RTCPeerConnection(rtcConfig); peerConnections[peerId] = pc; 
+            const streamToSend = screenStream || localStream; 
+            if (streamToSend) streamToSend.getTracks().forEach(t => pc.addTrack(t, streamToSend)); 
+            
+            pc.onicecandidate = (event) => { 
+                if(event.candidate) socket.emit('webrtc signal', { target: peerId, signal: { type: 'ice', candidate: event.candidate } }); 
+            }; 
+            pc.ontrack = (event) => { 
+                const peerUser = onlineUsersData.find(u => u.socketId === peerId); 
+                addVideoBox(peerId, event.streams[0], peerUser ? peerUser.name : 'Membro', peerUser ? peerUser.avatar : 'https://cdn.discordapp.com/embed/avatars/0.png'); 
+            }; 
+            if(initiate) { 
+                pc.createOffer().then(offer => { pc.setLocalDescription(offer); socket.emit('webrtc signal', { target: peerId, signal: offer }); }); 
+            } 
+            return pc; 
+        }
+        
+        if(socket) { 
+            socket.on('user joined voice', (peerId) => { if(currentVoiceChannelId) createPeerConnection(peerId, true); }); 
+            socket.on('user left voice', (peerId) => { if(peerConnections[peerId]) { peerConnections[peerId].close(); delete peerConnections[peerId]; } removeVideoBox(peerId); }); 
+            socket.on('webrtc signal', async (data) => { 
+                if(!currentVoiceChannelId) return; 
+                const peerId = data.sender; let pc = peerConnections[peerId]; 
+                if(data.signal.type === 'offer') { 
+                    if(!pc) pc = createPeerConnection(peerId, false); 
+                    await pc.setRemoteDescription(new RTCSessionDescription(data.signal)); 
+                    const answer = await pc.createAnswer(); 
+                    await pc.setLocalDescription(answer); 
+                    socket.emit('webrtc signal', { target: peerId, signal: answer }); 
+                } else if(data.signal.type === 'answer') { 
+                    if(pc) await pc.setRemoteDescription(new RTCSessionDescription(data.signal)); 
+                } else if(data.signal.type === 'ice') { 
+                    if(pc) pc.addIceCandidate(new RTCIceCandidate(data.signal.candidate)); 
+                } 
+            }); 
+        }
     </script>
 </body>
 </html>
