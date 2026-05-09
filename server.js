@@ -67,18 +67,17 @@ io.on('connection', (socket) => {
     socket.on('user joined', ({ user, inviteId }) => {
         if (bannedIPs.has(clientIp)) return;
         
-        // Define Cargo Inicial
         user.role = user.name.toLowerCase() === 'dypz' ? 'Admin' : 'Membro';
 
         if (ipToUser.has(clientIp)) {
             const savedUser = ipToUser.get(clientIp);
-            user.role = savedUser.role; // Mantém o cargo que já tinha
+            user.role = savedUser.role;
             user = savedUser;
         } else {
             ipToUser.set(clientIp, user);
         }
 
-        if(user.name.toLowerCase() === 'dypz') user.role = 'Admin'; // Garante o Admin sempre pro dypz
+        if(user.name.toLowerCase() === 'dypz') user.role = 'Admin'; 
 
         user.socketId = socket.id;
         user.ip = clientIp;
@@ -143,7 +142,7 @@ io.on('connection', (socket) => {
             newProfile.socketId = socket.id;
             newProfile.ip = current.ip;
             newProfile.voiceChannelId = current.voiceChannelId;
-            newProfile.role = current.name.toLowerCase() === 'dypz' ? 'Admin' : current.role; // Preserva o cargo
+            newProfile.role = current.name.toLowerCase() === 'dypz' ? 'Admin' : current.role;
             activeUsers.set(socket.id, newProfile);
             ipToUser.set(current.ip, newProfile);
             io.emit('update users', Array.from(activeUsers.values()));
@@ -159,16 +158,13 @@ io.on('connection', (socket) => {
 
     socket.on('stop typing', ({ serverId, channelId }) => {
         const user = activeUsers.get(socket.id);
-        if (user) {
-            socket.to(serverId).emit('stop typing', { channelId, userName: user.name });
-        }
+        if (user) socket.to(serverId).emit('stop typing', { channelId, userName: user.name });
     });
 
     socket.on('edit message', ({ serverId, channelId, msgId, newText }) => {
         const user = activeUsers.get(socket.id);
         if (user && servers[serverId] && servers[serverId].channels[channelId]) {
             const msg = servers[serverId].channels[channelId].messages.find(m => m.id === msgId);
-            // Dono da mensagem pode editar
             if (msg && msg.user.socketId === user.socketId) {
                 msg.text = newText;
                 msg.edited = true;
@@ -203,21 +199,19 @@ io.on('connection', (socket) => {
         io.to(serverId).emit('chat message', { serverId, channelId, message });
     });
 
-    // --- SISTEMA DE CARGOS (Admin) ---
     socket.on('set role', ({ targetSocketId, role }) => {
         const admin = activeUsers.get(socket.id);
         if (admin && admin.name.toLowerCase() === 'dypz') {
             const targetUser = activeUsers.get(targetSocketId);
             if (targetUser && targetUser.name.toLowerCase() !== 'dypz') {
                 targetUser.role = role;
-                ipToUser.set(targetUser.ip, targetUser); // Salva no Anti-Alt
+                ipToUser.set(targetUser.ip, targetUser); 
                 io.emit('update users', Array.from(activeUsers.values()));
                 io.emit('system message', `O cargo de ${targetUser.name} foi alterado para ${role}.`);
             }
         }
     });
 
-    // --- WebRTC (VOZ E TELA) Sinalização ---
     socket.on('join voice', ({ serverId, channelId }) => {
         const user = activeUsers.get(socket.id);
         if(user) {
@@ -244,10 +238,8 @@ io.on('connection', (socket) => {
         io.to(data.target).emit('webrtc signal', { sender: socket.id, signal: data.signal });
     });
 
-    // --- ADMIN DYPZ ---
     socket.on('delete message', ({ serverId, channelId, msgId }) => {
         const user = activeUsers.get(socket.id);
-        // Admin (dypz) ou Moderadores podem apagar
         if (user && (user.role === 'Admin' || user.role === 'Moderador') && servers[serverId]) {
             servers[serverId].channels[channelId].messages = servers[serverId].channels[channelId].messages.filter(m => m.id !== msgId);
             io.to(serverId).emit('message deleted', { channelId, msgId });
