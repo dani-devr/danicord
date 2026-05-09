@@ -150,6 +150,33 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('typing', ({ serverId, channelId }) => {
+        const user = activeUsers.get(socket.id);
+        if (user && user.status !== 'invisible') {
+            socket.to(serverId).emit('typing', { channelId, user });
+        }
+    });
+
+    socket.on('stop typing', ({ serverId, channelId }) => {
+        const user = activeUsers.get(socket.id);
+        if (user) {
+            socket.to(serverId).emit('stop typing', { channelId, userName: user.name });
+        }
+    });
+
+    socket.on('edit message', ({ serverId, channelId, msgId, newText }) => {
+        const user = activeUsers.get(socket.id);
+        if (user && servers[serverId] && servers[serverId].channels[channelId]) {
+            const msg = servers[serverId].channels[channelId].messages.find(m => m.id === msgId);
+            // Dono da mensagem pode editar
+            if (msg && msg.user.socketId === user.socketId) {
+                msg.text = newText;
+                msg.edited = true;
+                io.to(serverId).emit('message edited', { channelId, msgId, newText });
+            }
+        }
+    });
+
     socket.on('chat message', (msgData) => {
         const user = activeUsers.get(socket.id);
         const serverId = msgData.serverId;
