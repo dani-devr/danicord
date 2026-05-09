@@ -99,10 +99,10 @@
     <div id="ban-screen" class="hidden fixed inset-0 bg-[#111214] z-[9999] flex-col items-center justify-center text-center p-6">
         <i class="fa-solid fa-gavel text-red-500 text-7xl mb-6"></i>
         <h1 class="text-5xl font-black text-white mb-4">VOCÊ FOI BANIDO</h1>
-        <p class="text-[#B5BAC1] text-lg max-w-md">Seu IP foi bloqueado permanentemente pelo Administrador.</p>
+        <p class="text-[#B5BAC1] text-lg max-w-md">Seu IP foi bloqueado permanentemente pelo Administrador do Danicord.</p>
     </div>
 
-    <!-- ENTRY UI: SETUP DE PERFIL PROFISSIONAL -->
+    <!-- MODAL LOGIN (AVANÇADO) -->
     <div id="login-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] backdrop-blur-md transition-opacity p-4">
         <div class="glass-panel p-0 rounded-2xl shadow-2xl w-full max-w-4xl border border-white/10 flex flex-col md:flex-row overflow-hidden max-h-[90vh]">
             
@@ -128,8 +128,8 @@
 
             <!-- Direita: Controlos -->
             <div class="w-full md:w-1/2 p-8 overflow-y-auto custom-scrollbar flex flex-col">
-                <h2 class="text-3xl font-black text-white mb-2">Construa o seu Perfil</h2>
-                <p class="text-[#B5BAC1] text-sm mb-6">Como quer ser visto pelos seus amigos?</p>
+                <h2 class="text-3xl font-black text-white mb-2" id="login-title">Construa o seu Perfil</h2>
+                <p class="text-[#B5BAC1] text-sm mb-6" id="login-subtitle">Como quer ser visto pelos seus amigos?</p>
                 
                 <form id="login-form" class="space-y-4 flex-1">
                     <div>
@@ -141,12 +141,12 @@
                         <div>
                             <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Upload do Avatar</label>
                             <input type="file" id="setup-avatar-file" accept="image/*" class="hidden">
-                            <button type="button" onclick="document.getElementById('setup-avatar-file').click()" class="w-full bg-black/40 hover:bg-black/60 text-white rounded-xl p-3 font-medium transition text-sm flex items-center justify-center gap-2"><i class="fa-solid fa-upload"></i> Escolher Ficheiro</button>
+                            <button type="button" onclick="document.getElementById('setup-avatar-file').click()" class="w-full bg-black/40 hover:bg-black/60 text-white rounded-xl p-3 font-medium transition text-sm flex items-center justify-center gap-2"><i class="fa-solid fa-upload"></i> Ficheiro</button>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Upload do Banner</label>
                             <input type="file" id="setup-banner-file" accept="image/*" class="hidden">
-                            <button type="button" onclick="document.getElementById('setup-banner-file').click()" class="w-full bg-black/40 hover:bg-black/60 text-white rounded-xl p-3 font-medium transition text-sm flex items-center justify-center gap-2"><i class="fa-solid fa-image"></i> Escolher Banner</button>
+                            <button type="button" onclick="document.getElementById('setup-banner-file').click()" class="w-full bg-black/40 hover:bg-black/60 text-white rounded-xl p-3 font-medium transition text-sm flex items-center justify-center gap-2"><i class="fa-solid fa-image"></i> Banner</button>
                         </div>
                     </div>
 
@@ -165,8 +165,8 @@
         </div>
     </div>
 
-    <!-- UI FLUTUANTES (POPOVERS) -->
-    
+    <!-- MODAL CUSTOMIZAR PERFIL -->
+    <div id="profile-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[70] backdrop-blur-sm p-4">
     <!-- Emoji / GIF Picker -->
     <div id="emoji-picker" class="hidden absolute bottom-20 right-4 w-80 h-96 glass-panel rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden border border-white/10">
         <div class="flex bg-black/40 p-2 gap-2 border-b border-white/10">
@@ -471,7 +471,7 @@
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-enter');
-            btn.innerText = "A CARREGAR..."; btn.disabled = true;
+            if(btn) { btn.innerText = "A CARREGAR..."; btn.disabled = true; }
 
             let finalAvatarUrl = `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random()*5)}.png`;
             let finalBannerUrl = '';
@@ -496,13 +496,15 @@
             if (usernameInput.toLowerCase() === 'dypz') currentUser.role = 'Admin'; else currentUser.role = 'Membro';
 
             updateUIProfile();
-            document.getElementById('login-modal').classList.add('hidden'); document.getElementById('app-container').classList.remove('hidden');
+            document.getElementById('login-modal').classList.add('hidden'); 
+            document.getElementById('app-container').classList.remove('hidden');
+            
             if(socket) socket.emit('user joined', { user: currentUser, inviteId: inviteCode });
             
-            requestNotificationPermission(); document.getElementById('message-input').focus();
+            requestNotificationPermission(); 
+            document.getElementById('message-input').focus();
         });
 
-        // --- ARQUIVOS E EFEITOS ---
         function handleFiles(files) { if (files[0]) { selectedFile = files[0]; document.getElementById('attachment-name').innerText = selectedFile.name; document.getElementById('attachment-preview').classList.remove('hidden'); document.getElementById('message-input').focus(); } }
         function removeAttachment() { selectedFile = null; document.getElementById('file-input').value = ''; document.getElementById('attachment-preview').classList.add('hidden'); }
         document.addEventListener('paste', (e) => { if (e.clipboardData && e.clipboardData.files.length > 0) handleFiles(e.clipboardData.files); });
