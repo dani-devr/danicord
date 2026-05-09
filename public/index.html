@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Danicord</title>
-    <!-- Favicon Personalizado -->
+    <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%235865F2'/><path fill='white' d='M25,30 Q50,20 75,30 Q80,50 75,70 Q50,80 25,70 Q20,50 25,30'/></svg>">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -23,13 +23,21 @@
         #drag-overlay { z-index: 9999; }
         .particle { position: absolute; pointer-events: none; border-radius: 50%; opacity: 0.8; }
         
-        /* Animações de Partículas e Raios */
+        /* Animações de Partículas de Banner */
         @keyframes fallSnow { 0% { transform: translateY(-10px) translateX(0); opacity: 1; } 100% { transform: translateY(120px) translateX(20px); opacity: 0; } }
         @keyframes floatStars { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 50% { opacity: 1; scale: 1.2; } 100% { transform: translateY(-50px) scale(0.5); opacity: 0; } }
         @keyframes pulseFire { 0% { transform: translateY(0) scale(1); opacity: 0.8; } 100% { transform: translateY(-30px) scale(0.2); opacity: 0; } }
         @keyframes flashLightning { 0%, 90% { opacity: 0; } 92% { opacity: 1; background: white; } 94% { opacity: 0; } 96% { opacity: 1; background: white; } 100% { opacity: 0; } }
-        
-        /* Transição Suave do Fullscreen de Vídeo */
+        @keyframes floatBubbles { 0% { transform: translateY(100px) scale(0.5); opacity: 0; } 50% { opacity: 0.8; } 100% { transform: translateY(-20px) scale(1.5); opacity: 0; } }
+        @keyframes fallNeon { 0% { transform: translateY(-20px); opacity: 1; } 100% { transform: translateY(120px); opacity: 0; } }
+
+        /* Decorações do Avatar (PFP Effects) */
+        .decor-glow { box-shadow: 0 0 15px currentColor; border: 2px solid currentColor; }
+        .decor-spin { border: 3px dashed currentColor; animation: spin 4s linear infinite; }
+        .decor-pulse { border: 3px solid currentColor; animation: pop 1.5s ease-in-out infinite alternate; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes pop { 0% { box-shadow: 0 0 0 0 currentColor; } 100% { box-shadow: 0 0 0 10px transparent; } }
+
         .video-box-transition { transition: all 0.3s ease-in-out; }
     </style>
 </head>
@@ -38,13 +46,12 @@
     <div id="drag-overlay" class="hidden absolute inset-0 bg-[#5865F2]/90 backdrop-blur-sm flex-col items-center justify-center text-white border-8 border-dashed border-white m-4 rounded-3xl transition-all">
         <i class="fa-solid fa-file-arrow-up text-7xl mb-4"></i>
         <h2 class="text-4xl font-bold">Solte o arquivo aqui!</h2>
-        <p class="text-lg mt-2 opacity-80">Será enviado diretamente no chat.</p>
     </div>
 
     <div id="ban-screen" class="hidden fixed inset-0 bg-[#111214] z-[9999] flex-col items-center justify-center text-center p-6">
         <i class="fa-solid fa-gavel text-red-500 text-7xl mb-6"></i>
         <h1 class="text-5xl font-black text-white mb-4">VOCÊ FOI BANIDO</h1>
-        <p class="text-[#B5BAC1] text-lg max-w-md">Seu IP foi bloqueado permanentemente por dypz.</p>
+        <p class="text-[#B5BAC1] text-lg max-w-md">Seu IP foi bloqueado permanentemente pelo Administrador do Danicord.</p>
     </div>
 
     <!-- MODAL LOGIN -->
@@ -71,7 +78,7 @@
         <div class="bg-[#313338] rounded-lg shadow-2xl w-full max-w-md overflow-hidden border border-[#1E1F22]">
             <div id="profile-banner-preview" class="h-24 bg-[#5865F2] w-full relative overflow-hidden transition-colors bg-cover bg-center"></div>
             <div class="p-6 relative">
-                <div class="absolute -top-12 left-6 border-[6px] border-[#313338] rounded-full">
+                <div class="absolute -top-12 left-6 border-[6px] border-[#313338] rounded-full" id="profile-avatar-container">
                     <img id="profile-avatar-preview" src="" class="w-20 h-20 rounded-full object-cover bg-[#1E1F22]">
                 </div>
                 <div class="mt-10 space-y-4 max-h-[60vh] overflow-y-auto pr-2">
@@ -82,13 +89,22 @@
                     <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Sobre Mim (Bio)</label><textarea id="prof-bio" rows="2" class="w-full bg-[#1E1F22] text-white rounded p-2 text-sm"></textarea></div>
                     
                     <div class="grid grid-cols-2 gap-4">
-                        <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Cor do Banner</label><input type="color" id="prof-color" class="w-full h-10 bg-[#1E1F22] rounded cursor-pointer border-none"></div>
-                        <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Partículas</label>
+                        <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Cor Base (Nome e Efeitos)</label><input type="color" id="prof-color" class="w-full h-10 bg-[#1E1F22] rounded cursor-pointer border-none"></div>
+                        <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Efeito do Banner</label>
                             <select id="prof-particles" class="w-full bg-[#1E1F22] text-white rounded p-2 h-10 border-none outline-none">
-                                <option value="none">Nenhuma</option><option value="snow">Neve ❄️</option><option value="stars">Estrelas ✨</option><option value="fire">Fogo 🔥</option><option value="lightning">Raios ⚡</option>
+                                <option value="none">Nenhum</option><option value="snow">Neve ❄️</option><option value="stars">Estrelas ✨</option><option value="fire">Fogo 🔥</option><option value="lightning">Raios ⚡</option><option value="bubbles">Bolhas 🫧</option><option value="neon">Chuva Neon 🟢</option>
                             </select>
                         </div>
                     </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2"><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Decoração do Avatar (Novo!)</label>
+                            <select id="prof-pfp-decor" class="w-full bg-[#1E1F22] text-white rounded p-2 border-none outline-none">
+                                <option value="none">Padrão</option><option value="glow">Brilho Intenso</option><option value="spin">Círculo Giratório</option><option value="pulse">Pulso Sônico</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Imagem do Banner (URL / GIF)</label><input type="url" id="prof-banner-url" placeholder="Deixe vazio para usar a cor" class="w-full bg-[#1E1F22] text-white rounded p-2 text-sm"></div>
                     <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">URL Avatar (GIF/PNG)</label><input type="url" id="prof-avatar" class="w-full bg-[#1E1F22] text-white rounded p-2 text-sm"></div>
                     
@@ -105,13 +121,30 @@
     <div id="user-popout" class="hidden absolute z-[80] bg-[#111214] rounded-lg shadow-2xl w-[300px] overflow-hidden border border-[#1E1F22]">
         <div id="popout-banner" class="h-16 w-full bg-[#5865F2] relative overflow-hidden bg-cover bg-center"></div>
         <div class="p-4 relative">
-            <div class="absolute -top-10 left-4 border-[6px] border-[#111214] rounded-full"><img id="popout-avatar" src="" class="w-[72px] h-[72px] rounded-full object-cover bg-[#1E1F22]"></div>
+            <div class="absolute -top-10 left-4 border-[6px] border-[#111214] rounded-full" id="popout-avatar-container">
+                <img id="popout-avatar" src="" class="w-[72px] h-[72px] rounded-full object-cover bg-[#1E1F22]">
+            </div>
             <div class="mt-8 bg-[#2B2D31] rounded-lg p-3">
-                <h4 id="popout-name" class="text-lg font-bold text-white truncate">Nome</h4>
-                <p id="popout-activity" class="text-xs font-medium text-[#DBDEE1] mb-2 truncate hidden"></p>
-                <div class="w-full h-[1px] bg-[#1E1F22] mb-2"></div>
+                <h4 id="popout-name" class="text-lg font-bold text-white truncate flex items-center gap-1">Nome</h4>
+                <p id="popout-role-badge" class="text-[10px] font-bold text-white uppercase px-1.5 py-0.5 rounded inline-block mt-1 hidden"></p>
+                <p id="popout-activity" class="text-xs font-medium text-[#DBDEE1] mt-2 mb-2 truncate hidden"></p>
+                <div class="w-full h-[1px] bg-[#1E1F22] mb-2 mt-2"></div>
                 <h5 class="text-[10px] font-bold text-[#B5BAC1] uppercase mb-1">Sobre mim</h5>
                 <p id="popout-bio" class="text-sm text-[#DBDEE1] break-words whitespace-pre-wrap">Nenhuma bio.</p>
+            </div>
+
+            <!-- PAINEL EXCLUSIVO DO DYPZ (Aparece dinamicamente via JS) -->
+            <div id="admin-tools-panel" class="hidden mt-4 pt-3 border-t border-[#1E1F22]">
+                <h5 class="text-[10px] font-bold text-red-400 uppercase mb-2"><i class="fa-solid fa-screwdriver-wrench"></i> Ferramentas de Admin</h5>
+                <label class="text-xs text-[#87898C] mb-1 block">Definir Cargo</label>
+                <select id="admin-role-select" class="w-full bg-[#1E1F22] text-white rounded p-1.5 mb-3 text-xs border border-[#313338] outline-none">
+                    <option value="Membro">Membro</option>
+                    <option value="VIP">VIP</option>
+                    <option value="Moderador">Moderador</option>
+                </select>
+                <button id="admin-ban-btn" class="w-full bg-red-500 hover:bg-red-600 text-white p-1.5 rounded text-xs font-bold transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-gavel"></i> BANIR IP
+                </button>
             </div>
         </div>
     </div>
@@ -159,7 +192,7 @@
                 <div id="channel-list" class="space-y-0.5"></div>
             </div>
 
-            <!-- Painel Voz Conectada -->
+            <!-- Painel Voz -->
             <div id="voice-connection-panel" class="hidden bg-[#1E1F22] border-t border-[#111214] p-2 flex flex-col gap-2 text-white text-xs">
                 <div class="flex justify-between items-center text-[#23A559] font-bold"><span class="truncate"><i class="fa-solid fa-signal mr-1"></i> Voz Conectada</span> <button onclick="leaveVoice()" class="text-[#87898C] hover:text-red-500"><i class="fa-solid fa-phone-slash"></i></button></div>
                 <div class="flex gap-2 text-lg text-[#B5BAC1]">
@@ -171,7 +204,7 @@
 
             <div class="h-[52px] bg-[#232428] flex items-center px-2 gap-2 flex-shrink-0">
                 <div class="relative cursor-pointer hover:bg-[#3F4147] p-1 rounded flex-1 flex items-center gap-2 overflow-hidden transition" onclick="openProfile()">
-                    <img id="my-avatar-display" src="" class="w-8 h-8 rounded-full object-cover">
+                    <div id="my-avatar-mini-container"><img id="my-avatar-display" src="" class="w-8 h-8 rounded-full object-cover"></div>
                     <div class="flex flex-col min-w-0">
                         <span id="my-name-display" class="text-sm font-semibold text-white truncate">Usuário</span>
                         <span id="my-activity-display" class="text-[10px] text-[#B5BAC1] truncate">Configurar</span>
@@ -180,17 +213,14 @@
             </div>
         </aside>
 
-        <!-- ÁREA CENTRAL (CHAT + VIDEOS) -->
         <main class="flex-1 flex flex-col bg-[#313338] relative min-w-0" onclick="closeUserPopout()">
             <header class="h-12 border-b border-[#1E1F22] flex items-center px-4 font-semibold text-white shadow-sm gap-2">
                 <i id="header-channel-icon" class="fa-solid fa-hashtag text-[#87898C] text-xl"></i>
                 <span id="chat-header-name">geral</span>
             </header>
 
-            <!-- Grid de Vídeos WebRTC (Aprimorado) -->
-            <div id="video-grid" class="hidden flex-wrap gap-2 p-4 bg-[#1E1F22] border-b border-[#2B2D31] max-h-[50vh] overflow-y-auto content-start justify-center transition-all z-40">
-                <!-- Videos adicionados dinamicamente -->
-            </div>
+            <!-- Grid WebRTC -->
+            <div id="video-grid" class="hidden flex-wrap gap-2 p-4 bg-[#1E1F22] border-b border-[#2B2D31] max-h-[50vh] overflow-y-auto content-start justify-center transition-all z-40"></div>
 
             <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-1"></div>
 
@@ -216,23 +246,32 @@
             </div>
         </main>
 
-        <!-- SIDEBAR MEMBROS -->
         <aside class="w-60 bg-[#2B2D31] flex-shrink-0 hidden md:flex flex-col pb-4">
-            <div class="px-4 py-4"><span class="font-bold text-xs text-[#87898C] uppercase tracking-wide">Membros Online</span></div>
+            <div class="px-4 py-4"><span class="font-bold text-xs text-[#87898C] uppercase tracking-wide">Membros</span></div>
             <div id="members-list" class="flex-1 overflow-y-auto px-2 space-y-[2px]"></div>
         </aside>
     </div>
 
     <script>
+        // --- GERADOR DE SOM (Plin!) SEM ARQUIVOS EXTERNOS ---
+        function playPing() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(880, ctx.currentTime); // Nota A5
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                osc.start(); gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.3);
+                osc.stop(ctx.currentTime + 0.3);
+            } catch(e) {}
+        }
+
         // --- ESTADOS ---
-        let currentUser = { name: '', avatar: '', color: '#5865F2', bio: '', particles: 'none', bannerUrl: '', activity: '', socketId: null };
-        let currentServer = null; 
-        let currentTextChannelId = 'geral';
-        let currentVoiceChannelId = null;
-        
+        let currentUser = { name: '', avatar: '', color: '#5865F2', bio: '', particles: 'none', bannerUrl: '', decor: 'none', activity: '', socketId: null, role: 'Membro' };
+        let currentServer = null, currentTextChannelId = 'geral', currentVoiceChannelId = null;
         let selectedFile = null, isUploading = false, replyingTo = null;
-        let onlineUsersData = []; 
-        let myServers = new Map(); 
+        let onlineUsersData = [], myServers = new Map(), unreadServers = new Set(); 
 
         let socket = null;
         try { socket = io(); } catch(e) {}
@@ -240,7 +279,14 @@
         const urlParams = new URLSearchParams(window.location.search);
         const inviteCode = urlParams.get('invite');
 
-        // --- SISTEMA BAN & LOGIN ---
+        // --- CORES DE CARGOS ---
+        function getRoleColor(role, baseColor) {
+            if(role === 'Admin') return '#F0B232'; // Ouro
+            if(role === 'Moderador') return '#23A559'; // Verde
+            if(role === 'VIP') return '#EB459E'; // Rosa
+            return baseColor || 'white';
+        }
+
         if (socket) {
             socket.on('banned permanently', () => {
                 document.getElementById('ban-screen').classList.replace('hidden', 'flex');
@@ -258,14 +304,14 @@
             e.preventDefault();
             currentUser.name = document.getElementById('username').value.trim();
             currentUser.avatar = document.getElementById('avatar').value.trim() || `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random()*5)}.png`;
-            currentUser.color = '#5865F2'; currentUser.bio = ''; currentUser.particles = 'none'; currentUser.activity = ''; currentUser.bannerUrl = '';
+            currentUser.color = '#5865F2'; currentUser.bio = ''; currentUser.particles = 'none'; currentUser.activity = ''; currentUser.bannerUrl = ''; currentUser.decor = 'none';
             updateUIProfile();
             document.getElementById('login-modal').style.display = 'none';
             document.getElementById('app-container').classList.remove('hidden');
             if(socket) socket.emit('user joined', { user: currentUser, inviteId: inviteCode });
         });
 
-        // --- ARRASTAR E SOLTAR & CTRL+V ---
+        // --- ARRASTAR/CTRL+V ---
         function handleFiles(files) {
             if (files[0]) {
                 selectedFile = files[0];
@@ -275,22 +321,15 @@
             }
         }
         function removeAttachment() { selectedFile = null; document.getElementById('file-input').value = ''; document.getElementById('attachment-preview').classList.add('hidden'); }
-        
-        document.addEventListener('paste', (e) => {
-            if (e.clipboardData && e.clipboardData.files.length > 0) handleFiles(e.clipboardData.files);
-        });
+        document.addEventListener('paste', (e) => { if (e.clipboardData && e.clipboardData.files.length > 0) handleFiles(e.clipboardData.files); });
 
-        let dragCounter = 0;
-        const dragOverlay = document.getElementById('drag-overlay');
+        let dragCounter = 0; const dragOverlay = document.getElementById('drag-overlay');
         document.addEventListener('dragenter', (e) => { e.preventDefault(); dragCounter++; dragOverlay.classList.replace('hidden', 'flex'); });
         document.addEventListener('dragleave', (e) => { e.preventDefault(); dragCounter--; if (dragCounter === 0) dragOverlay.classList.replace('flex', 'hidden'); });
         document.addEventListener('dragover', e => e.preventDefault());
-        document.addEventListener('drop', (e) => {
-            e.preventDefault(); dragCounter = 0; dragOverlay.classList.replace('flex', 'hidden');
-            if (e.dataTransfer && e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files);
-        });
+        document.addEventListener('drop', (e) => { e.preventDefault(); dragCounter = 0; dragOverlay.classList.replace('flex', 'hidden'); if (e.dataTransfer && e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files); });
 
-        // --- PARTICULAS & PERFIL CUSTOMIZAVEL ---
+        // --- PARTICULAS & DECOR ---
         function applyParticles(element, type) {
             element.innerHTML = ''; 
             if (type === 'none') return;
@@ -298,19 +337,29 @@
             if (type === 'lightning') {
                 for(let i=0; i<3; i++) {
                     const p = document.createElement('div'); p.className = 'particle'; p.style.width = '3px'; p.style.height = '100%'; p.style.background = 'white';
-                    p.style.left = Math.random() * 100 + '%'; p.style.top = '0'; p.style.animation = `flashLightning ${Math.random()*3 + 1}s infinite`;
-                    element.appendChild(p);
+                    p.style.left = Math.random() * 100 + '%'; p.style.top = '0'; p.style.animation = `flashLightning ${Math.random()*3 + 1}s infinite`; element.appendChild(p);
                 }
-                const flash = document.createElement('div'); flash.className = 'absolute inset-0 bg-white opacity-0'; flash.style.animation = `flashLightning 4s infinite`;
-                element.appendChild(flash);
+                const flash = document.createElement('div'); flash.className = 'absolute inset-0 bg-white opacity-0'; flash.style.animation = `flashLightning 4s infinite`; element.appendChild(flash);
+                return;
+            }
+            if (type === 'neon') {
+                for(let i=0; i<30; i++) {
+                    const p = document.createElement('div'); p.className = 'particle'; p.style.width = '2px'; p.style.height = (Math.random()*20+10)+'px'; p.style.background = '#0f0';
+                    p.style.left = Math.random() * 100 + '%'; p.style.top = '-20px'; p.style.animation = `fallNeon ${Math.random()*1.5+0.5}s linear infinite`; element.appendChild(p);
+                }
+                return;
+            }
+            if (type === 'bubbles') {
+                for(let i=0; i<15; i++) {
+                    const p = document.createElement('div'); p.className = 'particle'; p.style.width = p.style.height = (Math.random()*15+5)+'px'; p.style.border = '1px solid rgba(255,255,255,0.6)';
+                    p.style.left = Math.random() * 100 + '%'; p.style.top = '100%'; p.style.animation = `floatBubbles ${Math.random()*3+2}s ease-in infinite`; element.appendChild(p);
+                }
                 return;
             }
 
             const count = type === 'snow' ? 20 : (type === 'stars' ? 15 : 10);
             for(let i=0; i<count; i++) {
-                const p = document.createElement('div');
-                p.className = 'particle'; p.style.left = Math.random() * 100 + '%'; p.style.top = (Math.random() * 50 - 20) + 'px';
-                
+                const p = document.createElement('div'); p.className = 'particle'; p.style.left = Math.random() * 100 + '%'; p.style.top = (Math.random() * 50 - 20) + 'px';
                 if(type === 'snow') { p.style.width = p.style.height = (Math.random()*4+2)+'px'; p.style.background = 'white'; p.style.animation = `fallSnow ${Math.random()*2+2}s linear infinite`; }
                 else if(type === 'stars') { p.style.width = p.style.height = (Math.random()*6+3)+'px'; p.style.background = '#FFD700'; p.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)'; p.style.animation = `floatStars ${Math.random()*2+2}s ease-in-out infinite`; }
                 else if(type === 'fire') { p.style.width = p.style.height = (Math.random()*10+5)+'px'; p.style.background = 'radial-gradient(circle, #ff9d00, #ff2a00)'; p.style.animation = `pulseFire ${Math.random()+0.5}s infinite alternate`; p.style.top = '100%'; }
@@ -318,8 +367,20 @@
             }
         }
 
+        function applyPfpDecor(containerId, decorType, color) {
+            const el = document.getElementById(containerId);
+            el.className = "absolute -top-12 left-6 rounded-full transition-all";
+            el.style.color = color || '#5865F2';
+            el.style.border = 'none';
+            if(decorType === 'none') { el.classList.add('border-[6px]', 'border-[#313338]'); return; }
+            if(decorType === 'glow') el.classList.add('decor-glow');
+            if(decorType === 'spin') el.classList.add('decor-spin');
+            if(decorType === 'pulse') el.classList.add('decor-pulse');
+        }
+
         function updateUIProfile() {
             document.getElementById('my-name-display').innerText = currentUser.name;
+            document.getElementById('my-name-display').style.color = getRoleColor(currentUser.role, currentUser.color);
             document.getElementById('my-avatar-display').src = currentUser.avatar;
             document.getElementById('my-activity-display').innerText = currentUser.activity || 'Online';
             
@@ -330,9 +391,11 @@
             document.getElementById('prof-activity').value = currentUser.activity || '';
             document.getElementById('prof-particles').value = currentUser.particles || 'none';
             document.getElementById('prof-banner-url').value = currentUser.bannerUrl || '';
+            document.getElementById('prof-pfp-decor').value = currentUser.decor || 'none';
             
             document.getElementById('profile-avatar-preview').src = currentUser.avatar;
             updateBannerVisuals(document.getElementById('profile-banner-preview'), currentUser.color, currentUser.bannerUrl, currentUser.particles);
+            applyPfpDecor('profile-avatar-container', currentUser.decor, currentUser.color);
         }
 
         function updateBannerVisuals(element, color, url, particles) {
@@ -351,38 +414,72 @@
             currentUser.activity = document.getElementById('prof-activity').value;
             currentUser.particles = document.getElementById('prof-particles').value;
             currentUser.bannerUrl = document.getElementById('prof-banner-url').value;
+            currentUser.decor = document.getElementById('prof-pfp-decor').value;
             updateUIProfile(); closeProfile();
             if(socket) socket.emit('update profile', currentUser);
         }
 
-        document.getElementById('prof-color').addEventListener('input', e => updateBannerVisuals(document.getElementById('profile-banner-preview'), e.target.value, document.getElementById('prof-banner-url').value, document.getElementById('prof-particles').value));
+        document.getElementById('prof-color').addEventListener('input', e => { updateBannerVisuals(document.getElementById('profile-banner-preview'), e.target.value, document.getElementById('prof-banner-url').value, document.getElementById('prof-particles').value); applyPfpDecor('profile-avatar-container', document.getElementById('prof-pfp-decor').value, e.target.value); });
         document.getElementById('prof-banner-url').addEventListener('input', e => updateBannerVisuals(document.getElementById('profile-banner-preview'), document.getElementById('prof-color').value, e.target.value, document.getElementById('prof-particles').value));
         document.getElementById('prof-avatar').addEventListener('input', e => document.getElementById('profile-avatar-preview').src = e.target.value || 'https://cdn.discordapp.com/embed/avatars/0.png');
         document.getElementById('prof-particles').addEventListener('change', e => applyParticles(document.getElementById('profile-banner-preview'), e.target.value));
+        document.getElementById('prof-pfp-decor').addEventListener('change', e => applyPfpDecor('profile-avatar-container', e.target.value, document.getElementById('prof-color').value));
+
+        // --- USER POPOUT & ADMIN TOOLS ---
+        let currentPopoutTargetId = null;
 
         function showUserPopout(event, socketId) {
             event.stopPropagation();
             const user = onlineUsersData.find(u => u.socketId === socketId);
             if(!user) return;
+            currentPopoutTargetId = socketId;
 
             const popout = document.getElementById('user-popout');
             updateBannerVisuals(document.getElementById('popout-banner'), user.color, user.bannerUrl, user.particles);
             
             document.getElementById('popout-avatar').src = user.avatar;
+            applyPfpDecor('popout-avatar-container', user.decor, user.color);
+
             document.getElementById('popout-name').innerText = user.name;
-            document.getElementById('popout-name').style.color = user.color || 'white';
+            document.getElementById('popout-name').style.color = getRoleColor(user.role, user.color);
+            
+            // Badge de Cargo
+            const badge = document.getElementById('popout-role-badge');
+            if (user.role !== 'Membro') {
+                badge.innerText = user.role;
+                badge.style.backgroundColor = getRoleColor(user.role, '#5865F2');
+                badge.classList.remove('hidden');
+            } else { badge.classList.add('hidden'); }
+
             document.getElementById('popout-bio').innerText = user.bio || 'Este usuário prefere manter o mistério.';
             
             const act = document.getElementById('popout-activity');
             if(user.activity) { act.innerText = user.activity; act.classList.remove('hidden'); } else { act.classList.add('hidden'); }
 
-            popout.style.top = Math.min(event.clientY, window.innerHeight - 300) + 'px';
+            // Admin Tools (Apenas para o dypz visualizando outros)
+            const adminPanel = document.getElementById('admin-tools-panel');
+            if (currentUser.role === 'Admin' && user.socketId !== currentUser.socketId) {
+                adminPanel.classList.remove('hidden');
+                document.getElementById('admin-role-select').value = user.role;
+            } else {
+                adminPanel.classList.add('hidden');
+            }
+
+            // Ações de clique Admin
+            document.getElementById('admin-role-select').onchange = (e) => {
+                socket.emit('set role', { targetSocketId: currentPopoutTargetId, role: e.target.value });
+            };
+            document.getElementById('admin-ban-btn').onclick = () => {
+                if(confirm(`Banir IP do(a) ${user.name} permanentemente?`)) { socket.emit('ban user', currentPopoutTargetId); closeUserPopout(); }
+            };
+
+            popout.style.top = Math.min(event.clientY, window.innerHeight - 350) + 'px';
             popout.style.left = Math.min(event.clientX + 20, window.innerWidth - 320) + 'px';
             popout.classList.remove('hidden');
         }
         function closeUserPopout() { document.getElementById('user-popout').classList.add('hidden'); }
 
-        // --- SERVIDORES E CANAIS ---
+        // --- SERVIDORES, NOTIFICAÇÕES (BOLINHA) ---
         function renderSidebar() {
             const sidebar = document.getElementById('server-sidebar');
             const sep = document.getElementById('server-separator');
@@ -391,9 +488,16 @@
             myServers.forEach(srv => {
                 const div = document.createElement('div');
                 const isAct = currentServer && srv.id === currentServer.id;
-                div.className = `w-12 h-12 ${isAct?'bg-[#5865F2] rounded-[16px]':'bg-[#313338] rounded-[24px] hover:bg-[#5865F2] hover:rounded-[16px]'} text-white flex items-center justify-center cursor-pointer transition-all mb-2 flex-shrink-0 shadow-lg`;
+                const hasUnread = unreadServers.has(srv.id) && !isAct;
+
+                div.className = `relative w-12 h-12 ${isAct?'bg-[#5865F2] rounded-[16px]':'bg-[#313338] rounded-[24px] hover:bg-[#5865F2] hover:rounded-[16px]'} text-white flex items-center justify-center cursor-pointer transition-all mb-2 flex-shrink-0 shadow-lg`;
                 div.title = srv.name; div.onclick = () => socket.emit('join server', srv.id);
                 div.innerHTML = `<i class="fa-solid ${srv.icon} text-xl"></i>`;
+                
+                if (hasUnread) {
+                    div.innerHTML += `<div class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-[#1E1F22]"></div>`;
+                }
+
                 sidebar.insertBefore(div, sep);
             });
         }
@@ -411,14 +515,10 @@
                 
                 const div = document.createElement('div');
                 div.className = `${bg} rounded px-2 py-1.5 flex items-center gap-2 cursor-pointer transition`;
-                div.onclick = () => {
-                    if(ch.type === 'text') switchTextChannel(ch.id);
-                    else joinVoiceChannel(ch.id);
-                };
+                div.onclick = () => { if(ch.type === 'text') switchTextChannel(ch.id); else joinVoiceChannel(ch.id); };
                 div.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="truncate">${ch.name}</span>`;
                 cl.appendChild(div);
 
-                // Lógica Especial: Mostrar Avatares embaixo do Canal de Voz
                 if (ch.type === 'voice') {
                     const usersInVoice = onlineUsersData.filter(u => u.voiceChannelId === ch.id);
                     if (usersInVoice.length > 0) {
@@ -428,9 +528,8 @@
                             voiceMembers.innerHTML += `
                                 <div class="flex items-center gap-2 text-xs text-[#87898C] hover:text-white transition cursor-pointer" onclick="showUserPopout(event, '${u.socketId}')">
                                     <img src="${u.avatar}" class="w-5 h-5 rounded-full object-cover">
-                                    <span class="truncate">${u.name}</span>
-                                </div>
-                            `;
+                                    <span class="truncate font-medium" style="color: ${getRoleColor(u.role)}">${u.name}</span>
+                                </div>`;
                         });
                         cl.appendChild(voiceMembers);
                     }
@@ -442,7 +541,6 @@
             currentTextChannelId = chId;
             const ch = currentServer.channels[chId];
             document.getElementById('chat-header-name').innerText = ch.name;
-            document.getElementById('header-channel-icon').className = 'fa-solid fa-hashtag text-[#87898C] text-xl';
             document.getElementById('chat-messages').innerHTML = `
                 <div class="mt-8 mb-6">
                     <div class="w-16 h-16 bg-[#5865F2] rounded-full flex items-center justify-center mb-4"><i class="fa-solid fa-hashtag text-white text-3xl"></i></div>
@@ -469,20 +567,16 @@
             alert("Link copiado: " + link);
         }
 
-        // --- MENSAGENS, ADMIN E RESPOSTAS ---
-        function setReply(id, name, text) {
-            replyingTo = { id, name, text: text.substring(0, 50) + (text.length > 50 ? '...' : '') };
-            document.getElementById('reply-banner').classList.remove('hidden');
-            document.getElementById('reply-text').innerText = `Respondendo a @${name}`;
-            document.getElementById('message-input').focus();
-        }
+        // --- MENSAGENS E PINGS ---
+        function setReply(id, name, text) { replyingTo = { id, name, text: text.substring(0, 50) + (text.length > 50 ? '...' : '') }; document.getElementById('reply-banner').classList.remove('hidden'); document.getElementById('reply-text').innerText = `Respondendo a @${name}`; document.getElementById('message-input').focus(); }
         function cancelReply() { replyingTo = null; document.getElementById('reply-banner').classList.add('hidden'); }
         function deleteMsg(msgId) { if(confirm("Deletar mensagem para todos?")) socket.emit('delete message', { serverId: currentServer.id, channelId: currentTextChannelId, msgId }); }
-        function banUser(socketId) { if(confirm("Banir este IP permanentemente?")) socket.emit('ban user', socketId); }
 
         function appendMessage(msg) {
             const div = document.createElement('div'); div.id = `msg-${msg.id}`;
-            const isDypz = currentUser.name.toLowerCase() === 'dypz';
+            const isDypz = currentUser.role === 'Admin';
+            const isMod = currentUser.role === 'Moderador';
+            
             let safeText = msg.text || '';
             const isEv = safeText.includes('@everyone'), isMen = safeText.includes(`@${currentUser.name}`);
             let baseClass = isEv ? 'msg-everyone' : (isMen ? 'msg-ping' : 'hover:bg-[#2E3035]');
@@ -491,9 +585,10 @@
             
             let menuHtml = `<div class="absolute top-0 right-4 hidden group-hover:flex items-center bg-[#313338] border border-[#1E1F22] rounded shadow z-10">`;
             menuHtml += `<button onclick="setReply('${msg.id}', '${msg.user.name}', '${msg.text ? msg.text.replace(/'/g, "\\'") : 'Mídia'}')" class="p-2 text-[#B5BAC1] hover:bg-[#404249]"><i class="fa-solid fa-reply"></i></button>`;
-            if(isDypz) {
+            
+            // Admin ou Moderador apagam
+            if(isDypz || isMod) {
                 menuHtml += `<button onclick="deleteMsg('${msg.id}')" class="p-2 text-red-500 hover:bg-[#404249]"><i class="fa-solid fa-trash"></i></button>`;
-                if(msg.user.name.toLowerCase() !== 'dypz') menuHtml += `<button onclick="banUser('${msg.user.socketId}')" class="p-2 text-red-500 hover:bg-[#404249]"><i class="fa-solid fa-gavel"></i></button>`;
             }
             menuHtml += `</div>`;
 
@@ -508,13 +603,16 @@
             if(isEv) safeText = safeText.replace(/@everyone/g, `<span class="bg-[#FAA61A]/30 text-[#FEE75C] font-medium px-1 rounded">@everyone</span>`);
             if(isMen) safeText = safeText.replace(new RegExp(`@${currentUser.name}`, 'g'), `<span class="bg-[#5865F2]/30 text-[#C9CDD6] font-medium px-1 rounded">@${currentUser.name}</span>`);
 
+            // Cor baseada no Cargo
+            const titleColor = getRoleColor(msg.user.role, msg.user.color || 'white');
+
             div.innerHTML = `${menuHtml}
                 <div class="relative flex-shrink-0 cursor-pointer" onclick="showUserPopout(event, '${msg.user.socketId}')">
                     <img src="${msg.user.avatar}" class="w-10 h-10 rounded-full object-cover mt-1">
                 </div>
                 <div class="flex flex-col min-w-0 flex-1">
                     ${replyHtml}
-                    <div class="flex items-baseline gap-2"><span class="font-medium text-white hover:underline cursor-pointer" style="color: ${msg.user.color||'white'}" onclick="showUserPopout(event, '${msg.user.socketId}')">${msg.user.name}</span><span class="text-xs text-[#87898C]">${new Date(msg.timestamp).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span></div>
+                    <div class="flex items-baseline gap-2"><span class="font-medium hover:underline cursor-pointer" style="color: ${titleColor}" onclick="showUserPopout(event, '${msg.user.socketId}')">${msg.user.name}</span><span class="text-xs text-[#87898C]">${new Date(msg.timestamp).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span></div>
                     <p class="text-[#DBDEE1] whitespace-pre-wrap leading-tight mt-0.5">${safeText}</p>${mediaHtml}
                 </div>`;
             const chatBox = document.getElementById('chat-messages');
@@ -529,12 +627,12 @@
             let mediaUrl = null, mediaType = null;
             if(selectedFile) {
                 const fd = new FormData(); fd.append('media', selectedFile);
-                document.getElementById('message-input').placeholder = "Enviando arquivo...";
+                document.getElementById('message-input').placeholder = "Enviando...";
                 try { const res = await fetch('/upload', {method:'POST', body:fd}); const data = await res.json(); if(data.url) {mediaUrl=data.url; mediaType=data.type;} } catch(e) {}
             }
             if(socket) socket.emit('chat message', { serverId: currentServer.id, channelId: currentTextChannelId, text, mediaUrl, mediaType, replyTo: replyingTo });
             document.getElementById('message-input').value = ''; removeAttachment(); cancelReply();
-            isUploading = false; document.getElementById('message-input').disabled = false; document.getElementById('message-input').placeholder = "Conversar... (@everyone notifica todos)"; document.getElementById('message-input').focus();
+            isUploading = false; document.getElementById('message-input').disabled = false; document.getElementById('message-input').placeholder = "Conversar..."; document.getElementById('message-input').focus();
         }
         document.getElementById('message-input').addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }});
 
@@ -546,6 +644,7 @@
             socket.on('server data', (data) => {
                 currentServer = data;
                 document.getElementById('current-server-name').innerText = data.name;
+                unreadServers.delete(data.id); // Limpa as bolinhas ao entrar
                 const textChannels = Object.values(data.channels).filter(c=>c.type==='text');
                 if(textChannels.length > 0) switchTextChannel(textChannels[0].id);
                 renderChannels(); renderSidebar();
@@ -562,260 +661,87 @@
                 if(currentServer && data.serverId === currentServer.id) {
                     if(currentServer.channels[data.channelId]) currentServer.channels[data.channelId].messages.push(data.message);
                     if(data.channelId === currentTextChannelId) appendMessage(data.message);
+                } else {
+                    // Adiciona bolinha vermelha para outros servidores
+                    unreadServers.add(data.serverId);
+                    renderSidebar();
+                }
+                
+                // Emite som se a aba estiver oculta, ou se for DM/Outro servidor
+                if (document.hidden || (currentServer && data.serverId !== currentServer.id)) {
+                    playPing();
                 }
             });
+
             socket.on('message deleted', ({ channelId, msgId }) => { if(channelId === currentTextChannelId) { const el = document.getElementById(`msg-${msgId}`); if(el) el.remove(); } });
 
             socket.on('update users', (users) => {
                 onlineUsersData = users;
                 const ml = document.getElementById('members-list'); ml.innerHTML = '';
+                
+                // Ordena: Admin > Moderador > VIP > Membro
+                const roleOrder = { 'Admin': 1, 'Moderador': 2, 'VIP': 3, 'Membro': 4 };
+                users.sort((a,b) => roleOrder[a.role] - roleOrder[b.role]);
+
                 users.forEach(u => {
-                    const isDypz = u.name.toLowerCase() === 'dypz' ? '<i class="fa-solid fa-crown text-[#F0B232] text-[10px] ml-1" title="Admin"></i>' : '';
-                    ml.innerHTML += `<div class="flex items-center gap-3 p-1.5 rounded hover:bg-[#35373C] cursor-pointer group" onclick="showUserPopout(event, '${u.socketId}')">
-                        <img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover"><div class="flex flex-col min-w-0"><span class="text-[#87898C] group-hover:text-[#DBDEE1] font-medium truncate" style="color:${u.color||''}">${u.name} ${isDypz}</span>
-                        ${u.activity ? `<span class="text-[10px] text-[#B5BAC1] truncate">${u.activity}</span>` : ''}</div></div>`;
+                    const icon = u.role === 'Admin' ? '<i class="fa-solid fa-crown text-[#F0B232] text-[10px] ml-1"></i>' : (u.role === 'Moderador' ? '<i class="fa-solid fa-shield text-[#23A559] text-[10px] ml-1"></i>' : '');
+                    ml.innerHTML += `
+                        <div class="flex items-center gap-3 p-1.5 rounded hover:bg-[#35373C] cursor-pointer group" onclick="showUserPopout(event, '${u.socketId}')">
+                            <img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover">
+                            <div class="flex flex-col min-w-0">
+                                <span class="group-hover:text-[#DBDEE1] font-medium truncate" style="color:${getRoleColor(u.role, u.color)}">${u.name} ${icon}</span>
+                                ${u.activity ? `<span class="text-[10px] text-[#B5BAC1] truncate">${u.activity}</span>` : ''}
+                            </div>
+                        </div>`;
                 });
-                
-                // Atualiza também os ícones das pessoas nas calls!
                 renderChannels(); 
-                
-                // E também adiciona a box caso tenham entrado em uma call local mas ainda não ligaram a camera
-                if (currentVoiceChannelId) {
-                    const usersInCall = onlineUsersData.filter(u => u.voiceChannelId === currentVoiceChannelId);
-                    usersInCall.forEach(u => {
-                        if (!document.getElementById(`vidbox-${u.socketId}`)) {
-                            addVideoBox(u.socketId, null, u.name, u.avatar);
-                        }
-                    });
-                }
             });
-            socket.on('system message', (msg) => { const div = document.createElement('div'); div.className = 'text-[#F0B232] text-sm py-2 font-bold text-center bg-[#F0B232]/10 rounded'; div.innerHTML = msg; document.getElementById('chat-messages').appendChild(div); });
+
+            socket.on('system message', (msg) => { const div = document.createElement('div'); div.className = 'text-[#23A559] text-sm py-2 font-bold text-center bg-[#23A559]/10 rounded border border-[#23A559]/30'; div.innerHTML = msg; document.getElementById('chat-messages').appendChild(div); chatMessages.scrollTop = chatMessages.scrollHeight; });
             socket.on('error message', alert);
         }
 
-        // ==========================================
-        //  WEBRTC (VOZ E TELA) IGUAL DISCORD PREMIUM
-        // ==========================================
-        let localStream = null;
-        let screenStream = null;
-        let peerConnections = {};
-        const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
-
+        // --- WEBRTC ---
+        let localStream = null, screenStream = null, peerConnections = {}; const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
         async function joinVoiceChannel(chId) {
             if(currentVoiceChannelId) leaveVoice();
             currentVoiceChannelId = chId;
-            document.getElementById('voice-connection-panel').classList.remove('hidden');
-            document.getElementById('video-grid').classList.replace('hidden', 'flex');
-            
+            document.getElementById('voice-connection-panel').classList.remove('hidden'); document.getElementById('video-grid').classList.replace('hidden', 'flex');
             socket.emit('join voice', { serverId: currentServer.id, channelId: chId });
-
-            try {
-                localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-                addVideoBox(socket.id, localStream, currentUser.name, currentUser.avatar, true);
-            } catch(e) { 
-                // Se der erro de mic, entra mesmo assim! (Só ouvinte/espectador)
-                addVideoBox(socket.id, null, currentUser.name, currentUser.avatar, true); 
-            }
+            try { localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false }); addVideoBox(socket.id, localStream, currentUser.name, currentUser.avatar, true); } catch(e) { addVideoBox(socket.id, null, currentUser.name, currentUser.avatar, true); }
         }
-
         function leaveVoice() {
             if(!currentVoiceChannelId) return;
             socket.emit('leave voice', { serverId: currentServer.id, channelId: currentVoiceChannelId });
             currentVoiceChannelId = null;
-            if(localStream) localStream.getTracks().forEach(t => t.stop());
-            if(screenStream) screenStream.getTracks().forEach(t => t.stop());
+            if(localStream) localStream.getTracks().forEach(t => t.stop()); if(screenStream) screenStream.getTracks().forEach(t => t.stop());
             localStream = null; screenStream = null;
-            Object.values(peerConnections).forEach(pc => pc.close());
-            peerConnections = {};
-            document.getElementById('voice-connection-panel').classList.add('hidden');
-            document.getElementById('video-grid').classList.replace('flex', 'hidden');
-            document.getElementById('video-grid').innerHTML = ''; // Limpa grid
-            renderChannels();
-            // Reseta botões
-            document.getElementById('btn-mic').innerHTML = '<i class="fa-solid fa-microphone"></i>';
-            document.getElementById('btn-cam').innerHTML = '<i class="fa-solid fa-video"></i>';
-            document.getElementById('btn-screen').innerHTML = '<i class="fa-solid fa-desktop"></i>';
-            document.getElementById('btn-mic').classList.remove('text-red-500');
+            Object.values(peerConnections).forEach(pc => pc.close()); peerConnections = {};
+            document.getElementById('voice-connection-panel').classList.add('hidden'); document.getElementById('video-grid').classList.replace('flex', 'hidden'); document.getElementById('video-grid').innerHTML = ''; renderChannels();
+            document.getElementById('btn-mic').innerHTML = '<i class="fa-solid fa-microphone"></i>'; document.getElementById('btn-cam').innerHTML = '<i class="fa-solid fa-video"></i>'; document.getElementById('btn-screen').innerHTML = '<i class="fa-solid fa-desktop"></i>'; document.getElementById('btn-mic').classList.remove('text-red-500');
         }
-
-        // NOVO: Adiciona uma box de vídeo super polida com foto de perfil e modo TELA CHEIA
         function addVideoBox(id, stream, name, avatarUrl, isLocal=false) {
             let box = document.getElementById(`vidbox-${id}`);
             if(!box) {
-                box = document.createElement('div');
-                box.id = `vidbox-${id}`;
+                box = document.createElement('div'); box.id = `vidbox-${id}`;
                 box.className = 'video-box-transition relative bg-[#111214] rounded-lg overflow-hidden border border-[#1E1F22] flex-1 min-w-[200px] max-w-full aspect-video flex items-center justify-center group shadow-md';
-                box.innerHTML = `
-                    <img src="${avatarUrl}" class="absolute w-20 h-20 rounded-full object-cover z-0 shadow-xl opacity-80" id="vid-avatar-${id}">
+                box.innerHTML = `<img src="${avatarUrl}" class="absolute w-20 h-20 rounded-full object-cover z-0 shadow-xl opacity-80" id="vid-avatar-${id}">
                     <video id="vid-${id}" class="w-full h-full object-contain relative z-10 hidden" autoplay playsinline ${isLocal ? 'muted' : ''}></video>
-                    
-                    <div class="absolute bottom-2 left-2 bg-black/70 px-2 py-1 rounded text-xs text-white z-20 flex items-center gap-2">
-                        ${name}
-                    </div>
-                    
-                    <!-- Botão de Expandir -->
-                    <button onclick="toggleFullscreenBox('${id}')" class="absolute top-2 right-2 bg-black/70 p-2 rounded text-white z-20 opacity-0 group-hover:opacity-100 transition hover:bg-black">
-                        <i class="fa-solid fa-expand" id="icon-expand-${id}"></i>
-                    </button>
-                `;
+                    <div class="absolute bottom-2 left-2 bg-black/70 px-2 py-1 rounded text-xs text-white z-20">${name}</div>
+                    <button onclick="toggleFullscreenBox('${id}')" class="absolute top-2 right-2 bg-black/70 p-2 rounded text-white z-20 opacity-0 group-hover:opacity-100 transition hover:bg-black"><i class="fa-solid fa-expand" id="icon-expand-${id}"></i></button>`;
                 document.getElementById('video-grid').appendChild(box);
             }
-            
-            const vid = document.getElementById(`vid-${id}`);
-            const av = document.getElementById(`vid-avatar-${id}`);
-            
-            if(stream && stream.getVideoTracks().length > 0) {
-                if(vid.srcObject !== stream) vid.srcObject = stream;
-                vid.classList.remove('hidden');
-                av.classList.add('hidden');
-            } else {
-                vid.srcObject = null;
-                vid.classList.add('hidden');
-                av.classList.remove('hidden');
-            }
+            const vid = document.getElementById(`vid-${id}`), av = document.getElementById(`vid-avatar-${id}`);
+            if(stream && stream.getVideoTracks().length > 0) { if(vid.srcObject !== stream) vid.srcObject = stream; vid.classList.remove('hidden'); av.classList.add('hidden'); } else { vid.srcObject = null; vid.classList.add('hidden'); av.classList.remove('hidden'); }
         }
-
         function removeVideoBox(id) { const box = document.getElementById(`vidbox-${id}`); if(box) box.remove(); }
-
-        // NOVO: Expande o vídeo da pessoa para tela inteira (foco)
-        function toggleFullscreenBox(id) {
-            const box = document.getElementById(`vidbox-${id}`);
-            const icon = document.getElementById(`icon-expand-${id}`);
-            
-            if (box.classList.contains('fixed')) {
-                box.classList.remove('fixed', 'inset-4', 'z-[100]', 'shadow-2xl');
-                box.classList.add('relative', 'flex-1', 'min-w-[200px]', 'aspect-video');
-                icon.classList.replace('fa-compress', 'fa-expand');
-            } else {
-                box.classList.add('fixed', 'inset-4', 'z-[100]', 'shadow-2xl');
-                box.classList.remove('relative', 'flex-1', 'min-w-[200px]', 'aspect-video');
-                icon.classList.replace('fa-expand', 'fa-compress');
-            }
-        }
-
-        // Controles Locais
-        function toggleMic() {
-            if(!localStream) return;
-            const track = localStream.getAudioTracks()[0];
-            if(track) {
-                track.enabled = !track.enabled;
-                const btn = document.getElementById('btn-mic');
-                btn.innerHTML = track.enabled ? '<i class="fa-solid fa-microphone"></i>' : '<i class="fa-solid fa-microphone-slash"></i>';
-                btn.classList.toggle('text-red-500', !track.enabled);
-            }
-        }
-
-        async function toggleCam() {
-            if(!localStream) {
-                 localStream = new MediaStream(); // Cria stream caso o usuário tenha entrado sem mic
-            }
-            const btn = document.getElementById('btn-cam');
-            const videoTrack = localStream.getVideoTracks()[0];
-            
-            if(videoTrack) { // Desliga
-                videoTrack.stop(); localStream.removeTrack(videoTrack);
-                btn.classList.remove('text-[#23A559]');
-                updateAllPeerTracks();
-            } else { // Liga
-                try {
-                    const vs = await navigator.mediaDevices.getUserMedia({ video: true });
-                    localStream.addTrack(vs.getVideoTracks()[0]);
-                    btn.classList.add('text-[#23A559]');
-                    updateAllPeerTracks();
-                } catch(e) { alert("Câmera não encontrada."); }
-            }
-        }
-
-        async function toggleScreen() {
-            const btn = document.getElementById('btn-screen');
-            if(screenStream) { // Desliga tela
-                screenStream.getTracks().forEach(t=>t.stop()); screenStream = null;
-                btn.classList.remove('text-[#23A559]');
-                updateAllPeerTracks(); // Volta para webcam
-            } else { // Liga tela
-                try {
-                    screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-                    screenStream.getVideoTracks()[0].onended = () => toggleScreen(); // Se parar pelo navegador
-                    btn.classList.add('text-[#23A559]');
-                    updateAllPeerTracks();
-                } catch(e) {}
-            }
-        }
-
-        function updateAllPeerTracks() {
-            // Atualiza vídeo local na tela
-            const streamToRender = screenStream || localStream;
-            addVideoBox(socket.id, streamToRender, currentUser.name, currentUser.avatar, true);
-            
-            // Envia pros amigos
-            Object.values(peerConnections).forEach(pc => {
-                const senders = pc.getSenders();
-                const vTrack = streamToRender ? streamToRender.getVideoTracks()[0] : null;
-                const aTrack = localStream ? localStream.getAudioTracks()[0] : null;
-                
-                const vSender = senders.find(s => s.track && s.track.kind === 'video');
-                if(vTrack && vSender) vSender.replaceTrack(vTrack);
-                else if(vTrack && !vSender) pc.addTrack(vTrack, streamToRender);
-                else if(!vTrack && vSender) pc.removeTrack(vSender);
-                
-                const aSender = senders.find(s => s.track && s.track.kind === 'audio');
-                if(aTrack && aSender) aSender.replaceTrack(aTrack);
-            });
-        }
-
-        function createPeerConnection(peerId, initiate) {
-            const pc = new RTCPeerConnection(rtcConfig);
-            peerConnections[peerId] = pc;
-            
-            const streamToSend = screenStream || localStream;
-            if (streamToSend) streamToSend.getTracks().forEach(t => pc.addTrack(t, streamToSend));
-
-            pc.onicecandidate = (event) => {
-                if(event.candidate) socket.emit('webrtc signal', { target: peerId, signal: { type: 'ice', candidate: event.candidate } });
-            };
-
-            pc.ontrack = (event) => {
-                const peerUser = onlineUsersData.find(u => u.socketId === peerId);
-                addVideoBox(peerId, event.streams[0], peerUser ? peerUser.name : 'Membro', peerUser ? peerUser.avatar : 'https://cdn.discordapp.com/embed/avatars/0.png');
-            };
-
-            if(initiate) {
-                pc.createOffer().then(offer => {
-                    pc.setLocalDescription(offer);
-                    socket.emit('webrtc signal', { target: peerId, signal: offer });
-                });
-            }
-            return pc;
-        }
-
-        if(socket) {
-            socket.on('user joined voice', (peerId) => {
-                if(currentVoiceChannelId) createPeerConnection(peerId, true);
-            });
-
-            socket.on('user left voice', (peerId) => {
-                if(peerConnections[peerId]) { peerConnections[peerId].close(); delete peerConnections[peerId]; }
-                removeVideoBox(peerId);
-            });
-
-            socket.on('webrtc signal', async (data) => {
-                if(!currentVoiceChannelId) return;
-                const peerId = data.sender;
-                let pc = peerConnections[peerId];
-                
-                if(data.signal.type === 'offer') {
-                    if(!pc) pc = createPeerConnection(peerId, false);
-                    await pc.setRemoteDescription(new RTCSessionDescription(data.signal));
-                    const answer = await pc.createAnswer();
-                    await pc.setLocalDescription(answer);
-                    socket.emit('webrtc signal', { target: peerId, signal: answer });
-                } else if(data.signal.type === 'answer') {
-                    if(pc) await pc.setRemoteDescription(new RTCSessionDescription(data.signal));
-                } else if(data.signal.type === 'ice') {
-                    if(pc) pc.addIceCandidate(new RTCIceCandidate(data.signal.candidate));
-                }
-            });
-        }
+        function toggleFullscreenBox(id) { const box = document.getElementById(`vidbox-${id}`); const icon = document.getElementById(`icon-expand-${id}`); if (box.classList.contains('fixed')) { box.classList.remove('fixed', 'inset-4', 'z-[100]', 'shadow-2xl'); box.classList.add('relative', 'flex-1', 'min-w-[200px]', 'aspect-video'); icon.classList.replace('fa-compress', 'fa-expand'); } else { box.classList.add('fixed', 'inset-4', 'z-[100]', 'shadow-2xl'); box.classList.remove('relative', 'flex-1', 'min-w-[200px]', 'aspect-video'); icon.classList.replace('fa-expand', 'fa-compress'); } }
+        function toggleMic() { if(!localStream) return; const track = localStream.getAudioTracks()[0]; if(track) { track.enabled = !track.enabled; const btn = document.getElementById('btn-mic'); btn.innerHTML = track.enabled ? '<i class="fa-solid fa-microphone"></i>' : '<i class="fa-solid fa-microphone-slash"></i>'; btn.classList.toggle('text-red-500', !track.enabled); } }
+        async function toggleCam() { if(!localStream) localStream = new MediaStream(); const btn = document.getElementById('btn-cam'); const videoTrack = localStream.getVideoTracks()[0]; if(videoTrack) { videoTrack.stop(); localStream.removeTrack(videoTrack); btn.classList.remove('text-[#23A559]'); updateAllPeerTracks(); } else { try { const vs = await navigator.mediaDevices.getUserMedia({ video: true }); localStream.addTrack(vs.getVideoTracks()[0]); btn.classList.add('text-[#23A559]'); updateAllPeerTracks(); } catch(e) { alert("Câmera indisponível."); } } }
+        async function toggleScreen() { const btn = document.getElementById('btn-screen'); if(screenStream) { screenStream.getTracks().forEach(t=>t.stop()); screenStream = null; btn.classList.remove('text-[#23A559]'); updateAllPeerTracks(); } else { try { screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true }); screenStream.getVideoTracks()[0].onended = () => toggleScreen(); btn.classList.add('text-[#23A559]'); updateAllPeerTracks(); } catch(e) {} } }
+        function updateAllPeerTracks() { const streamToRender = screenStream || localStream; addVideoBox(socket.id, streamToRender, currentUser.name, currentUser.avatar, true); Object.values(peerConnections).forEach(pc => { const senders = pc.getSenders(); const vTrack = streamToRender ? streamToRender.getVideoTracks()[0] : null; const aTrack = localStream ? localStream.getAudioTracks()[0] : null; const vSender = senders.find(s => s.track && s.track.kind === 'video'); if(vTrack && vSender) vSender.replaceTrack(vTrack); else if(vTrack && !vSender) pc.addTrack(vTrack, streamToRender); else if(!vTrack && vSender) pc.removeTrack(vSender); const aSender = senders.find(s => s.track && s.track.kind === 'audio'); if(aTrack && aSender) aSender.replaceTrack(aTrack); }); }
+        function createPeerConnection(peerId, initiate) { const pc = new RTCPeerConnection(rtcConfig); peerConnections[peerId] = pc; const streamToSend = screenStream || localStream; if (streamToSend) streamToSend.getTracks().forEach(t => pc.addTrack(t, streamToSend)); pc.onicecandidate = (event) => { if(event.candidate) socket.emit('webrtc signal', { target: peerId, signal: { type: 'ice', candidate: event.candidate } }); }; pc.ontrack = (event) => { const peerUser = onlineUsersData.find(u => u.socketId === peerId); addVideoBox(peerId, event.streams[0], peerUser ? peerUser.name : 'Membro', peerUser ? peerUser.avatar : 'https://cdn.discordapp.com/embed/avatars/0.png'); }; if(initiate) { pc.createOffer().then(offer => { pc.setLocalDescription(offer); socket.emit('webrtc signal', { target: peerId, signal: offer }); }); } return pc; }
+        if(socket) { socket.on('user joined voice', (peerId) => { if(currentVoiceChannelId) createPeerConnection(peerId, true); }); socket.on('user left voice', (peerId) => { if(peerConnections[peerId]) { peerConnections[peerId].close(); delete peerConnections[peerId]; } removeVideoBox(peerId); }); socket.on('webrtc signal', async (data) => { if(!currentVoiceChannelId) return; const peerId = data.sender; let pc = peerConnections[peerId]; if(data.signal.type === 'offer') { if(!pc) pc = createPeerConnection(peerId, false); await pc.setRemoteDescription(new RTCSessionDescription(data.signal)); const answer = await pc.createAnswer(); await pc.setLocalDescription(answer); socket.emit('webrtc signal', { target: peerId, signal: answer }); } else if(data.signal.type === 'answer') { if(pc) await pc.setRemoteDescription(new RTCSessionDescription(data.signal)); } else if(data.signal.type === 'ice') { if(pc) pc.addIceCandidate(new RTCIceCandidate(data.signal.candidate)); } }); }
     </script>
 </body>
 </html>
