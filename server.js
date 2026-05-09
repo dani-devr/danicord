@@ -11,8 +11,11 @@ const io = new Server(server, {
     maxHttpBufferSize: 1e9 // Limite de 1GB
 });
 
+// --- SISTEMA DE ARQUIVOS (UPLOADS E BANCO DE DADOS) ---
 const uploadDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+const dbPath = path.join(__dirname, 'data.json');
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, uploadDir),
@@ -37,11 +40,11 @@ app.post('/upload', upload.single('media'), (req, res) => {
 });
 
 // --- ESTADO DA APLICAÇÃO ---
-const activeUsers = new Map();
-const bannedIPs = new Set();
-const ipToUser = new Map(); 
+const activeUsers = new Map(); // Usuários online (Não salvo no disco)
+let bannedIPs = new Set();
+let ipToUser = new Map(); 
 
-const servers = {
+let servers = {
     'global': { 
         id: 'global', name: 'Danicord Global', icon: 'fa-globe', type: 'public', 
         channels: {
@@ -51,6 +54,42 @@ const servers = {
     }
 };
 
+// --- FUNÇÕES DE SAVE/LOAD (DATA PERSISTENCE) ---
+function loadData() {
+    if (fs.existsSync(dbPath)) {
+        try {
+            const raw = fs.readFileSync(dbPath, 'utf8');
+            const data = JSON.parse(raw);
+            if (data.servers) servers = data.servers;
+            if (data.bannedIPs) bannedIPs = new Set(data.bannedIPs);
+            if (data.ipToUser) ipToUser = new Map(Object.entries(data.ipToUser));
+            console.log("Banco de dados carregado com sucesso!");
+        } catch (e) {
+            console.error("Erro ao carregar data.json:", e);
+        }
+    }
+}
+
+function saveData() {
+    try {
+        const data = {
+            servers: servers,
+            bannedIPs: Array.from(bannedIPs),
+            ipToUser: Object.fromEntries(ipToUser)
+        };
+        fs.writeFileSync(dbPath, JSON.stringify(data));
+    } catch (e) {
+        console.error("Erro ao salvar data.json:", e);
+    }
+}
+
+// Carrega os dados ao ligar o servidor
+loadData();
+
+// Salva os dados a cada 10 segundos automaticamente
+setInterval(saveData, 10000);
+
+// --- CONEXÕES SOCKET ---
 io.on('connection', (socket) => {
     let clientIp = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
     if (clientIp.includes(',')) clientIp = clientIp.split(',')[0].trim();
@@ -75,6 +114,7 @@ io.on('connection', (socket) => {
             user = savedUser;
         } else {
             ipToUser.set(clientIp, user);
+            saveData(); // Salva novo usuário
         }
 
         if(user.name.toLowerCase() === 'dypz') user.role = 'Admin'; 
@@ -87,7 +127,10 @@ io.on('connection', (socket) => {
         let serverToJoin = 'global';
         if (inviteId && servers[inviteId]) serverToJoin = inviteId;
 
-        socket.emit('initial servers', [servers['global']]);
+        // Envia todos os servidores públicos
+        const publicServers = Object.values(servers).filter(s => s.type === 'public');
+        socket.emit('initial servers', publicServers);
+        
         joinServer(socket, serverToJoin);
         io.emit('update users', Array.from(activeUsers.values()));
     });
@@ -103,6 +146,7 @@ io.on('connection', (socket) => {
         };
         socket.emit('server created', servers[newServerId]); 
         joinServer(socket, newServerId);
+        saveData();
     });
 
     socket.on('create channel', ({ serverId, name, type }) => {
@@ -110,6 +154,7 @@ io.on('connection', (socket) => {
         const chId = 'ch_' + Date.now().toString(36);
         servers[serverId].channels[chId] = { id: chId, name: name, type: type, messages: type === 'text' ? [] : undefined };
         io.to(serverId).emit('channel created', { serverId, channel: servers[serverId].channels[chId] });
+        saveData();
     });
 
     socket.on('create group', (data) => {
@@ -127,6 +172,7 @@ io.on('connection', (socket) => {
             }
         });
         joinServer(socket, newServerId);
+        saveData();
     });
 
     socket.on('join server', (serverId) => {
@@ -146,6 +192,7 @@ io.on('connection', (socket) => {
             activeUsers.set(socket.id, newProfile);
             ipToUser.set(current.ip, newProfile);
             io.emit('update users', Array.from(activeUsers.values()));
+            saveData();
         }
     });
 
@@ -169,6 +216,7 @@ io.on('connection', (socket) => {
                 msg.text = newText;
                 msg.edited = true;
                 io.to(serverId).emit('message edited', { channelId, msgId, newText });
+                saveData();
             }
         }
     });
@@ -193,10 +241,12 @@ io.on('connection', (socket) => {
         };
         
         const ch = servers[serverId].channels[channelId];
-        if (ch.messages.length > 200) ch.messages.shift();
+        // Guarda até 500 mensagens para não pesar o disco
+        if (ch.messages.length > 500) ch.messages.shift();
         ch.messages.push(message);
 
         io.to(serverId).emit('chat message', { serverId, channelId, message });
+        saveData(); // Grava mensagem no HD
     });
 
     socket.on('set role', ({ targetSocketId, role }) => {
@@ -208,6 +258,7 @@ io.on('connection', (socket) => {
                 ipToUser.set(targetUser.ip, targetUser); 
                 io.emit('update users', Array.from(activeUsers.values()));
                 io.emit('system message', `O cargo de ${targetUser.name} foi alterado para ${role}.`);
+                saveData();
             }
         }
     });
@@ -243,6 +294,7 @@ io.on('connection', (socket) => {
         if (user && (user.role === 'Admin' || user.role === 'Moderador') && servers[serverId]) {
             servers[serverId].channels[channelId].messages = servers[serverId].channels[channelId].messages.filter(m => m.id !== msgId);
             io.to(serverId).emit('message deleted', { channelId, msgId });
+            saveData();
         }
     });
 
@@ -258,6 +310,7 @@ io.on('connection', (socket) => {
                     if (cleanIp === targetUser.ip) { s.emit('banned permanently'); s.disconnect(true); }
                 });
                 io.emit('system message', `dypz baniu ${targetUser.name} permanentemente através do Painel de Controle.`);
+                saveData();
             }
         }
     });
@@ -281,4 +334,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Danicord rodando na porta ${PORT}`));
+server.listen(PORT, () => console.log(`Danicord rodando na porta ${PORT} com Save Persistence`));
