@@ -2,8 +2,9 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Danicord</title>
+    <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%235865F2'/><path fill='white' d='M25,30 Q50,20 75,30 Q80,50 75,70 Q50,80 25,70 Q20,50 25,30'/></svg>">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -11,7 +12,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: var(--bg-track, #2B2D31); border-radius: 4px; }
         ::-webkit-scrollbar-thumb { background: var(--bg-thumb, #1A1B1E); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--bg-thumb-hover, #111214); }
@@ -33,7 +34,7 @@
         @keyframes fallConfetti { 0% { transform: translateY(-20px) rotate(0deg); opacity: 1; } 100% { transform: translateY(150px) rotate(720deg); opacity: 0; } }
         @keyframes floatHearts { 0% { transform: translateY(100px) scale(0.5); opacity: 0; } 50% { opacity: 0.8; } 100% { transform: translateY(-50px) scale(1.2); opacity: 0; } }
 
-        /* Correção Absoluta de Temas (Sobrescrevendo classes utilitárias exatas do Tailwind) */
+        /* Correção Absoluta de Temas (Sobrescrevendo classes do Tailwind) */
         body.theme-light .bg-\[\#313338\] { background-color: #FFFFFF !important; }
         body.theme-light .bg-\[\#2B2D31\] { background-color: #F2F3F5 !important; }
         body.theme-light .bg-\[\#1E1F22\] { background-color: #E3E5E8 !important; }
@@ -44,7 +45,6 @@
         body.theme-light .text-\[\#87898C\] { color: #5C5E66 !important; }
         body.theme-light .border-\[\#1E1F22\] { border-color: #D4D7DC !important; }
         body.theme-light .border-\[\#2B2D31\] { border-color: #E3E5E8 !important; }
-        /* Protege botões primários para não ficarem com texto preto */
         body.theme-light .bg-\[\#5865F2\] { color: #FFFFFF !important; }
         body.theme-light .bg-red-500 { color: #FFFFFF !important; }
         body.theme-light .bg-\[\#23A559\] { color: #FFFFFF !important; }
@@ -85,9 +85,10 @@
 </head>
 <body class="bg-[#313338] text-[#DBDEE1] h-screen w-screen overflow-hidden flex selection:bg-[#5865F2] selection:text-white relative theme-dark">
 
+    <!-- OVERLAYS E MODAIS -->
     <div id="drag-overlay" class="hidden absolute inset-0 bg-[#5865F2]/90 backdrop-blur-sm flex-col items-center justify-center text-white border-8 border-dashed border-white m-4 rounded-3xl transition-all">
         <i class="fa-solid fa-file-arrow-up text-7xl mb-4"></i>
-        <h2 class="text-4xl font-bold">Solte o arquivo aqui!</h2>
+        <h2 class="text-4xl font-bold text-center">Solte o arquivo aqui!</h2>
     </div>
 
     <div id="ban-screen" class="hidden fixed inset-0 bg-[#111214] z-[9999] flex-col items-center justify-center text-center p-6">
@@ -97,7 +98,7 @@
     </div>
 
     <!-- MODAL LOGIN -->
-    <div id="login-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] backdrop-blur-sm transition-opacity">
+    <div id="login-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] backdrop-blur-sm transition-opacity p-4">
         <div class="bg-[#313338] p-8 rounded-lg shadow-2xl w-full max-w-md">
             <h2 class="text-2xl font-bold text-center text-white mb-2" id="login-title">Bem-vindo ao Danicord!</h2>
             <p class="text-center text-[#B5BAC1] text-sm mb-6" id="login-subtitle">O seu IP ficará vinculado a esta conta.</p>
@@ -110,13 +111,13 @@
                     <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">URL Avatar (GIF Suportado)</label>
                     <input type="url" id="avatar" class="w-full bg-[#1E1F22] text-white rounded p-2.5 focus:outline-none focus:ring-1 focus:ring-[#5865F2]">
                 </div>
-                <button type="submit" class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-semibold py-2.5 rounded mt-4">Entrar</button>
+                <button type="submit" class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-semibold py-2.5 rounded mt-4 transition">Entrar</button>
             </form>
         </div>
     </div>
 
     <!-- MODAL CUSTOMIZAR PERFIL -->
-    <div id="profile-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[70] backdrop-blur-sm">
+    <div id="profile-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[70] backdrop-blur-sm p-4">
         <div class="bg-[#313338] rounded-lg shadow-2xl w-full max-w-md overflow-hidden border border-[#1E1F22]">
             <div id="profile-banner-preview" class="h-24 bg-[#5865F2] w-full relative overflow-hidden transition-colors bg-cover bg-center"></div>
             <div class="p-6 relative">
@@ -154,13 +155,13 @@
                         </div>
                     </div>
 
-                    <div class="mt-2"><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Tema da Aplicação (Visual)</label>
+                    <div class="mt-2"><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Tema da Aplicação</label>
                         <select id="prof-theme" class="w-full bg-[#1E1F22] text-white rounded p-2 border-none outline-none">
                             <option value="dark">🌙 Escuro (Padrão)</option><option value="light">☀️ Claro</option><option value="ocean">🌊 Oceano</option><option value="forest">🌲 Floresta</option>
                         </select>
                     </div>
 
-                    <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Imagem do Banner (URL / GIF)</label><input type="url" id="prof-banner-url" placeholder="Deixe vazio para usar a cor" class="w-full bg-[#1E1F22] text-white rounded p-2 text-sm"></div>
+                    <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Imagem do Banner (URL / GIF)</label><input type="url" id="prof-banner-url" placeholder="Vazio para usar a cor" class="w-full bg-[#1E1F22] text-white rounded p-2 text-sm"></div>
                     <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">URL Avatar (GIF/PNG)</label><input type="url" id="prof-avatar" class="w-full bg-[#1E1F22] text-white rounded p-2 text-sm"></div>
                     
                     <div class="flex gap-2 justify-end pt-4 border-t border-[#1E1F22]">
@@ -205,7 +206,7 @@
     </div>
 
     <!-- MODAL CRIAR CANAL -->
-    <div id="channel-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[60] backdrop-blur-sm">
+    <div id="channel-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[60] backdrop-blur-sm p-4">
         <div class="bg-[#313338] p-6 rounded-lg shadow-2xl w-full max-w-sm border border-[#1E1F22]">
             <h3 class="text-xl font-bold text-white mb-4">Criar Canal</h3>
             <div class="flex flex-col gap-2 mb-4">
@@ -224,98 +225,144 @@
         </div>
     </div>
 
+    <!-- OVERLAYS MOBILE -->
+    <div id="mobile-overlay-left" class="hidden fixed inset-0 bg-black/50 z-40 md:hidden" onclick="toggleLeftSidebar()"></div>
+    <div id="mobile-overlay-right" class="hidden fixed inset-0 bg-black/50 z-40 md:hidden" onclick="toggleRightSidebar()"></div>
+
     <!-- INTERFACE PRINCIPAL -->
     <div id="app-container" class="hidden h-full w-full flex">
         
-        <!-- SIDEBAR SERVIDORES -->
-        <nav class="w-[72px] bg-[#1E1F22] h-full flex flex-col items-center py-3 gap-2 flex-shrink-0 overflow-y-auto z-10" id="server-sidebar">
-            <div class="w-8 h-[2px] bg-[#313338] rounded-full my-1 mt-auto" id="server-separator"></div>
-            <div onclick="createServer()" class="w-12 h-12 bg-[#313338] text-[#23A559] hover:bg-[#23A559] hover:text-white rounded-[24px] hover:rounded-xl flex items-center justify-center cursor-pointer transition-all"><i class="fa-solid fa-plus text-xl"></i></div>
-        </nav>
+        <!-- SIDEBARS ESQUERDAS (AGORA RESPONSIVAS) -->
+        <div id="left-sidebars" class="fixed inset-y-0 left-0 z-50 flex transform -translate-x-full transition-transform duration-300 md:relative md:translate-x-0">
+            <!-- SIDEBAR SERVIDORES -->
+            <nav class="w-[72px] bg-[#1E1F22] h-full flex flex-col items-center py-3 gap-2 flex-shrink-0 overflow-y-auto z-10 border-r border-[#111214] md:border-none" id="server-sidebar">
+                <div class="w-8 h-[2px] bg-[#313338] rounded-full my-1 mt-auto" id="server-separator"></div>
+                <div onclick="createServer()" class="w-12 h-12 bg-[#313338] text-[#23A559] hover:bg-[#23A559] hover:text-white rounded-[24px] hover:rounded-xl flex items-center justify-center cursor-pointer transition-all"><i class="fa-solid fa-plus text-xl"></i></div>
+            </nav>
 
-        <!-- SIDEBAR CANAIS -->
-        <aside class="w-60 bg-[#2B2D31] flex flex-col flex-shrink-0 rounded-tl-lg overflow-hidden relative">
-            <header class="h-12 border-b border-[#1E1F22] flex items-center px-4 font-bold text-white shadow-sm group">
-                <span id="current-server-name" class="truncate">Carregando...</span>
-                <button onclick="copyInviteLink()" class="ml-auto text-[#B5BAC1] hover:text-[#5865F2] opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-user-plus"></i></button>
-            </header>
-            
-            <div class="flex-1 overflow-y-auto p-2">
-                <div class="flex items-center justify-between text-[#87898C] text-xs font-bold uppercase mb-1">
-                    <span><i class="fa-solid fa-chevron-down text-[10px] mr-1"></i> Canais</span>
-                    <button onclick="openChannelModal()" class="hover:text-white"><i class="fa-solid fa-plus"></i></button>
-                </div>
-                <div id="channel-list" class="space-y-0.5"></div>
-            </div>
-
-            <!-- Painel Voz -->
-            <div id="voice-connection-panel" class="hidden bg-[#1E1F22] border-t border-[#111214] p-2 flex flex-col gap-2 text-white text-xs">
-                <div class="flex justify-between items-center text-[#23A559] font-bold"><span class="truncate"><i class="fa-solid fa-signal mr-1"></i> Voz Conectada</span> <button onclick="leaveVoice()" class="text-[#87898C] hover:text-red-500"><i class="fa-solid fa-phone-slash"></i></button></div>
-                <div class="flex gap-2 text-lg text-[#B5BAC1]">
-                    <button id="btn-mic" onclick="toggleMic()" class="hover:text-white hover:bg-[#35373C] p-1.5 rounded flex-1"><i class="fa-solid fa-microphone"></i></button>
-                    <button id="btn-cam" onclick="toggleCam()" class="hover:text-white hover:bg-[#35373C] p-1.5 rounded flex-1"><i class="fa-solid fa-video"></i></button>
-                    <button id="btn-screen" onclick="toggleScreen()" class="hover:text-white hover:bg-[#35373C] p-1.5 rounded flex-1"><i class="fa-solid fa-desktop"></i></button>
-                </div>
-            </div>
-
-            <div class="h-[52px] bg-[#232428] flex items-center px-2 gap-2 flex-shrink-0">
-                <div class="relative cursor-pointer hover:bg-[#3F4147] p-1 rounded flex-1 flex items-center gap-2 overflow-hidden transition" onclick="openProfile()">
-                    <div id="my-avatar-mini-container" class="relative">
-                        <img id="my-avatar-display" src="" class="w-8 h-8 rounded-full object-cover">
-                        <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-[#232428] rounded-full bg-[#23A559]"></div>
+            <!-- SIDEBAR CANAIS -->
+            <aside class="w-60 bg-[#2B2D31] h-full flex flex-col flex-shrink-0 rounded-none md:rounded-tl-lg overflow-hidden relative shadow-2xl md:shadow-none">
+                <header class="h-12 border-b border-[#1E1F22] flex items-center px-4 font-bold text-white shadow-sm group">
+                    <span id="current-server-name" class="truncate">Carregando...</span>
+                    <button onclick="copyInviteLink()" class="ml-auto text-[#B5BAC1] hover:text-[#5865F2] transition"><i class="fa-solid fa-user-plus"></i></button>
+                </header>
+                
+                <div class="flex-1 overflow-y-auto p-2">
+                    <div class="flex items-center justify-between text-[#87898C] text-xs font-bold uppercase mb-1">
+                        <span><i class="fa-solid fa-chevron-down text-[10px] mr-1"></i> Canais</span>
+                        <button onclick="openChannelModal()" class="hover:text-white"><i class="fa-solid fa-plus"></i></button>
                     </div>
-                    <div class="flex flex-col min-w-0">
-                        <span id="my-name-display" class="text-sm font-semibold text-white truncate">Usuário</span>
-                        <span id="my-activity-display" class="text-[10px] text-[#B5BAC1] truncate">Configurar</span>
+                    <div id="channel-list" class="space-y-0.5"></div>
+                </div>
+
+                <!-- Painel Voz -->
+                <div id="voice-connection-panel" class="hidden bg-[#1E1F22] border-t border-[#111214] p-2 flex flex-col gap-2 text-white text-xs">
+                    <div class="flex justify-between items-center text-[#23A559] font-bold"><span class="truncate"><i class="fa-solid fa-signal mr-1"></i> Voz Conectada</span> <button onclick="leaveVoice()" class="text-[#87898C] hover:text-red-500"><i class="fa-solid fa-phone-slash"></i></button></div>
+                    <div class="flex gap-2 text-lg text-[#B5BAC1]">
+                        <button id="btn-mic" onclick="toggleMic()" class="hover:text-white hover:bg-[#35373C] p-1.5 rounded flex-1"><i class="fa-solid fa-microphone"></i></button>
+                        <button id="btn-cam" onclick="toggleCam()" class="hover:text-white hover:bg-[#35373C] p-1.5 rounded flex-1"><i class="fa-solid fa-video"></i></button>
+                        <button id="btn-screen" onclick="toggleScreen()" class="hover:text-white hover:bg-[#35373C] p-1.5 rounded flex-1 hidden md:block"><i class="fa-solid fa-desktop"></i></button>
                     </div>
                 </div>
-            </div>
-        </aside>
+
+                <div class="h-[52px] bg-[#232428] flex items-center px-2 gap-2 flex-shrink-0">
+                    <div class="relative cursor-pointer hover:bg-[#3F4147] p-1 rounded flex-1 flex items-center gap-2 overflow-hidden transition" onclick="openProfile()">
+                        <div id="my-avatar-mini-container" class="relative">
+                            <img id="my-avatar-display" src="" class="w-8 h-8 rounded-full object-cover">
+                            <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-[#232428] rounded-full bg-[#23A559]"></div>
+                        </div>
+                        <div class="flex flex-col min-w-0">
+                            <span id="my-name-display" class="text-sm font-semibold text-white truncate">Usuário</span>
+                            <span id="my-activity-display" class="text-[10px] text-[#B5BAC1] truncate">Configurar</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
 
         <!-- ÁREA CENTRAL (CHAT + VIDEOS) -->
         <main class="flex-1 flex flex-col bg-[#313338] relative min-w-0" onclick="closeUserPopout()">
-            <header class="h-12 border-b border-[#1E1F22] flex items-center px-4 font-semibold text-white shadow-sm gap-2">
-                <i id="header-channel-icon" class="fa-solid fa-hashtag text-[#87898C] text-xl"></i>
-                <span id="chat-header-name">geral</span>
+            
+            <!-- HEADER MOBILE APRIMORADO -->
+            <header class="h-12 border-b border-[#1E1F22] flex items-center px-4 font-semibold text-white shadow-sm justify-between">
+                <div class="flex items-center gap-3 min-w-0">
+                    <button class="md:hidden text-[#B5BAC1] hover:text-white text-xl" onclick="toggleLeftSidebar()"><i class="fa-solid fa-bars"></i></button>
+                    <i id="header-channel-icon" class="fa-solid fa-hashtag text-[#87898C] text-xl hidden sm:block"></i>
+                    <span id="chat-header-name" class="truncate">geral</span>
+                </div>
+                <button class="md:hidden text-[#B5BAC1] hover:text-white text-xl ml-2" onclick="toggleRightSidebar()"><i class="fa-solid fa-user-group"></i></button>
             </header>
 
             <!-- Grid WebRTC -->
-            <div id="video-grid" class="hidden flex-wrap gap-2 p-4 bg-[#1E1F22] border-b border-[#2B2D31] max-h-[50vh] overflow-y-auto content-start justify-center transition-all z-40"></div>
+            <div id="video-grid" class="hidden grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 p-2 bg-[#1E1F22] border-b border-[#2B2D31] max-h-[50vh] overflow-y-auto transition-all z-30"></div>
 
-            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-1"></div>
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-2 sm:p-4 space-y-1"></div>
 
-            <div class="px-4 pb-6 pt-2">
+            <div class="px-2 sm:px-4 pb-4 pt-2">
                 <div class="bg-[#383A40] rounded-lg flex flex-col">
                     <div id="reply-banner" class="hidden bg-[#2B2D31] px-4 py-2 flex items-center justify-between border-b border-[#1E1F22] rounded-t-lg">
-                        <div class="flex items-center gap-2 text-sm text-[#B5BAC1]"><i class="fa-solid fa-reply"></i><span id="reply-text"></span></div>
+                        <div class="flex items-center gap-2 text-sm text-[#B5BAC1]"><i class="fa-solid fa-reply"></i><span id="reply-text" class="truncate max-w-[200px] sm:max-w-md"></span></div>
                         <button onclick="cancelReply()" class="text-[#B5BAC1] hover:text-white"><i class="fa-solid fa-xmark"></i></button>
                     </div>
                     <div id="attachment-preview" class="hidden p-4 border-b border-[#2B2D31] flex items-center gap-4 relative">
                         <div class="bg-[#2B2D31] p-3 rounded-lg flex items-center gap-3 border border-[#1E1F22]">
                             <i class="fa-solid fa-file-circle-check text-3xl text-[#5865F2]"></i>
-                            <span id="attachment-name" class="text-sm font-semibold text-white max-w-[250px] truncate">arquivo</span>
+                            <span id="attachment-name" class="text-sm font-semibold text-white max-w-[150px] sm:max-w-[250px] truncate">arquivo</span>
                         </div>
                         <button onclick="removeAttachment()" class="absolute top-2 right-2 text-[#87898C] hover:text-red-500 transition"><i class="fa-solid fa-trash"></i></button>
                     </div>
                     
                     <div id="typing-indicator" class="hidden px-4 text-xs font-bold text-[#B5BAC1] mt-2 h-4 truncate"></div>
 
-                    <div class="flex items-center px-4 py-2 min-h-[44px]">
+                    <div class="flex items-center px-3 py-2 min-h-[44px]">
                         <input type="file" id="file-input" class="hidden" onchange="handleFiles(event.target.files)">
-                        <button onclick="document.getElementById('file-input').click()" class="text-[#B5BAC1] hover:text-[#DBDEE1] bg-[#2B2D31] w-6 h-6 rounded-full flex items-center justify-center hover:bg-[#4E5058] mr-4 transition"><i class="fa-solid fa-plus text-sm"></i></button>
-                        <input type="text" id="message-input" placeholder="Conversar... (@everyone notifica todos)" class="flex-1 bg-transparent border-none outline-none text-[#DBDEE1] discord-input-placeholder py-1">
+                        <button onclick="document.getElementById('file-input').click()" class="text-[#B5BAC1] hover:text-[#DBDEE1] bg-[#2B2D31] w-7 h-7 rounded-full flex items-center justify-center hover:bg-[#4E5058] mr-3 transition flex-shrink-0"><i class="fa-solid fa-plus text-sm"></i></button>
+                        <input type="text" id="message-input" placeholder="Mensagem..." class="flex-1 bg-transparent border-none outline-none text-[#DBDEE1] discord-input-placeholder py-1 min-w-0 text-sm sm:text-base">
                     </div>
                 </div>
             </div>
         </main>
 
-        <aside class="w-60 bg-[#2B2D31] flex-shrink-0 hidden md:flex flex-col pb-4">
-            <div class="px-4 py-4"><span class="font-bold text-xs text-[#87898C] uppercase tracking-wide">Membros Online</span></div>
-            <div id="members-list" class="flex-1 overflow-y-auto px-2 space-y-[2px]"></div>
+        <!-- SIDEBAR MEMBROS (RESPONSIVA) -->
+        <aside id="right-sidebar" class="fixed inset-y-0 right-0 z-50 w-60 bg-[#2B2D31] flex flex-col transform translate-x-full transition-transform duration-300 md:relative md:translate-x-0 shadow-2xl md:shadow-none">
+            <div class="px-4 py-4 border-b border-[#1E1F22] md:border-none flex justify-between items-center">
+                <span class="font-bold text-xs text-[#87898C] uppercase tracking-wide">Membros Online</span>
+                <button class="md:hidden text-[#B5BAC1]" onclick="toggleRightSidebar()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="members-list" class="flex-1 overflow-y-auto px-2 space-y-[2px] mt-2 md:mt-0"></div>
         </aside>
     </div>
 
     <script>
+        // --- MOBILE MENU TOGGLES ---
+        function toggleLeftSidebar() {
+            const sidebar = document.getElementById('left-sidebars');
+            const overlay = document.getElementById('mobile-overlay-left');
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full'); overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full'); overlay.classList.add('hidden');
+            }
+        }
+        function toggleRightSidebar() {
+            const sidebar = document.getElementById('right-sidebar');
+            const overlay = document.getElementById('mobile-overlay-right');
+            if (sidebar.classList.contains('translate-x-full')) {
+                sidebar.classList.remove('translate-x-full'); overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('translate-x-full'); overlay.classList.add('hidden');
+            }
+        }
+        function closeAllSidebarsOnMobile() {
+            if (window.innerWidth < 768) {
+                document.getElementById('left-sidebars').classList.add('-translate-x-full');
+                document.getElementById('mobile-overlay-left').classList.add('hidden');
+                document.getElementById('right-sidebar').classList.add('translate-x-full');
+                document.getElementById('mobile-overlay-right').classList.add('hidden');
+            }
+        }
+
+        // --- GERADOR DE SOM (Plin!) ---
         function playPing() {
             if (currentUser.status === 'dnd') return; 
             try {
@@ -373,12 +420,14 @@
             currentUser.name = document.getElementById('username').value.trim();
             currentUser.avatar = document.getElementById('avatar').value.trim() || `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random()*5)}.png`;
             currentUser.color = '#5865F2'; currentUser.bio = ''; currentUser.particles = 'none'; currentUser.activity = ''; currentUser.bannerUrl = ''; currentUser.decor = 'none'; currentUser.status = 'online'; currentUser.theme = 'dark';
+            
             updateUIProfile();
             document.getElementById('login-modal').style.display = 'none';
             document.getElementById('app-container').classList.remove('hidden');
             if(socket) socket.emit('user joined', { user: currentUser, inviteId: inviteCode });
         });
 
+        // --- UPLOADS ---
         function handleFiles(files) {
             if (files[0]) {
                 selectedFile = files[0];
@@ -396,6 +445,7 @@
         document.addEventListener('dragover', e => e.preventDefault());
         document.addEventListener('drop', (e) => { e.preventDefault(); dragCounter = 0; dragOverlay.classList.replace('flex', 'hidden'); if (e.dataTransfer && e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files); });
 
+        // --- EFEITOS E TEMAS ---
         function applyParticles(element, type) {
             element.innerHTML = ''; 
             if (type === 'none') return;
@@ -530,6 +580,7 @@
         document.getElementById('prof-particles').addEventListener('change', e => applyParticles(document.getElementById('profile-banner-preview'), e.target.value));
         document.getElementById('prof-pfp-decor').addEventListener('change', e => applyPfpDecor('profile-avatar-container', e.target.value, document.getElementById('prof-color').value));
 
+        // --- USER POPOUT E PAINEL ADMIN ---
         let currentPopoutTargetId = null;
         function showUserPopout(event, socketId) {
             event.stopPropagation();
@@ -564,6 +615,7 @@
             if(user.activity) { act.innerText = user.activity; act.classList.remove('hidden'); } else { act.classList.add('hidden'); }
 
             const adminPanel = document.getElementById('admin-tools-panel');
+            // Libera as ferramentas de admin para o dypz gerir outros utilizadores
             if (currentUser.role === 'Admin' && user.socketId !== currentUser.socketId) {
                 adminPanel.classList.remove('hidden'); document.getElementById('admin-role-select').value = user.role;
             } else { adminPanel.classList.add('hidden'); }
@@ -571,12 +623,24 @@
             document.getElementById('admin-role-select').onchange = (e) => { socket.emit('set role', { targetSocketId: currentPopoutTargetId, role: e.target.value }); };
             document.getElementById('admin-ban-btn').onclick = () => { if(confirm(`Banir IP do(a) ${user.name} permanentemente?`)) { socket.emit('ban user', currentPopoutTargetId); closeUserPopout(); } };
 
-            popout.style.top = Math.min(event.clientY, window.innerHeight - 350) + 'px';
-            popout.style.left = Math.min(event.clientX + 20, window.innerWidth - 320) + 'px';
+            // Posicionamento inteligente para mobile e desktop
+            let topPos = event.clientY;
+            let leftPos = event.clientX + 20;
+            if (window.innerWidth < 768) {
+                leftPos = 10;
+                topPos = Math.max(10, Math.min(topPos, window.innerHeight - 400));
+            } else {
+                topPos = Math.min(topPos, window.innerHeight - 350);
+                leftPos = Math.min(leftPos, window.innerWidth - 320);
+            }
+
+            popout.style.top = topPos + 'px';
+            popout.style.left = leftPos + 'px';
             popout.classList.remove('hidden');
         }
         function closeUserPopout() { document.getElementById('user-popout').classList.add('hidden'); }
 
+        // --- RENDERIZAÇÃO UI ---
         function renderSidebar() {
             const sidebar = document.getElementById('server-sidebar');
             const sep = document.getElementById('server-separator');
@@ -588,7 +652,8 @@
                 const hasUnread = unreadServers.has(srv.id) && !isAct;
 
                 div.className = `relative w-12 h-12 ${isAct?'bg-[#5865F2] rounded-[16px]':'bg-[#313338] rounded-[24px] hover:bg-[#5865F2] hover:rounded-[16px]'} text-white flex items-center justify-center cursor-pointer transition-all mb-2 flex-shrink-0 shadow-lg`;
-                div.title = srv.name; div.onclick = () => socket.emit('join server', srv.id);
+                div.title = srv.name; 
+                div.onclick = () => { socket.emit('join server', srv.id); closeAllSidebarsOnMobile(); };
                 div.innerHTML = `<i class="fa-solid ${srv.icon} text-xl"></i>`;
                 
                 if (hasUnread) div.innerHTML += `<div class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-[#1E1F22]"></div>`;
@@ -605,8 +670,12 @@
                 const icon = ch.type === 'text' ? 'fa-hashtag' : 'fa-volume-high';
                 const bg = (isActText || isActVoice) ? 'bg-[#404249] text-white' : 'text-[#87898C] hover:bg-[#35373C] hover:text-[#DBDEE1]';
                 
-                const div = document.createElement('div'); div.className = `${bg} rounded px-2 py-1.5 flex items-center gap-2 cursor-pointer transition`;
-                div.onclick = () => { if(ch.type === 'text') switchTextChannel(ch.id); else joinVoiceChannel(ch.id); };
+                const div = document.createElement('div'); div.className = `${bg} rounded px-2 py-1.5 flex items-center gap-2 cursor-pointer transition mb-0.5`;
+                div.onclick = () => { 
+                    if(ch.type === 'text') switchTextChannel(ch.id); 
+                    else joinVoiceChannel(ch.id); 
+                    closeAllSidebarsOnMobile();
+                };
                 div.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="truncate">${ch.name}</span>`;
                 cl.appendChild(div);
 
@@ -631,7 +700,6 @@
             currentTextChannelId = chId;
             const ch = currentServer.channels[chId];
             document.getElementById('chat-header-name').innerText = ch.name;
-            document.getElementById('header-channel-icon').className = 'fa-solid fa-hashtag text-[#87898C] text-xl';
             document.getElementById('chat-messages').innerHTML = `
                 <div class="mt-8 mb-6">
                     <div class="w-16 h-16 bg-[#5865F2] rounded-full flex items-center justify-center mb-4"><i class="fa-solid fa-hashtag text-white text-3xl"></i></div>
@@ -650,7 +718,7 @@
             closeChannelModal();
         }
 
-        function createServer() { const name = prompt("Nome do Servidor:"); if(name) socket.emit('create server', { name }); }
+        function createServer() { const name = prompt("Nome do Servidor:"); if(name) socket.emit('create server', { name }); closeAllSidebarsOnMobile(); }
         function copyInviteLink() {
             if(!currentServer) return; const link = window.location.origin + window.location.pathname + '?invite=' + currentServer.id;
             navigator.clipboard.writeText(link).catch(() => { const t=document.createElement("input"); t.value=link; document.body.appendChild(t); t.select(); document.execCommand("copy"); document.body.removeChild(t); });
@@ -687,23 +755,25 @@
             const isEv = safeText.includes('@everyone'), isMen = safeText.includes(`@${currentUser.name}`);
             let baseClass = isEv ? 'msg-everyone' : (isMen ? 'msg-ping' : 'hover:bg-[#2E3035]');
 
-            div.className = `flex gap-4 py-1 px-4 -mx-4 transition group relative ${baseClass}`;
+            div.className = `flex gap-2 sm:gap-4 py-1.5 sm:py-1 px-2 sm:px-4 -mx-2 sm:-mx-4 transition group relative ${baseClass}`;
             
-            let menuHtml = `<div class="absolute top-0 right-4 hidden group-hover:flex items-center bg-[#313338] border border-[#1E1F22] rounded shadow z-10">`;
+            let menuHtml = `<div class="absolute -top-3 right-4 hidden group-hover:flex items-center bg-[#313338] border border-[#1E1F22] rounded shadow z-10 text-xs sm:text-base">`;
             menuHtml += `<button onclick="setReply('${msg.id}', '${msg.user.name}', '${msg.text ? msg.text.replace(/'/g, "\\'") : 'Mídia'}')" class="p-2 text-[#B5BAC1] hover:bg-[#404249]" title="Responder"><i class="fa-solid fa-reply"></i></button>`;
             if(isMine) menuHtml += `<button onclick="editMsg('${msg.id}')" class="p-2 text-[#B5BAC1] hover:bg-[#404249]" title="Editar"><i class="fa-solid fa-pencil"></i></button>`;
+            
+            // Lógica de Moderação protegida corretamente
             if(isDypz || isMod || isMine) menuHtml += `<button onclick="deleteMsg('${msg.id}')" class="p-2 text-red-500 hover:bg-[#404249]" title="Apagar"><i class="fa-solid fa-trash"></i></button>`;
             if(isDypz && !isMine) menuHtml += `<button onclick="banUser('${msg.user.socketId}')" class="p-2 text-red-500 hover:bg-[#404249]" title="Banir IP"><i class="fa-solid fa-gavel"></i></button>`;
             menuHtml += `</div>`;
 
             let mediaHtml = '', replyHtml = '';
             if (msg.mediaUrl) {
-                if(msg.mediaType === 'image') mediaHtml = `<img src="${msg.mediaUrl}" class="max-w-sm max-h-80 rounded mt-2 border border-[#1E1F22]">`;
-                else if(msg.mediaType === 'video') mediaHtml = `<video src="${msg.mediaUrl}" controls class="max-w-md rounded mt-2 bg-black border border-[#1E1F22]"></video>`;
-                else if(msg.mediaType === 'audio') mediaHtml = `<audio src="${msg.mediaUrl}" controls class="mt-2 w-full max-w-sm"></audio>`;
-                else mediaHtml = `<a href="${msg.mediaUrl}" target="_blank" class="mt-2 inline-flex items-center gap-2 bg-[#2B2D31] p-3 rounded text-[#00A8FC] hover:underline"><i class="fa-solid fa-download"></i> Arquivo</a>`;
+                if(msg.mediaType === 'image') mediaHtml = `<img src="${msg.mediaUrl}" class="max-w-xs sm:max-w-sm max-h-60 sm:max-h-80 rounded mt-2 border border-[#1E1F22]">`;
+                else if(msg.mediaType === 'video') mediaHtml = `<video src="${msg.mediaUrl}" controls class="max-w-xs sm:max-w-md rounded mt-2 bg-black border border-[#1E1F22]"></video>`;
+                else if(msg.mediaType === 'audio') mediaHtml = `<audio src="${msg.mediaUrl}" controls class="mt-2 w-full max-w-[200px] sm:max-w-sm"></audio>`;
+                else mediaHtml = `<a href="${msg.mediaUrl}" target="_blank" class="mt-2 inline-flex items-center gap-2 bg-[#2B2D31] p-3 rounded text-[#00A8FC] hover:underline text-xs sm:text-base"><i class="fa-solid fa-download"></i> Arquivo</a>`;
             }
-            if(msg.replyTo) replyHtml = `<div class="text-[#B5BAC1] text-xs flex items-center gap-2 mb-1 opacity-70 before:content-[''] before:w-6 before:h-[1px] before:bg-[#4E5058]"><img src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-3 h-3 rounded-full"> <span class="font-bold">@${msg.replyTo.name}</span>: ${msg.replyTo.text}</div>`;
+            if(msg.replyTo) replyHtml = `<div class="text-[#B5BAC1] text-[10px] sm:text-xs flex items-center gap-2 mb-1 opacity-70 before:content-[''] before:w-4 sm:before:w-6 before:h-[1px] before:bg-[#4E5058] truncate"><img src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-3 h-3 rounded-full"> <span class="font-bold">@${msg.replyTo.name}</span>: ${msg.replyTo.text}</div>`;
             
             const rawText = safeText.replace(/"/g, '&quot;');
             if(isEv) safeText = safeText.replace(/@everyone/g, `<span class="bg-[#FAA61A]/30 text-[#FEE75C] font-medium px-1 rounded">@everyone</span>`);
@@ -714,12 +784,12 @@
 
             div.innerHTML = `${menuHtml}
                 <div class="relative flex-shrink-0 cursor-pointer" onclick="showUserPopout(event, '${msg.user.socketId}')">
-                    <img src="${msg.user.avatar}" class="w-10 h-10 rounded-full object-cover mt-1">
+                    <img src="${msg.user.avatar}" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover mt-1">
                 </div>
                 <div class="flex flex-col min-w-0 flex-1">
                     ${replyHtml}
-                    <div class="flex items-baseline gap-2"><span class="font-medium hover:underline cursor-pointer" style="color: ${titleColor}" onclick="showUserPopout(event, '${msg.user.socketId}')">${msg.user.name}</span><span class="text-xs text-[#87898C]">${new Date(msg.timestamp).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span></div>
-                    <p id="msg-text-${msg.id}" data-raw="${rawText}" class="text-[#DBDEE1] whitespace-pre-wrap leading-tight mt-0.5">${safeText}${editedSpan}</p>${mediaHtml}
+                    <div class="flex items-baseline gap-2"><span class="font-medium hover:underline cursor-pointer text-sm sm:text-base" style="color: ${titleColor}" onclick="showUserPopout(event, '${msg.user.socketId}')">${msg.user.name}</span><span class="text-[10px] sm:text-xs text-[#87898C]">${new Date(msg.timestamp).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span></div>
+                    <p id="msg-text-${msg.id}" data-raw="${rawText}" class="text-[#DBDEE1] whitespace-pre-wrap leading-tight mt-0.5 text-sm sm:text-base">${safeText}${editedSpan}</p>${mediaHtml}
                 </div>`;
             const chatBox = document.getElementById('chat-messages');
             chatBox.appendChild(div); chatBox.scrollTop = chatBox.scrollHeight;
@@ -733,12 +803,12 @@
             let mediaUrl = null, mediaType = null;
             if(selectedFile) {
                 const fd = new FormData(); fd.append('media', selectedFile);
-                document.getElementById('message-input').placeholder = "Enviando...";
+                document.getElementById('message-input').placeholder = "A enviar...";
                 try { const res = await fetch('/upload', {method:'POST', body:fd}); const data = await res.json(); if(data.url) {mediaUrl=data.url; mediaType=data.type;} } catch(e) {}
             }
             if(socket) socket.emit('chat message', { serverId: currentServer.id, channelId: currentTextChannelId, text, mediaUrl, mediaType, replyTo: replyingTo });
             document.getElementById('message-input').value = ''; removeAttachment(); cancelReply();
-            isUploading = false; document.getElementById('message-input').disabled = false; document.getElementById('message-input').placeholder = "Conversar... (@everyone notifica todos)"; document.getElementById('message-input').focus();
+            isUploading = false; document.getElementById('message-input').disabled = false; document.getElementById('message-input').placeholder = "Mensagem..."; document.getElementById('message-input').focus();
         }
         document.getElementById('message-input').addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }});
 
@@ -812,6 +882,12 @@
             });
 
             socket.on('update users', (users) => {
+                // AQUI OCORRE A CORREÇÃO DE SINCRONIZAÇÃO DO CARGO LOCAL DO CLIENTE:
+                const myData = users.find(u => u.socketId === currentUser.socketId);
+                if (myData) {
+                    currentUser.role = myData.role; 
+                }
+
                 onlineUsersData = users;
                 const ml = document.getElementById('members-list'); ml.innerHTML = '';
                 
@@ -836,7 +912,7 @@
                 renderChannels(); 
             });
 
-            socket.on('system message', (msg) => { const div = document.createElement('div'); div.className = 'text-[#23A559] text-sm py-2 font-bold text-center bg-[#23A559]/10 rounded border border-[#23A559]/30'; div.innerHTML = msg; document.getElementById('chat-messages').appendChild(div); chatMessages.scrollTop = chatMessages.scrollHeight; });
+            socket.on('system message', (msg) => { const div = document.createElement('div'); div.className = 'text-[#23A559] text-sm py-2 font-bold text-center bg-[#23A559]/10 rounded border border-[#23A559]/30 mx-4'; div.innerHTML = msg; document.getElementById('chat-messages').appendChild(div); chatMessages.scrollTop = chatMessages.scrollHeight; });
             socket.on('error message', alert);
         }
 
@@ -845,7 +921,7 @@
         async function joinVoiceChannel(chId) {
             if(currentVoiceChannelId) leaveVoice();
             currentVoiceChannelId = chId;
-            document.getElementById('voice-connection-panel').classList.remove('hidden'); document.getElementById('video-grid').classList.replace('hidden', 'flex');
+            document.getElementById('voice-connection-panel').classList.remove('hidden'); document.getElementById('video-grid').classList.replace('hidden', 'grid');
             socket.emit('join voice', { serverId: currentServer.id, channelId: chId });
             try { localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false }); addVideoBox(socket.id, localStream, currentUser.name, currentUser.avatar, true); } catch(e) { addVideoBox(socket.id, null, currentUser.name, currentUser.avatar, true); }
         }
@@ -856,17 +932,17 @@
             if(localStream) localStream.getTracks().forEach(t => t.stop()); if(screenStream) screenStream.getTracks().forEach(t => t.stop());
             localStream = null; screenStream = null;
             Object.values(peerConnections).forEach(pc => pc.close()); peerConnections = {};
-            document.getElementById('voice-connection-panel').classList.add('hidden'); document.getElementById('video-grid').classList.replace('flex', 'hidden'); document.getElementById('video-grid').innerHTML = ''; renderChannels();
+            document.getElementById('voice-connection-panel').classList.add('hidden'); document.getElementById('video-grid').classList.replace('grid', 'hidden'); document.getElementById('video-grid').innerHTML = ''; renderChannels();
             document.getElementById('btn-mic').innerHTML = '<i class="fa-solid fa-microphone"></i>'; document.getElementById('btn-cam').innerHTML = '<i class="fa-solid fa-video"></i>'; document.getElementById('btn-screen').innerHTML = '<i class="fa-solid fa-desktop"></i>'; document.getElementById('btn-mic').classList.remove('text-red-500');
         }
         function addVideoBox(id, stream, name, avatarUrl, isLocal=false) {
             let box = document.getElementById(`vidbox-${id}`);
             if(!box) {
                 box = document.createElement('div'); box.id = `vidbox-${id}`;
-                box.className = 'video-box-transition relative bg-[#111214] rounded-lg overflow-hidden border border-[#1E1F22] flex-1 min-w-[200px] max-w-full aspect-video flex items-center justify-center group shadow-md';
-                box.innerHTML = `<img src="${avatarUrl}" class="absolute w-20 h-20 rounded-full object-cover z-0 shadow-xl opacity-80" id="vid-avatar-${id}">
+                box.className = 'video-box-transition relative bg-[#111214] rounded-lg overflow-hidden border border-[#1E1F22] flex-1 min-w-[150px] max-w-full aspect-video flex items-center justify-center group shadow-md';
+                box.innerHTML = `<img src="${avatarUrl}" class="absolute w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover z-0 shadow-xl opacity-80" id="vid-avatar-${id}">
                     <video id="vid-${id}" class="w-full h-full object-contain relative z-10 hidden" autoplay playsinline ${isLocal ? 'muted' : ''}></video>
-                    <div class="absolute bottom-2 left-2 bg-black/70 px-2 py-1 rounded text-xs text-white z-20">${name}</div>
+                    <div class="absolute bottom-2 left-2 bg-black/70 px-2 py-1 rounded text-xs text-white z-20 truncate max-w-[80%]">${name}</div>
                     <button onclick="toggleFullscreenBox('${id}')" class="absolute top-2 right-2 bg-black/70 p-2 rounded text-white z-20 opacity-0 group-hover:opacity-100 transition hover:bg-black"><i class="fa-solid fa-expand" id="icon-expand-${id}"></i></button>`;
                 document.getElementById('video-grid').appendChild(box);
             }
@@ -874,7 +950,7 @@
             if(stream && stream.getVideoTracks().length > 0) { if(vid.srcObject !== stream) vid.srcObject = stream; vid.classList.remove('hidden'); av.classList.add('hidden'); } else { vid.srcObject = null; vid.classList.add('hidden'); av.classList.remove('hidden'); }
         }
         function removeVideoBox(id) { const box = document.getElementById(`vidbox-${id}`); if(box) box.remove(); }
-        function toggleFullscreenBox(id) { const box = document.getElementById(`vidbox-${id}`); const icon = document.getElementById(`icon-expand-${id}`); if (box.classList.contains('fixed')) { box.classList.remove('fixed', 'inset-4', 'z-[100]', 'shadow-2xl'); box.classList.add('relative', 'flex-1', 'min-w-[200px]', 'aspect-video'); icon.classList.replace('fa-compress', 'fa-expand'); } else { box.classList.add('fixed', 'inset-4', 'z-[100]', 'shadow-2xl'); box.classList.remove('relative', 'flex-1', 'min-w-[200px]', 'aspect-video'); icon.classList.replace('fa-expand', 'fa-compress'); } }
+        function toggleFullscreenBox(id) { const box = document.getElementById(`vidbox-${id}`); const icon = document.getElementById(`icon-expand-${id}`); if (box.classList.contains('fixed')) { box.classList.remove('fixed', 'inset-4', 'z-[100]', 'shadow-2xl'); box.classList.add('relative', 'flex-1', 'min-w-[150px]', 'aspect-video'); icon.classList.replace('fa-compress', 'fa-expand'); } else { box.classList.add('fixed', 'inset-4', 'z-[100]', 'shadow-2xl'); box.classList.remove('relative', 'flex-1', 'min-w-[150px]', 'aspect-video'); icon.classList.replace('fa-expand', 'fa-compress'); } }
         function toggleMic() { if(!localStream) return; const track = localStream.getAudioTracks()[0]; if(track) { track.enabled = !track.enabled; const btn = document.getElementById('btn-mic'); btn.innerHTML = track.enabled ? '<i class="fa-solid fa-microphone"></i>' : '<i class="fa-solid fa-microphone-slash"></i>'; btn.classList.toggle('text-red-500', !track.enabled); } }
         async function toggleCam() { if(!localStream) localStream = new MediaStream(); const btn = document.getElementById('btn-cam'); const videoTrack = localStream.getVideoTracks()[0]; if(videoTrack) { videoTrack.stop(); localStream.removeTrack(videoTrack); btn.classList.remove('text-[#23A559]'); updateAllPeerTracks(); } else { try { const vs = await navigator.mediaDevices.getUserMedia({ video: true }); localStream.addTrack(vs.getVideoTracks()[0]); btn.classList.add('text-[#23A559]'); updateAllPeerTracks(); } catch(e) { alert("Câmera indisponível."); } } }
         async function toggleScreen() { const btn = document.getElementById('btn-screen'); if(screenStream) { screenStream.getTracks().forEach(t=>t.stop()); screenStream = null; btn.classList.remove('text-[#23A559]'); updateAllPeerTracks(); } else { try { screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true }); screenStream.getVideoTracks()[0].onended = () => toggleScreen(); btn.classList.add('text-[#23A559]'); updateAllPeerTracks(); } catch(e) {} } }
