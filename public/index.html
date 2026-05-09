@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Danicord</title>
+    <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%235865F2'/><path fill='white' d='M25,30 Q50,20 75,30 Q80,50 75,70 Q50,80 25,70 Q20,50 25,30'/></svg>">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,7 +14,7 @@
         /* BASE & SCROLLBAR */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: background-color 0.3s ease; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: var(--bg-track, transparent); border-radius: 4px; }
         ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.3); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.5); }
         .discord-input-placeholder::placeholder { color: #87898C; }
@@ -51,7 +52,7 @@
         body.theme-light .text-\[\#87898C\] { color: #5C5E66 !important; }
         body.theme-light .border-\[\#1E1F22\] { border-color: #D4D7DC !important; }
         body.theme-light .border-\[\#2B2D31\] { border-color: #E3E5E8 !important; }
-        body.theme-light .glass-panel { background: rgba(255, 255, 255, 0.8) !important; border: 1px solid rgba(0,0,0,0.1) !important; }
+        body.theme-light .glass-panel { background: rgba(255, 255, 255, 0.9) !important; border: 1px solid rgba(0,0,0,0.1) !important; color: #000; }
 
         body.theme-ocean .bg-\[\#313338\] { background-color: #0F172A !important; }
         body.theme-ocean .bg-\[\#2B2D31\] { background-color: #1E293B !important; }
@@ -59,6 +60,7 @@
         body.theme-ocean .bg-\[\#232428\] { background-color: #020617 !important; }
         body.theme-ocean .bg-\[\#383A40\] { background-color: #1E293B !important; }
         body.theme-ocean .border-\[\#1E1F22\] { border-color: #0B1120 !important; }
+        body.theme-ocean .border-\[\#2B2D31\] { border-color: #0F172A !important; }
 
         body.theme-forest .bg-\[\#313338\] { background-color: #14532D !important; }
         body.theme-forest .bg-\[\#2B2D31\] { background-color: #166534 !important; }
@@ -66,6 +68,7 @@
         body.theme-forest .bg-\[\#232428\] { background-color: #022C22 !important; }
         body.theme-forest .bg-\[\#383A40\] { background-color: #166534 !important; }
         body.theme-forest .border-\[\#1E1F22\] { border-color: #064E3B !important; }
+        body.theme-forest .border-\[\#2B2D31\] { border-color: #14532D !important; }
 
         /* AVATAR DECORATIONS PREMIUM (REFEITOS COM PSEUDO-ELEMENTOS) */
         .decor-container { position: relative; z-index: 10; }
@@ -82,11 +85,13 @@
         /* Typing Dots */
         .typing-dots::after { content: '.'; animation: typing 1.5s steps(4, end) infinite; }
         @keyframes typing { 0%, 100% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } }
+
+        .video-box-transition { transition: all 0.3s ease-in-out; }
     </style>
 </head>
 <body class="bg-[#313338] text-[#DBDEE1] h-screen w-screen overflow-hidden flex selection:bg-[#5865F2] selection:text-white relative theme-dark">
 
-    <div id="drag-overlay" class="hidden absolute inset-0 bg-[#5865F2]/90 backdrop-blur-sm flex-col items-center justify-center text-white border-8 border-dashed border-white m-4 rounded-3xl transition-all smooth-hover">
+    <div id="drag-overlay" class="hidden absolute inset-0 bg-[#5865F2]/90 backdrop-blur-sm flex-col items-center justify-center text-white border-8 border-dashed border-white m-4 rounded-3xl transition-all smooth-hover z-[9999]">
         <i class="fa-solid fa-file-arrow-up text-7xl mb-4"></i>
         <h2 class="text-4xl font-bold text-center">Solte o arquivo aqui!</h2>
     </div>
@@ -97,31 +102,93 @@
         <p class="text-[#B5BAC1] text-lg max-w-md">Seu IP foi bloqueado permanentemente pelo Administrador.</p>
     </div>
 
-    <!-- MODAL LOGIN (Glassmorphism) -->
+    <!-- ENTRY UI: SETUP DE PERFIL PROFISSIONAL -->
     <div id="login-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] backdrop-blur-md transition-opacity p-4">
-        <div class="glass-panel p-8 rounded-2xl shadow-2xl w-full max-w-md border border-white/10">
-            <h2 class="text-2xl font-bold text-center text-white mb-2" id="login-title">Bem-vindo ao Danicord!</h2>
-            <p class="text-center text-[#B5BAC1] text-sm mb-6" id="login-subtitle">Acesso seguro e criptografado.</p>
-            <form id="login-form" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Nome de Exibição <span class="text-red-500">*</span></label>
-                    <input type="text" id="username" required class="w-full bg-black/40 text-white rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#5865F2] smooth-hover">
+        <div class="glass-panel p-0 rounded-2xl shadow-2xl w-full max-w-4xl border border-white/10 flex flex-col md:flex-row overflow-hidden max-h-[90vh]">
+            
+            <!-- Esquerda: Preview Real -->
+            <div class="w-full md:w-1/2 bg-black/40 flex flex-col items-center justify-center p-6 border-r border-white/10 relative">
+                <h3 class="text-white/50 font-bold uppercase tracking-widest text-xs mb-8 absolute top-6">Pré-visualização</h3>
+                <div class="w-full max-w-[300px] glass-panel rounded-2xl shadow-2xl overflow-hidden transform scale-100">
+                    <div id="setup-banner-preview" class="h-20 w-full bg-[#5865F2] relative overflow-hidden bg-cover bg-center"></div>
+                    <div class="p-5 relative">
+                        <div class="absolute -top-10 left-5 border-[6px] border-transparent rounded-full decor-container" id="setup-avatar-container">
+                            <img id="setup-avatar-preview" src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-[72px] h-[72px] rounded-full object-cover bg-[#1E1F22] z-10 relative shadow-xl">
+                            <div class="absolute -bottom-1 -right-1 w-5 h-5 border-[4px] border-[#111214] rounded-full bg-[#23A559] z-20"></div>
+                        </div>
+                        <div class="mt-10 bg-black/40 rounded-xl p-4 border border-white/5">
+                            <h4 id="setup-name-preview" class="text-xl font-black text-white truncate">Novo Usuário</h4>
+                            <div class="w-full h-[1px] bg-white/10 mb-3 mt-3"></div>
+                            <h5 class="text-[10px] font-bold text-[#B5BAC1] uppercase mb-1">Sobre mim</h5>
+                            <p class="text-sm text-[#DBDEE1]">Pronto para entrar no Danicord!</p>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">URL Avatar (GIF Suportado)</label>
-                    <input type="url" id="avatar" class="w-full bg-black/40 text-white rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#5865F2] smooth-hover">
-                </div>
-                <button type="submit" class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold py-3 rounded-xl mt-6 shadow-lg transform hover:scale-[1.02] smooth-hover">Entrar</button>
-            </form>
+            </div>
+
+            <!-- Direita: Controlos -->
+            <div class="w-full md:w-1/2 p-8 overflow-y-auto custom-scrollbar flex flex-col">
+                <h2 class="text-3xl font-black text-white mb-2">Construa o seu Perfil</h2>
+                <p class="text-[#B5BAC1] text-sm mb-6">Como quer ser visto pelos seus amigos?</p>
+                
+                <form id="login-form" class="space-y-4 flex-1">
+                    <div>
+                        <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Nome de Exibição <span class="text-red-500">*</span></label>
+                        <input type="text" id="setup-name" required placeholder="Ex: NinjaPro" class="w-full bg-black/40 text-white rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#5865F2] smooth-hover">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Upload do Avatar</label>
+                            <input type="file" id="setup-avatar-file" accept="image/*" class="hidden">
+                            <button type="button" onclick="document.getElementById('setup-avatar-file').click()" class="w-full bg-black/40 hover:bg-black/60 text-white rounded-xl p-3 font-medium transition text-sm flex items-center justify-center gap-2"><i class="fa-solid fa-upload"></i> Escolher Ficheiro</button>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Upload do Banner</label>
+                            <input type="file" id="setup-banner-file" accept="image/*" class="hidden">
+                            <button type="button" onclick="document.getElementById('setup-banner-file').click()" class="w-full bg-black/40 hover:bg-black/60 text-white rounded-xl p-3 font-medium transition text-sm flex items-center justify-center gap-2"><i class="fa-solid fa-image"></i> Escolher Banner</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Cor Base</label><input type="color" id="setup-color" value="#5865F2" class="w-full h-10 bg-black/40 rounded-lg cursor-pointer border-none smooth-hover"></div>
+                        <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Efeito</label>
+                            <select id="setup-particles" class="w-full bg-black/40 text-white rounded-lg p-2.5 h-10 border-none outline-none smooth-hover text-sm">
+                                <option value="none">Nenhum</option><option value="snow">Neve ❄️</option><option value="lightning">Raios ⚡</option><option value="sakura">Cerejeira 🌸</option><option value="neon">Neon 🟢</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btn-enter" class="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-black py-4 rounded-xl mt-auto shadow-[0_0_15px_rgba(88,101,242,0.5)] transform hover:scale-[1.02] smooth-hover text-lg transition-all">ENTRAR NO DANICORD</button>
+                </form>
+            </div>
         </div>
     </div>
 
-    <!-- MODAL CUSTOMIZAR PERFIL -->
+    <!-- UI FLUTUANTES (POPOVERS) -->
+    
+    <!-- Emoji / GIF Picker -->
+    <div id="emoji-picker" class="hidden absolute bottom-20 right-4 w-80 h-96 glass-panel rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden border border-white/10">
+        <div class="flex bg-black/40 p-2 gap-2 border-b border-white/10">
+            <button onclick="switchPicker('emoji')" id="tab-emoji" class="flex-1 py-1.5 rounded-lg bg-white/10 text-white font-bold text-sm smooth-hover">Emojis</button>
+            <button onclick="switchPicker('gif')" id="tab-gif" class="flex-1 py-1.5 rounded-lg hover:bg-white/5 text-[#B5BAC1] font-bold text-sm smooth-hover">GIFs</button>
+        </div>
+        <div id="picker-content" class="flex-1 overflow-y-auto p-3 custom-scrollbar content-start"></div>
+        <div id="custom-emoji-admin" class="hidden p-2 bg-black/40 border-t border-white/10">
+            <button onclick="uploadCustomEmoji()" class="w-full text-xs text-[#23A559] hover:text-white font-bold p-1"><i class="fa-solid fa-plus mr-1"></i>Adicionar Emoji Customizado</button>
+        </div>
+    </div>
+
+    <!-- Autocomplete de Menções -->
+    <div id="mention-popover" class="hidden absolute bottom-16 left-4 w-60 glass-panel rounded-xl shadow-xl z-50 overflow-hidden border border-white/10 py-1">
+        <ul id="mention-list" class="max-h-40 overflow-y-auto custom-scrollbar"></ul>
+    </div>
+
+    <!-- MODAL CUSTOMIZAR PERFIL (DENTRO DA APP) -->
     <div id="profile-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[70] backdrop-blur-md p-4">
         <div class="glass-panel rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-white/10">
             <div id="profile-banner-preview" class="h-28 bg-[#5865F2] w-full relative overflow-hidden transition-colors bg-cover bg-center"></div>
             <div class="p-6 relative">
-                <!-- Avatar Preview -->
                 <div class="absolute -top-12 left-6 border-[6px] border-transparent rounded-full decor-container" id="profile-avatar-container">
                     <img id="profile-avatar-preview" src="" class="w-20 h-20 rounded-full object-cover bg-[#1E1F22] z-10 relative shadow-xl">
                 </div>
@@ -163,7 +230,7 @@
                         </select>
                     </div>
 
-                    <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Imagem do Banner (URL)</label><input type="url" id="prof-banner-url" placeholder="Vazio para usar a cor" class="w-full bg-black/40 text-white rounded-lg p-2 text-sm smooth-hover"></div>
+                    <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Imagem do Banner (URL / GIF)</label><input type="url" id="prof-banner-url" placeholder="Vazio para usar a cor" class="w-full bg-black/40 text-white rounded-lg p-2 text-sm smooth-hover"></div>
                     <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">URL Avatar (GIF/PNG)</label><input type="url" id="prof-avatar" class="w-full bg-black/40 text-white rounded-lg p-2 text-sm smooth-hover"></div>
                     
                     <div class="flex gap-3 justify-end pt-6 border-t border-white/10 mt-4">
@@ -175,7 +242,7 @@
         </div>
     </div>
 
-    <!-- USER POPOUT CARD (Glassmorphism Premium) -->
+    <!-- USER POPOUT CARD -->
     <div id="user-popout" class="hidden absolute z-[80] glass-panel rounded-2xl shadow-2xl w-[320px] overflow-hidden border border-white/10 transform scale-95 opacity-0 transition-all duration-200">
         <div id="popout-banner" class="h-20 w-full bg-[#5865F2] relative overflow-hidden bg-cover bg-center"></div>
         <div class="p-5 relative">
@@ -192,7 +259,6 @@
                 <p id="popout-bio" class="text-sm text-[#DBDEE1] break-words whitespace-pre-wrap leading-relaxed">Nenhuma bio.</p>
             </div>
 
-            <!-- PAINEL EXCLUSIVO DO DYPZ -->
             <div id="admin-tools-panel" class="hidden mt-4 pt-3 border-t border-white/10">
                 <h5 class="text-[10px] font-bold text-red-400 uppercase mb-2"><i class="fa-solid fa-screwdriver-wrench"></i> Admin Tools</h5>
                 <select id="admin-role-select" class="w-full bg-black/40 text-white rounded-lg p-2 mb-3 text-xs border border-transparent outline-none smooth-hover hover:bg-black/60">
@@ -227,7 +293,6 @@
         </div>
     </div>
 
-    <!-- Ovelays Mobile -->
     <div id="mobile-overlay-left" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden smooth-hover" onclick="toggleLeftSidebar()"></div>
     <div id="mobile-overlay-right" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden smooth-hover" onclick="toggleRightSidebar()"></div>
 
@@ -236,20 +301,27 @@
         <div id="left-sidebars" class="fixed inset-y-0 left-0 z-50 flex transform -translate-x-full transition-transform duration-300 md:relative md:translate-x-0 shadow-2xl md:shadow-none">
             
             <nav class="w-[72px] bg-[#1E1F22] h-full flex flex-col items-center py-3 gap-3 flex-shrink-0 overflow-y-auto z-10 border-r border-[#111214] md:border-none" id="server-sidebar">
-                <div class="w-8 h-[2px] bg-white/10 rounded-full my-1 mt-auto" id="server-separator"></div>
+                <div onclick="openHomeDMs()" id="btn-home" class="w-12 h-12 bg-[#313338] text-white hover:bg-[#5865F2] rounded-[24px] hover:rounded-[16px] flex items-center justify-center cursor-pointer transition-all shadow-lg border border-white/5 relative">
+                    <i class="fa-brands fa-discord text-2xl"></i>
+                    <div id="home-unread-dot" class="hidden absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-[#1E1F22]"></div>
+                </div>
+                
+                <div class="w-8 h-[2px] bg-white/10 rounded-full my-1"></div>
+                <div id="server-list-container" class="flex flex-col gap-2 w-full items-center"></div>
+                <div class="w-8 h-[2px] bg-white/10 rounded-full my-1 mt-auto"></div>
                 <div onclick="createServer()" class="w-12 h-12 bg-[#313338] text-[#23A559] hover:bg-[#23A559] hover:text-white rounded-[24px] hover:rounded-xl flex items-center justify-center cursor-pointer transition-all shadow-lg"><i class="fa-solid fa-plus text-xl"></i></div>
             </nav>
 
-            <aside class="w-64 bg-[#2B2D31] h-full flex flex-col flex-shrink-0 rounded-none md:rounded-tl-xl overflow-hidden relative">
+            <aside class="w-64 bg-[#2B2D31] h-full flex flex-col flex-shrink-0 rounded-none md:rounded-tl-xl overflow-hidden relative border-r border-white/5">
                 <header class="h-14 border-b border-[#1E1F22] flex items-center px-4 font-bold text-white shadow-sm group bg-[#2B2D31] hover:bg-[#35373C] cursor-pointer smooth-hover">
-                    <span id="current-server-name" class="truncate text-lg">Carregando...</span>
-                    <button onclick="copyInviteLink(); event.stopPropagation();" class="ml-auto text-[#B5BAC1] hover:text-[#5865F2] transition bg-black/20 p-1.5 rounded-lg opacity-0 group-hover:opacity-100" title="Copiar Convite"><i class="fa-solid fa-user-plus"></i></button>
+                    <span id="current-server-name" class="truncate text-lg">Mensagens Diretas</span>
+                    <button id="btn-invite-copy" onclick="copyInviteLink(); event.stopPropagation();" class="ml-auto text-[#B5BAC1] hover:text-[#5865F2] transition bg-black/20 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hidden" title="Copiar Convite"><i class="fa-solid fa-user-plus"></i></button>
                 </header>
                 
                 <div class="flex-1 overflow-y-auto p-3">
                     <div class="flex items-center justify-between text-[#87898C] text-xs font-bold uppercase mb-2">
-                        <span><i class="fa-solid fa-chevron-down text-[10px] mr-1"></i> Canais</span>
-                        <button onclick="openChannelModal()" class="hover:text-white transition"><i class="fa-solid fa-plus"></i></button>
+                        <span id="sidebar-category-name"><i class="fa-solid fa-chevron-down text-[10px] mr-1"></i> DMs</span>
+                        <button onclick="handleSidebarPlus()" id="btn-sidebar-plus" class="hover:text-white transition"><i class="fa-solid fa-plus"></i></button>
                     </div>
                     <div id="channel-list" class="space-y-1"></div>
                 </div>
@@ -278,22 +350,22 @@
             </aside>
         </div>
 
-        <main class="flex-1 flex flex-col bg-[#313338] relative min-w-0" onclick="closeUserPopout()">
+        <main class="flex-1 flex flex-col bg-[#313338] relative min-w-0" onclick="closeAllPopovers()">
             <header class="h-14 border-b border-[#1E1F22] flex items-center px-4 font-semibold text-white shadow-sm justify-between bg-[#313338] z-20">
                 <div class="flex items-center gap-3 min-w-0">
-                    <button class="md:hidden text-[#B5BAC1] hover:text-white text-xl p-1" onclick="toggleLeftSidebar()"><i class="fa-solid fa-bars"></i></button>
-                    <i id="header-channel-icon" class="fa-solid fa-hashtag text-[#87898C] text-2xl hidden sm:block"></i>
-                    <span id="chat-header-name" class="truncate text-lg font-bold">geral</span>
+                    <button class="md:hidden text-[#B5BAC1] hover:text-white text-xl p-1" onclick="toggleLeftSidebar(); event.stopPropagation();"><i class="fa-solid fa-bars"></i></button>
+                    <i id="header-channel-icon" class="fa-solid fa-at text-[#87898C] text-2xl hidden sm:block"></i>
+                    <span id="chat-header-name" class="truncate text-lg font-bold">Amigos</span>
                 </div>
-                <button class="md:hidden text-[#B5BAC1] hover:text-white text-xl p-1 ml-2" onclick="toggleRightSidebar()"><i class="fa-solid fa-user-group"></i></button>
+                <button class="md:hidden text-[#B5BAC1] hover:text-white text-xl p-1 ml-2" onclick="toggleRightSidebar(); event.stopPropagation();"><i class="fa-solid fa-user-group"></i></button>
             </header>
 
             <div id="video-grid" class="hidden grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-4 bg-[#1E1F22]/80 backdrop-blur-sm border-b border-[#2B2D31] max-h-[50vh] overflow-y-auto transition-all z-10 shadow-inner"></div>
 
-            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-2"></div>
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-2 relative"></div>
 
-            <div class="px-4 sm:px-6 pb-6 pt-2 bg-gradient-to-t from-[#313338] via-[#313338] to-transparent z-20">
-                <div class="bg-[#383A40] rounded-xl shadow-lg flex flex-col border border-white/5">
+            <div class="px-4 sm:px-6 pb-6 pt-2 bg-gradient-to-t from-[#313338] via-[#313338] to-transparent z-20 relative">
+                <div class="bg-[#383A40] rounded-xl shadow-lg flex flex-col border border-white/5 relative">
                     
                     <div id="reply-banner" class="hidden bg-[#2B2D31] px-4 py-2 flex items-center justify-between border-b border-[#1E1F22] rounded-t-xl">
                         <div class="flex items-center gap-2 text-sm text-[#B5BAC1] font-medium"><i class="fa-solid fa-reply"></i><span id="reply-text" class="truncate max-w-[200px] sm:max-w-md"></span></div>
@@ -310,13 +382,14 @@
                     
                     <div id="typing-indicator" class="hidden px-4 text-xs font-bold text-[#B5BAC1] mt-2 h-4 truncate"></div>
 
-                    <div class="flex items-center px-4 py-3 min-h-[52px] gap-3">
+                    <div class="flex items-center px-4 py-3 min-h-[52px] gap-3 relative">
                         <input type="file" id="file-input" class="hidden" onchange="handleFiles(event.target.files)">
                         <button onclick="document.getElementById('file-input').click()" class="text-[#B5BAC1] hover:text-[#DBDEE1] bg-black/20 w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#5865F2] hover:text-white transition flex-shrink-0 shadow-sm"><i class="fa-solid fa-plus text-sm"></i></button>
                         
-                        <input type="text" id="message-input" placeholder="Mensagem..." class="flex-1 bg-transparent border-none outline-none text-[#DBDEE1] discord-input-placeholder py-1 min-w-0 text-[15px]" autofocus>
+                        <input type="text" id="message-input" placeholder="Mensagem..." class="flex-1 bg-transparent border-none outline-none text-[#DBDEE1] discord-input-placeholder py-1 min-w-0 text-[15px]" autocomplete="off">
                         
-                        <button onclick="sendGifUrl()" class="text-[#B5BAC1] hover:text-white bg-black/20 px-3 h-8 rounded-lg flex items-center justify-center hover:bg-[#5865F2] transition flex-shrink-0 font-bold text-xs tracking-wider shadow-sm" title="Enviar GIF">GIF</button>
+                        <!-- BOTÃO DE EMOJI/GIF -->
+                        <button onclick="toggleEmojiPicker(event)" class="text-[#B5BAC1] hover:text-white transition text-xl flex-shrink-0" title="Emojis e GIFs"><i class="fa-solid fa-face-smile"></i></button>
                     </div>
                 </div>
             </div>
@@ -332,37 +405,30 @@
     </div>
 
     <script>
-        // Funções de Menu Mobile
-        function toggleLeftSidebar() { 
-            const s = document.getElementById('left-sidebars'), o = document.getElementById('mobile-overlay-left'); 
-            if (s.classList.contains('-translate-x-full')) { s.classList.remove('-translate-x-full'); o.classList.remove('hidden'); } else { s.classList.add('-translate-x-full'); o.classList.add('hidden'); } 
-        }
-        function toggleRightSidebar() { 
-            const s = document.getElementById('right-sidebar'), o = document.getElementById('mobile-overlay-right'); 
-            if (s.classList.contains('translate-x-full')) { s.classList.remove('translate-x-full'); o.classList.remove('hidden'); } else { s.classList.add('translate-x-full'); o.classList.add('hidden'); } 
-        }
-        function closeAllSidebarsOnMobile() { 
-            if (window.innerWidth < 768) { document.getElementById('left-sidebars').classList.add('-translate-x-full'); document.getElementById('mobile-overlay-left').classList.add('hidden'); document.getElementById('right-sidebar').classList.add('translate-x-full'); document.getElementById('mobile-overlay-right').classList.add('hidden'); } 
-        }
+        // --- UTILITÁRIOS E VARIÁVEIS ---
+        function toggleLeftSidebar() { const s = document.getElementById('left-sidebars'), o = document.getElementById('mobile-overlay-left'); if (s.classList.contains('-translate-x-full')) { s.classList.remove('-translate-x-full'); o.classList.remove('hidden'); } else { s.classList.add('-translate-x-full'); o.classList.add('hidden'); } }
+        function toggleRightSidebar() { const s = document.getElementById('right-sidebar'), o = document.getElementById('mobile-overlay-right'); if (s.classList.contains('translate-x-full')) { s.classList.remove('translate-x-full'); o.classList.remove('hidden'); } else { s.classList.add('translate-x-full'); o.classList.add('hidden'); } }
+        function closeAllSidebarsOnMobile() { if (window.innerWidth < 768) { document.getElementById('left-sidebars').classList.add('-translate-x-full'); document.getElementById('mobile-overlay-left').classList.add('hidden'); document.getElementById('right-sidebar').classList.add('translate-x-full'); document.getElementById('mobile-overlay-right').classList.add('hidden'); } }
+        function closeAllPopovers() { document.getElementById('emoji-picker').classList.add('hidden'); document.getElementById('mention-popover').classList.add('hidden'); closeUserPopout(); }
 
         function playPing() {
             if (currentUser.status === 'dnd') return; 
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
+                const osc = ctx.createOscillator(); const gain = ctx.createGain();
                 osc.connect(gain); gain.connect(ctx.destination);
                 osc.type = 'sine'; osc.frequency.setValueAtTime(880, ctx.currentTime); 
                 gain.gain.setValueAtTime(0.8, ctx.currentTime); 
-                osc.start(); gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.3);
-                osc.stop(ctx.currentTime + 0.3);
+                osc.start(); gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.3); osc.stop(ctx.currentTime + 0.3);
             } catch(e) {}
         }
 
         let currentUser = { name: '', avatar: '', color: '#5865F2', bio: '', particles: 'none', bannerUrl: '', decor: 'none', activity: '', socketId: null, role: 'Membro', status: 'online', theme: 'dark' };
-        let currentServer = null, currentTextChannelId = 'geral', currentVoiceChannelId = null;
+        let currentServer = null, currentTextChannelId = null, currentVoiceChannelId = null;
+        let isDmMode = true, currentDmId = null; 
+        
         let selectedFile = null, isUploading = false, replyingTo = null;
-        let onlineUsersData = [], myServers = new Map(), unreadServers = new Set(); 
+        let onlineUsersData = [], myServers = new Map(), unreadServers = new Set(), userDMs = {}, serverEmojis = []; 
 
         let socket = null;
         try { socket = io(); } catch(e) {}
@@ -373,34 +439,70 @@
         function getRoleColor(role, baseColor) { if(role === 'Admin') return '#F0B232'; if(role === 'Moderador') return '#23A559'; if(role === 'VIP') return '#EB459E'; return baseColor || 'white'; }
         function getStatusColor(status) { if(status === 'idle') return '#F0B232'; if(status === 'dnd') return '#F23F42'; if(status === 'invisible') return '#80848E'; return '#23A559'; }
 
-        document.getElementById('chat-messages').addEventListener('click', () => {
-            const sel = window.getSelection(); if(sel.toString().length === 0) document.getElementById('message-input').focus();
+        // Mantém foco na barra
+        document.getElementById('chat-messages').addEventListener('click', (e) => {
+            const sel = window.getSelection(); 
+            if(sel.toString().length === 0 && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'I') document.getElementById('message-input').focus();
+        });
+
+        // --- SISTEMA DE LOGIN ---
+        let tempAvatarFile = null, tempBannerFile = null;
+        
+        document.getElementById('setup-name').addEventListener('input', e => { document.getElementById('setup-name-preview').innerText = e.target.value || 'Novo Usuário'; });
+        document.getElementById('setup-color').addEventListener('input', e => { updateBannerVisuals(document.getElementById('setup-banner-preview'), e.target.value, tempBannerFile ? URL.createObjectURL(tempBannerFile) : '', document.getElementById('setup-particles').value); });
+        document.getElementById('setup-particles').addEventListener('change', e => { applyParticles(document.getElementById('setup-banner-preview'), e.target.value); });
+        
+        document.getElementById('setup-avatar-file').addEventListener('change', e => {
+            if(e.target.files[0]) { tempAvatarFile = e.target.files[0]; document.getElementById('setup-avatar-preview').src = URL.createObjectURL(tempAvatarFile); }
+        });
+        document.getElementById('setup-banner-file').addEventListener('change', e => {
+            if(e.target.files[0]) { tempBannerFile = e.target.files[0]; updateBannerVisuals(document.getElementById('setup-banner-preview'), document.getElementById('setup-color').value, URL.createObjectURL(tempBannerFile), document.getElementById('setup-particles').value); }
         });
 
         if (socket) {
-            socket.on('banned permanently', () => { document.getElementById('ban-screen').classList.replace('hidden', 'flex'); document.getElementById('app-container').style.display = 'none'; });
+            socket.on('banned permanently', () => { document.getElementById('ban-screen').classList.replace('hidden', 'flex'); document.getElementById('login-modal').classList.add('hidden'); });
             socket.on('force login', (forcedUser) => {
-                currentUser = forcedUser; updateUIProfile(); document.getElementById('login-modal').style.display = 'none'; document.getElementById('app-container').classList.remove('hidden'); socket.emit('user joined', { user: currentUser, inviteId: inviteCode }); requestNotificationPermission();
+                currentUser = forcedUser; updateUIProfile(); document.getElementById('login-modal').classList.add('hidden'); document.getElementById('app-container').classList.remove('hidden'); socket.emit('user joined', { user: currentUser, inviteId: inviteCode }); requestNotificationPermission();
             });
         }
 
         function requestNotificationPermission() { if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") Notification.requestPermission(); }
 
-        document.getElementById('login-form').addEventListener('submit', (e) => {
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const usernameInput = document.getElementById('username').value.trim();
+            const btn = document.getElementById('btn-enter');
+            btn.innerText = "A CARREGAR..."; btn.disabled = true;
+
+            let finalAvatarUrl = `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random()*5)}.png`;
+            let finalBannerUrl = '';
+
+            if(tempAvatarFile) {
+                const fd = new FormData(); fd.append('media', tempAvatarFile);
+                try { const res = await fetch('/upload', {method:'POST', body:fd}); const data = await res.json(); if(data.url) finalAvatarUrl = data.url; } catch(e) {}
+            }
+            if(tempBannerFile) {
+                const fd = new FormData(); fd.append('media', tempBannerFile);
+                try { const res = await fetch('/upload', {method:'POST', body:fd}); const data = await res.json(); if(data.url) finalBannerUrl = data.url; } catch(e) {}
+            }
+
+            const usernameInput = document.getElementById('setup-name').value.trim();
             currentUser.name = usernameInput;
-            currentUser.avatar = document.getElementById('avatar').value.trim() || `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random()*5)}.png`;
-            currentUser.color = '#5865F2'; currentUser.bio = ''; currentUser.particles = 'none'; currentUser.activity = ''; currentUser.bannerUrl = ''; currentUser.decor = 'none'; currentUser.status = 'online'; currentUser.theme = 'dark';
+            currentUser.avatar = finalAvatarUrl;
+            currentUser.color = document.getElementById('setup-color').value; 
+            currentUser.particles = document.getElementById('setup-particles').value; 
+            currentUser.bannerUrl = finalBannerUrl; 
+            currentUser.bio = ''; currentUser.activity = ''; currentUser.decor = 'none'; currentUser.status = 'online'; currentUser.theme = 'dark';
             
             if (usernameInput.toLowerCase() === 'dypz') currentUser.role = 'Admin'; else currentUser.role = 'Membro';
 
             updateUIProfile();
-            document.getElementById('login-modal').style.display = 'none'; document.getElementById('app-container').classList.remove('hidden');
+            document.getElementById('login-modal').classList.add('hidden'); document.getElementById('app-container').classList.remove('hidden');
             if(socket) socket.emit('user joined', { user: currentUser, inviteId: inviteCode });
+            
             requestNotificationPermission(); document.getElementById('message-input').focus();
         });
 
+        // --- ARQUIVOS E EFEITOS ---
         function handleFiles(files) { if (files[0]) { selectedFile = files[0]; document.getElementById('attachment-name').innerText = selectedFile.name; document.getElementById('attachment-preview').classList.remove('hidden'); document.getElementById('message-input').focus(); } }
         function removeAttachment() { selectedFile = null; document.getElementById('file-input').value = ''; document.getElementById('attachment-preview').classList.add('hidden'); }
         document.addEventListener('paste', (e) => { if (e.clipboardData && e.clipboardData.files.length > 0) handleFiles(e.clipboardData.files); });
@@ -422,27 +524,21 @@
             const count = type === 'snow' ? 20 : (type === 'stars' ? 15 : 10); for(let i=0; i<count; i++) { const p = document.createElement('div'); p.className = 'particle'; p.style.left = Math.random() * 100 + '%'; p.style.top = (Math.random() * 50 - 20) + 'px'; if(type === 'snow') { p.style.width = p.style.height = (Math.random()*4+2)+'px'; p.style.background = 'white'; p.style.animation = `fallSnow ${Math.random()*2+2}s linear infinite`; } else if(type === 'stars') { p.style.width = p.style.height = (Math.random()*6+3)+'px'; p.style.background = '#FFD700'; p.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)'; p.style.animation = `floatStars ${Math.random()*2+2}s ease-in-out infinite`; } else if(type === 'fire') { p.style.width = p.style.height = (Math.random()*10+5)+'px'; p.style.background = 'radial-gradient(circle, #ff9d00, #ff2a00)'; p.style.animation = `pulseFire ${Math.random()+0.5}s infinite alternate`; p.style.top = '100%'; } element.appendChild(p); }
         }
 
-        // NOVO: Aplicação das Decorações Usando Variáveis de CSS para integrar perfeitamente com os Pseudo-Elementos
         function applyPfpDecor(containerId, decorType, color) { 
             const el = document.getElementById(containerId); 
             el.className = "absolute -top-12 left-6 rounded-full transition-all smooth-hover decor-container"; 
             el.style.setProperty('--decor-color', color || '#5865F2');
-            
             if(decorType === 'none') { el.classList.add('border-[6px]', 'border-transparent'); return; } 
-            if(decorType === 'glow') el.classList.add('decor-glow'); 
-            if(decorType === 'spin') el.classList.add('decor-spin'); 
-            if(decorType === 'pulse') el.classList.add('decor-pulse'); 
-            if(decorType === 'rainbow') el.classList.add('decor-rainbow'); 
-            if(decorType === 'glitch') el.classList.add('decor-glitch'); 
-            if(decorType === 'fire-ring') el.classList.add('decor-fire-ring'); 
+            if(decorType === 'glow') el.classList.add('decor-glow'); if(decorType === 'spin') el.classList.add('decor-spin'); if(decorType === 'pulse') el.classList.add('decor-pulse'); if(decorType === 'rainbow') el.classList.add('decor-rainbow'); if(decorType === 'glitch') el.classList.add('decor-glitch'); if(decorType === 'fire-ring') el.classList.add('decor-fire-ring'); 
         }
-        
         function applyTheme(theme) { document.body.className = `bg-[#313338] text-[#DBDEE1] h-screen w-screen overflow-hidden flex selection:bg-[#5865F2] selection:text-white relative theme-${theme}`; }
 
         function updateUIProfile() { 
             document.getElementById('my-name-display').innerText = currentUser.name; document.getElementById('my-name-display').style.color = getRoleColor(currentUser.role, currentUser.color); document.getElementById('my-avatar-display').src = currentUser.avatar; document.getElementById('my-activity-display').innerText = currentUser.activity || (currentUser.status === 'invisible' ? 'Invisível' : 'Online'); 
             const myDot = document.getElementById('my-avatar-mini-container').querySelector('.absolute'); if(myDot) myDot.style.backgroundColor = getStatusColor(currentUser.status); 
+            
             document.getElementById('prof-name').value = currentUser.name; document.getElementById('prof-avatar').value = currentUser.avatar; document.getElementById('prof-color').value = currentUser.color || '#5865F2'; document.getElementById('prof-bio').value = currentUser.bio || ''; document.getElementById('prof-activity').value = currentUser.activity || ''; document.getElementById('prof-particles').value = currentUser.particles || 'none'; document.getElementById('prof-banner-url').value = currentUser.bannerUrl || ''; document.getElementById('prof-pfp-decor').value = currentUser.decor || 'none'; document.getElementById('prof-status').value = currentUser.status || 'online'; document.getElementById('prof-theme').value = currentUser.theme || 'dark'; 
+            
             document.getElementById('profile-avatar-preview').src = currentUser.avatar; updateBannerVisuals(document.getElementById('profile-banner-preview'), currentUser.color, currentUser.bannerUrl, currentUser.particles); applyPfpDecor('profile-avatar-container', currentUser.decor, currentUser.color); applyTheme(currentUser.theme);
         }
 
@@ -457,39 +553,96 @@
         document.getElementById('prof-particles').addEventListener('change', e => { applyParticles(document.getElementById('profile-banner-preview'), e.target.value); });
         document.getElementById('prof-pfp-decor').addEventListener('change', e => { applyPfpDecor('profile-avatar-container', e.target.value, document.getElementById('prof-color').value); });
 
+        // --- POPOUTS, SIDEBARS & MENUS ---
         let currentPopoutTargetId = null;
         function showUserPopout(event, socketId) { 
-            event.stopPropagation(); const user = onlineUsersData.find(u => u.socketId === socketId); if(!user) return; currentPopoutTargetId = socketId; 
+            event.stopPropagation(); closeAllPopovers(); const user = onlineUsersData.find(u => u.socketId === socketId); if(!user) return; currentPopoutTargetId = socketId; 
+            
             const popout = document.getElementById('user-popout'); updateBannerVisuals(document.getElementById('popout-banner'), user.color, user.bannerUrl, user.particles); 
             document.getElementById('popout-avatar').src = user.avatar; applyPfpDecor('popout-avatar-container', user.decor, user.color); 
+            
             let popoutDot = document.getElementById('popout-status-dot'); if(!popoutDot) { popoutDot = document.createElement('div'); popoutDot.id = 'popout-status-dot'; popoutDot.className = 'absolute -bottom-1 -right-1 w-5 h-5 border-[4px] border-[#111214] rounded-full'; document.getElementById('popout-avatar-container').appendChild(popoutDot); } popoutDot.style.backgroundColor = getStatusColor(user.status); 
+
             document.getElementById('popout-name').innerText = user.name; document.getElementById('popout-name').style.color = getRoleColor(user.role, user.color); 
             const badge = document.getElementById('popout-role-badge'); if (user.role !== 'Membro') { badge.innerText = user.role; badge.style.backgroundColor = getRoleColor(user.role, '#5865F2'); badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); } 
             document.getElementById('popout-bio').innerText = user.bio || 'Este usuário prefere manter o mistério.'; 
             const act = document.getElementById('popout-activity'); if(user.activity) { act.innerText = user.activity; act.classList.remove('hidden'); } else { act.classList.add('hidden'); } 
-            const adminPanel = document.getElementById('admin-tools-panel'); if (currentUser.role === 'Admin' && user.socketId !== currentUser.socketId) { adminPanel.classList.remove('hidden'); document.getElementById('admin-role-select').value = user.role; } else { adminPanel.classList.add('hidden'); } 
+
+            const adminPanel = document.getElementById('admin-tools-panel'); 
+            if (currentUser.role === 'Admin' && user.socketId !== currentUser.socketId) { adminPanel.classList.remove('hidden'); document.getElementById('admin-role-select').value = user.role; } else { adminPanel.classList.add('hidden'); } 
+            
             document.getElementById('admin-role-select').onchange = (e) => { socket.emit('set role', { targetSocketId: currentPopoutTargetId, role: e.target.value }); }; 
             document.getElementById('admin-ban-btn').onclick = () => { if(confirm(`Banir IP do(a) ${user.name} permanentemente?`)) { socket.emit('ban user', currentPopoutTargetId); closeUserPopout(); } }; 
             
             let topPos = event.clientY; let leftPos = event.clientX + 20; if (window.innerWidth < 768) { leftPos = 10; topPos = Math.max(10, Math.min(topPos, window.innerHeight - 450)); } else { topPos = Math.min(topPos, window.innerHeight - 400); leftPos = Math.min(leftPos, window.innerWidth - 350); } 
             popout.style.top = topPos + 'px'; popout.style.left = leftPos + 'px'; 
             
-            popout.classList.remove('hidden'); 
-            setTimeout(() => { popout.classList.remove('scale-95', 'opacity-0'); popout.classList.add('scale-100', 'opacity-100'); }, 10);
+            popout.classList.remove('hidden'); setTimeout(() => { popout.classList.remove('scale-95', 'opacity-0'); popout.classList.add('scale-100', 'opacity-100'); }, 10);
         }
-        function closeUserPopout() { 
-            const popout = document.getElementById('user-popout');
-            popout.classList.remove('scale-100', 'opacity-100'); popout.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => { popout.classList.add('hidden'); }, 200); 
+        function closeUserPopout() { const popout = document.getElementById('user-popout'); popout.classList.remove('scale-100', 'opacity-100'); popout.classList.add('scale-95', 'opacity-0'); setTimeout(() => { popout.classList.add('hidden'); }, 200); }
+
+        function openHomeDMs() {
+            isDmMode = true; currentServer = null; currentVoiceChannelId = null;
+            document.getElementById('current-server-name').innerText = "Mensagens Diretas";
+            document.getElementById('btn-invite-copy').classList.add('hidden');
+            document.getElementById('sidebar-category-name').innerHTML = `<i class="fa-solid fa-chevron-down text-[10px] mr-1"></i> DMs`;
+            document.getElementById('btn-sidebar-plus').onclick = createDM;
+            renderSidebar(); renderDMList();
+            document.getElementById('chat-header-name').innerText = "Amigos";
+            document.getElementById('header-channel-icon').className = 'fa-solid fa-at text-[#87898C] text-2xl hidden sm:block';
+            document.getElementById('chat-messages').innerHTML = `<div class="flex flex-col items-center justify-center h-full text-center opacity-50"><i class="fa-solid fa-user-group text-6xl mb-4"></i><h2 class="text-2xl font-bold">Início</h2><p>Selecione um amigo para conversar.</p></div>`;
+            document.getElementById('message-input').disabled = true;
+            document.getElementById('video-grid').classList.replace('flex', 'hidden');
+        }
+
+        function createDM() {
+            const list = onlineUsersData.filter(u => u.socketId !== currentUser.socketId);
+            if(list.length === 0) return alert("Nenhum amigo online para conversar!");
+            let msg = "Digite o número do amigo para criar DM:\n";
+            list.forEach((u, i) => msg += `${i+1}. ${u.name}\n`);
+            const pick = prompt(msg);
+            if(pick && !isNaN(pick) && list[pick-1]) {
+                socket.emit('create dm', list[pick-1].ip);
+                closeAllSidebarsOnMobile();
+            }
+        }
+
+        function renderDMList() {
+            const cl = document.getElementById('channel-list'); cl.innerHTML = '';
+            Object.values(userDMs).forEach(dm => {
+                const isAct = dm.id === currentDmId;
+                const bg = isAct ? 'bg-[#404249] text-white shadow-sm' : 'text-[#87898C] hover:bg-black/10 hover:text-[#DBDEE1]';
+                const otherIp = dm.users.find(ip => ip !== currentUser.ip);
+                let otherName = "Amigo"; let otherAvatar = "https://cdn.discordapp.com/embed/avatars/0.png";
+                const otherUserObj = onlineUsersData.find(u => u.ip === otherIp);
+                if(otherUserObj) { otherName = otherUserObj.name; otherAvatar = otherUserObj.avatar; }
+
+                const div = document.createElement('div'); div.className = `${bg} rounded-lg px-3 py-2 flex items-center gap-3 cursor-pointer smooth-hover mb-1 font-medium`; 
+                div.onclick = () => { socket.emit('join dm', dm.id); closeAllSidebarsOnMobile(); }; 
+                div.innerHTML = `<img src="${otherAvatar}" class="w-6 h-6 rounded-full object-cover"><span class="truncate">${otherName}</span>`; 
+                cl.appendChild(div);
+            });
         }
 
         function renderSidebar() {
-            const sidebar = document.getElementById('server-sidebar'); const sep = document.getElementById('server-separator'); Array.from(sidebar.children).forEach(c => { if(c.id !== 'server-separator' && !c.innerHTML.includes('fa-plus')) sidebar.removeChild(c); });
-            myServers.forEach(srv => { const div = document.createElement('div'); const isAct = currentServer && srv.id === currentServer.id; const hasUnread = unreadServers.has(srv.id) && !isAct; div.className = `relative w-12 h-12 ${isAct?'bg-[#5865F2] rounded-[16px]':'bg-black/20 rounded-[24px] hover:bg-[#5865F2] hover:rounded-[16px]'} text-white flex items-center justify-center cursor-pointer transition-all mb-2 flex-shrink-0 shadow-md smooth-hover border border-white/5`; div.title = srv.name; div.onclick = () => { socket.emit('join server', srv.id); closeAllSidebarsOnMobile(); }; div.innerHTML = `<i class="fa-solid ${srv.icon} text-xl"></i>`; if (hasUnread) { div.innerHTML += `<div class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-[#1E1F22]"></div>`; } sidebar.insertBefore(div, sep); });
+            const container = document.getElementById('server-list-container'); container.innerHTML = '';
+            const homeBtn = document.getElementById('btn-home');
+            if (isDmMode) { homeBtn.classList.add('bg-[#5865F2]', 'rounded-[16px]'); homeBtn.classList.remove('bg-[#313338]', 'rounded-[24px]'); }
+            else { homeBtn.classList.remove('bg-[#5865F2]', 'rounded-[16px]'); homeBtn.classList.add('bg-[#313338]', 'rounded-[24px]'); }
+
+            myServers.forEach(srv => {
+                const div = document.createElement('div'); const isAct = !isDmMode && currentServer && srv.id === currentServer.id; const hasUnread = unreadServers.has(srv.id) && !isAct;
+                div.className = `relative w-12 h-12 ${isAct?'bg-[#5865F2] rounded-[16px]':'bg-black/20 rounded-[24px] hover:bg-[#5865F2] hover:rounded-[16px]'} text-white flex items-center justify-center cursor-pointer transition-all flex-shrink-0 shadow-md smooth-hover border border-white/5`; 
+                div.title = srv.name; div.onclick = () => { socket.emit('join server', srv.id); closeAllSidebarsOnMobile(); }; div.innerHTML = `<i class="fa-solid ${srv.icon} text-xl"></i>`; 
+                if (hasUnread) { div.innerHTML += `<div class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-[#1E1F22]"></div>`; } 
+                container.appendChild(div); 
+            });
         }
 
         function renderChannels() {
-            if(!currentServer) return; const cl = document.getElementById('channel-list'); cl.innerHTML = '';
+            if(isDmMode) { renderDMList(); return; }
+            if(!currentServer) return; 
+            const cl = document.getElementById('channel-list'); cl.innerHTML = '';
             Object.values(currentServer.channels).forEach(ch => {
                 const isActText = ch.type === 'text' && ch.id === currentTextChannelId; const isActVoice = ch.type === 'voice' && ch.id === currentVoiceChannelId; const icon = ch.type === 'text' ? 'fa-hashtag' : 'fa-volume-high'; const bg = (isActText || isActVoice) ? 'bg-[#404249] text-white shadow-sm' : 'text-[#87898C] hover:bg-black/10 hover:text-[#DBDEE1]';
                 const div = document.createElement('div'); div.className = `${bg} rounded-lg px-3 py-2 flex items-center gap-3 cursor-pointer smooth-hover mb-1 font-medium`; div.onclick = () => { if(ch.type === 'text') switchTextChannel(ch.id); else joinVoiceChannel(ch.id); closeAllSidebarsOnMobile(); }; div.innerHTML = `<i class="fa-solid ${icon} text-[15px] opacity-70"></i><span class="truncate">${ch.name}</span>`; cl.appendChild(div);
@@ -497,34 +650,85 @@
             });
         }
 
-        function switchTextChannel(chId) { currentTextChannelId = chId; const ch = currentServer.channels[chId]; document.getElementById('chat-header-name').innerText = ch.name; document.getElementById('chat-messages').innerHTML = `<div class="mt-10 mb-8 px-4"><div class="w-16 h-16 bg-[#5865F2] rounded-full flex items-center justify-center mb-4 shadow-lg"><i class="fa-solid fa-hashtag text-white text-3xl"></i></div><h1 class="text-white text-4xl font-black mb-2">Bem-vindo(a) a #${ch.name}</h1><p class="text-[#B5BAC1]">Este é o começo do histórico deste canal.</p></div>`; if (ch.messages) ch.messages.forEach(appendMessage); renderChannels(); }
+        function switchTextChannel(chId) { 
+            currentTextChannelId = chId; const ch = currentServer.channels[chId]; 
+            document.getElementById('chat-header-name').innerText = ch.name; document.getElementById('header-channel-icon').className = 'fa-solid fa-hashtag text-[#87898C] text-2xl hidden sm:block'; 
+            document.getElementById('chat-messages').innerHTML = `<div class="mt-10 mb-8 px-4"><div class="w-16 h-16 bg-[#5865F2] rounded-full flex items-center justify-center mb-4 shadow-lg"><i class="fa-solid fa-hashtag text-white text-3xl"></i></div><h1 class="text-white text-4xl font-black mb-2">Bem-vindo(a) a #${ch.name}</h1><p class="text-[#B5BAC1]">Este é o começo do histórico deste canal.</p></div>`; 
+            if (ch.messages) ch.messages.forEach(m => appendMessage(m, false)); 
+            document.getElementById('message-input').disabled = false; renderChannels(); 
+        }
+
         function openChannelModal() { document.getElementById('channel-modal').classList.remove('hidden'); }
         function closeChannelModal() { document.getElementById('channel-modal').classList.add('hidden'); }
         function submitChannel() { const name = document.getElementById('channel-name').value.trim().replace(/\s+/g, '-').toLowerCase(); const type = document.querySelector('input[name="channel-type"]:checked').value; if(name && currentServer) socket.emit('create channel', { serverId: currentServer.id, name, type }); closeChannelModal(); }
         function createServer() { const name = prompt("Nome do Servidor:"); if(name) socket.emit('create server', { name }); closeAllSidebarsOnMobile(); }
         function copyInviteLink() { if(!currentServer) return; const link = window.location.origin + window.location.pathname + '?invite=' + currentServer.id; navigator.clipboard.writeText(link).catch(() => { const t=document.createElement("input"); t.value=link; document.body.appendChild(t); t.select(); document.execCommand("copy"); document.body.removeChild(t); }); alert("Link copiado: " + link); }
+        function handleSidebarPlus() { if(isDmMode) createDM(); else openChannelModal(); }
+
+        // --- PINGS, EMOJIS & GIFS ---
+        const msgInput = document.getElementById('message-input');
+        const mentionPopover = document.getElementById('mention-popover');
+        const mentionList = document.getElementById('mention-list');
+        
+        msgInput.addEventListener('input', (e) => {
+            const val = e.target.value; const lastWord = val.split(' ').pop();
+            if (lastWord.startsWith('@') && lastWord.length > 0) {
+                const search = lastWord.substring(1).toLowerCase(); const matches = onlineUsersData.filter(u => u.name.toLowerCase().includes(search) && u.socketId !== currentUser.socketId);
+                if (matches.length > 0) { mentionList.innerHTML = ''; matches.forEach(m => { const li = document.createElement('li'); li.className = 'p-2 flex items-center gap-2 hover:bg-white/10 cursor-pointer transition text-sm text-white'; li.innerHTML = `<img src="${m.avatar}" class="w-5 h-5 rounded-full object-cover"> <span style="color:${getRoleColor(m.role)}">${m.name}</span>`; li.onmousedown = (ev) => { ev.preventDefault(); msgInput.value = val.substring(0, val.lastIndexOf(lastWord)) + `@${m.name} `; mentionPopover.classList.add('hidden'); msgInput.focus(); }; mentionList.appendChild(li); }); mentionPopover.classList.remove('hidden'); } else mentionPopover.classList.add('hidden');
+            } else { mentionPopover.classList.add('hidden'); }
+            if ((currentServer || isDmMode) && val.length > 0) { const targetId = isDmMode ? currentDmId : currentServer.id; socket.emit('typing', { serverId: targetId, channelId: currentTextChannelId }); clearTimeout(typingTimeout); typingTimeout = setTimeout(() => { socket.emit('stop typing', { serverId: targetId, channelId: currentTextChannelId }); }, 2000); }
+        });
+
+        const emojiList = ['😀','😂','😅','😉','😇','😍','🥰','😘','😋','😎','🤔','🙄','😑','😶','🤐','😪','😫','😴','😌','😛','😜','😝','🤤','😒','😓','😔','😕','🙃','🤑','😲','☹️','🙁','😖','😞','😟','😤','😢','😭','😦','😧','😨','😩','🤯','😬','😰','😱','🥵','🥶','😳','🤪','😵','😡','😠','🤬','😷','🤒','🤕','🤢','🤮','🤧','😇','🥳','🥺','🤠','🤡','🤥','🤫','🤭','🧐','🤓','😈','👿','💀','☠️','👻','💩','👽','👾','🤖','🎃','😺','😸','😹','😻','😼','😽','🙀','😿','😾'];
+        function toggleEmojiPicker(e) { e.stopPropagation(); const picker = document.getElementById('emoji-picker'); if(picker.classList.contains('hidden')) { closeAllPopovers(); picker.classList.remove('hidden'); switchPicker('emoji'); } else picker.classList.add('hidden'); }
+        function switchPicker(type) {
+            document.getElementById('tab-emoji').className = type==='emoji'?'flex-1 py-1.5 rounded-lg bg-white/10 text-white font-bold text-sm smooth-hover':'flex-1 py-1.5 rounded-lg hover:bg-white/5 text-[#B5BAC1] font-bold text-sm smooth-hover';
+            document.getElementById('tab-gif').className = type==='gif'?'flex-1 py-1.5 rounded-lg bg-white/10 text-white font-bold text-sm smooth-hover':'flex-1 py-1.5 rounded-lg hover:bg-white/5 text-[#B5BAC1] font-bold text-sm smooth-hover';
+            const content = document.getElementById('picker-content'); const adminPanel = document.getElementById('custom-emoji-admin'); content.innerHTML = '';
+            if (type === 'emoji') {
+                if(serverEmojis.length > 0) { content.innerHTML += `<div class="text-xs font-bold text-[#87898C] uppercase mb-2">Servidor</div><div class="flex flex-wrap gap-2 mb-4" id="custom-emojis-grid"></div>`; const grid = content.querySelector('#custom-emojis-grid'); serverEmojis.forEach(ce => { const img = document.createElement('img'); img.src = ce.url; img.className = "w-8 h-8 object-contain cursor-pointer hover:scale-110 transition"; img.onclick = () => { msgInput.value += ` :img_${ce.id}: `; msgInput.focus(); }; grid.appendChild(img); }); }
+                adminPanel.classList.remove('hidden');
+                content.innerHTML += `<div class="text-xs font-bold text-[#87898C] uppercase mb-2">Padrão</div><div class="flex flex-wrap gap-1" id="std-emojis-grid"></div>`; const grid2 = content.querySelector('#std-emojis-grid'); emojiList.forEach(em => { const btn = document.createElement('button'); btn.className = "w-8 h-8 text-xl hover:bg-white/10 rounded transition"; btn.innerText = em; btn.onclick = () => { msgInput.value += em; msgInput.focus(); }; grid2.appendChild(btn); });
+            } else {
+                adminPanel.classList.add('hidden'); content.innerHTML = `<div class="flex flex-col h-full justify-center items-center text-center opacity-70"><i class="fa-solid fa-bolt text-4xl mb-4 text-[#F0B232]"></i><p class="text-sm text-white font-bold mb-2">Adicionar GIF Mágico</p><input type="url" id="gif-fast-url" placeholder="Cole o link do GIF aqui..." class="w-full bg-black/40 rounded p-2 text-xs text-white outline-none mb-2"><button onclick="sendFastGif()" class="bg-[#5865F2] w-full p-2 rounded text-white text-xs font-bold hover:bg-[#4752C4]">ENVIAR GIF</button></div>`;
+            }
+        }
+        function sendFastGif() { const url = document.getElementById('gif-fast-url').value.trim(); if(url) { const targetId = isDmMode ? currentDmId : currentServer.id; socket.emit('chat message', { serverId: targetId, channelId: currentTextChannelId, text: '', mediaUrl: url, mediaType: 'image', replyTo: replyingTo, isDm: isDmMode }); cancelReply(); document.getElementById('emoji-picker').classList.add('hidden'); } }
+        async function uploadCustomEmoji() { if(currentUser.role !== 'Admin' && currentUser.role !== 'Moderador') return alert("Apenas Moderadores podem adicionar emojis!"); const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.onchange = async (e) => { if(e.target.files[0]) { const fd = new FormData(); fd.append('media', e.target.files[0]); const res = await fetch('/upload', {method:'POST', body:fd}); const data = await res.json(); if(data.url) socket.emit('add custom emoji', data.url); } }; input.click(); }
+
+        let targetMsgIdForReaction = null;
+        function openReactionPicker(msgId, e) {
+            e.stopPropagation(); targetMsgIdForReaction = msgId; const picker = document.getElementById('emoji-picker'); closeAllPopovers(); picker.classList.remove('hidden'); switchPicker('emoji');
+            const emojis = picker.querySelectorAll('#std-emojis-grid button'); emojis.forEach(btn => { btn.onclick = () => { const targetId = isDmMode ? currentDmId : currentServer.id; socket.emit('react message', { serverId: targetId, channelId: currentTextChannelId, msgId: targetMsgIdForReaction, emoji: btn.innerText, isDm: isDmMode }); picker.classList.add('hidden'); setTimeout(()=> { switchPicker('emoji'); }, 500); } });
+            const customs = picker.querySelectorAll('#custom-emojis-grid img'); if(customs) { customs.forEach((img, idx) => { img.onclick = () => { const targetId = isDmMode ? currentDmId : currentServer.id; socket.emit('react message', { serverId: targetId, channelId: currentTextChannelId, msgId: targetMsgIdForReaction, emoji: `img_${serverEmojis[idx].id}`, isDm: isDmMode }); picker.classList.add('hidden'); setTimeout(()=> { switchPicker('emoji'); }, 500); } }); }
+        }
 
         function setReply(id, name, text) { replyingTo = { id, name, text: text.substring(0, 50) + (text.length > 50 ? '...' : '') }; document.getElementById('reply-banner').classList.remove('hidden'); document.getElementById('reply-text').innerText = `Respondendo a @${name}`; document.getElementById('message-input').focus(); }
         function cancelReply() { replyingTo = null; document.getElementById('reply-banner').classList.add('hidden'); }
-        function deleteMsg(msgId) { if(confirm("Deletar mensagem para todos?")) { socket.emit('delete message', { serverId: currentServer.id, channelId: currentTextChannelId, msgId }); } }
+        function deleteMsg(msgId) { if(confirm("Deletar mensagem para todos?")) { const targetId = isDmMode ? currentDmId : currentServer.id; socket.emit('delete message', { serverId: targetId, channelId: currentTextChannelId, msgId, isDm: isDmMode }); } }
         function banUser(socketId) { if(confirm("Banir este IP permanentemente?")) { socket.emit('ban user', socketId); } }
-        function editMsg(msgId) { const msgEl = document.getElementById(`msg-text-${msgId}`); if(!msgEl) return; const oldText = msgEl.getAttribute('data-raw'); const newText = prompt("Edite a sua mensagem:", oldText); if(newText !== null && newText.trim() !== '' && newText !== oldText) { socket.emit('edit message', { serverId: currentServer.id, channelId: currentTextChannelId, msgId, newText: newText.trim() }); } }
+        function editMsg(msgId) { const msgEl = document.getElementById(`msg-text-${msgId}`); if(!msgEl) return; const oldText = msgEl.getAttribute('data-raw'); const newText = prompt("Edite a sua mensagem:", oldText); if(newText !== null && newText.trim() !== '' && newText !== oldText) { const targetId = isDmMode ? currentDmId : currentServer.id; socket.emit('edit message', { serverId: targetId, channelId: currentTextChannelId, msgId, newText: newText.trim(), isDm: isDmMode }); } }
 
-        function appendMessage(msg) {
+        function appendMessage(msg, isDmView) {
             const div = document.createElement('div'); div.id = `msg-${msg.id}`; 
             const isDypz = currentUser.role === 'Admin'; const isMod = currentUser.role === 'Moderador'; const isMine = msg.user.socketId === currentUser.socketId; 
-            let safeText = msg.text || ''; const isEv = safeText.includes('@everyone'), isMen = safeText.includes(`@${currentUser.name}`); 
+            
+            let safeText = msg.text || ''; 
+            serverEmojis.forEach(ce => { safeText = safeText.replace(new RegExp(`:img_${ce.id}:`, 'g'), `<img src="${ce.url}" class="inline-block w-6 h-6 object-contain align-middle">`); });
+
+            const isEv = safeText.includes('@everyone'), isMen = safeText.includes(`@${currentUser.name}`); 
             let baseClass = isEv ? 'msg-everyone' : (isMen ? 'msg-ping' : 'hover:bg-black/10'); 
             div.className = `flex gap-3 sm:gap-4 py-2 px-3 sm:px-4 -mx-2 sm:-mx-4 transition group relative rounded-lg ${baseClass} smooth-hover mt-1`;
             
             let menuHtml = `<div class="absolute -top-3 right-4 hidden group-hover:flex items-center bg-[#313338] border border-white/10 rounded-lg shadow-xl z-10 text-xs sm:text-base overflow-hidden">`; 
+            menuHtml += `<button onclick="openReactionPicker('${msg.id}', event)" class="p-2 text-[#B5BAC1] hover:bg-white/10 hover:text-[#F0B232] transition" title="Adicionar Reação"><i class="fa-solid fa-face-smile"></i></button>`;
             menuHtml += `<button onclick="setReply('${msg.id}', '${msg.user.name}', '${msg.text ? msg.text.replace(/'/g, "\\'") : 'Mídia'}')" class="p-2 text-[#B5BAC1] hover:bg-white/10 hover:text-white transition" title="Responder"><i class="fa-solid fa-reply"></i></button>`; 
             if(isMine) menuHtml += `<button onclick="editMsg('${msg.id}')" class="p-2 text-[#B5BAC1] hover:bg-white/10 hover:text-white transition" title="Editar"><i class="fa-solid fa-pencil"></i></button>`; 
             if(isDypz || isMod || isMine) menuHtml += `<button onclick="deleteMsg('${msg.id}')" class="p-2 text-red-400 hover:bg-red-500 hover:text-white transition" title="Apagar"><i class="fa-solid fa-trash"></i></button>`; 
-            if(isDypz && !isMine) menuHtml += `<button onclick="banUser('${msg.user.socketId}')" class="p-2 text-red-400 hover:bg-red-500 hover:text-white transition" title="Banir IP"><i class="fa-solid fa-gavel"></i></button>`; 
+            if(isDypz && !isMine && !isDmView) menuHtml += `<button onclick="banUser('${msg.user.socketId}')" class="p-2 text-red-400 hover:bg-red-500 hover:text-white transition" title="Banir IP"><i class="fa-solid fa-gavel"></i></button>`; 
             menuHtml += `</div>`;
 
-            let mediaHtml = '', replyHtml = '';
+            let mediaHtml = '', replyHtml = '', reactionsHtml = '';
             if (msg.mediaUrl) { 
                 if(msg.mediaType === 'image') mediaHtml = `<img src="${msg.mediaUrl}" class="max-w-xs sm:max-w-sm max-h-60 sm:max-h-80 rounded-xl mt-2 border border-white/5 shadow-md">`; 
                 else if(msg.mediaType === 'video') mediaHtml = `<video src="${msg.mediaUrl}" controls class="max-w-xs sm:max-w-md rounded-xl mt-2 bg-black border border-white/5 shadow-md"></video>`; 
@@ -533,6 +737,16 @@
             }
             if(msg.replyTo) replyHtml = `<div class="text-[#B5BAC1] text-[10px] sm:text-xs flex items-center gap-2 mb-1 opacity-80 before:content-[''] before:w-4 sm:before:w-6 before:h-[2px] before:bg-[#4E5058] before:rounded-l-lg truncate"><img src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-4 h-4 rounded-full"> <span class="font-bold text-white">@${msg.replyTo.name}</span>: ${msg.replyTo.text}</div>`; 
             
+            if(msg.reactions && Object.keys(msg.reactions).length > 0) {
+                reactionsHtml = `<div class="flex flex-wrap gap-1 mt-2" id="react-box-${msg.id}">`;
+                for(let emoji in msg.reactions) {
+                    const count = msg.reactions[emoji].length; const iReacted = msg.reactions[emoji].includes(currentUser.name); const bgR = iReacted ? 'bg-[#5865F2]/30 border-[#5865F2]' : 'bg-white/5 border-transparent hover:bg-white/10'; 
+                    let displayEmoji = emoji; if(emoji.startsWith('img_')) { const ce = serverEmojis.find(e => e.id === emoji.replace('img_','')); if(ce) displayEmoji = `<img src="${ce.url}" class="w-4 h-4 inline-block object-contain">`; }
+                    reactionsHtml += `<button onclick="socket.emit('react message', {serverId:'${isDmMode?currentDmId:currentServer.id}', channelId:'${currentTextChannelId}', msgId:'${msg.id}', emoji:'${emoji}', isDm:${isDmMode}})" class="flex items-center gap-1.5 px-2 py-0.5 rounded-lg border ${bgR} text-xs font-bold transition text-white" title="${msg.reactions[emoji].join(', ')}">${displayEmoji} <span>${count}</span></button>`;
+                }
+                reactionsHtml += `</div>`;
+            }
+
             const rawText = safeText.replace(/"/g, '&quot;');
             if(isEv) safeText = safeText.replace(/@everyone/g, `<span class="bg-[#FAA61A]/20 text-[#FEE75C] font-bold px-1.5 py-0.5 rounded-md">@everyone</span>`); 
             if(isMen) safeText = safeText.replace(new RegExp(`@${currentUser.name}`, 'g'), `<span class="bg-[#5865F2]/30 text-[#C9CDD6] font-bold px-1.5 py-0.5 rounded-md">@${currentUser.name}</span>`);
@@ -552,46 +766,71 @@
                     </div>
                     <p id="msg-text-${msg.id}" data-raw="${rawText}" class="text-[#DBDEE1] whitespace-pre-wrap leading-relaxed mt-0.5 text-[15px] sm:text-[16px]">${safeText}${editedSpan}</p>
                     ${mediaHtml}
+                    ${reactionsHtml}
                 </div>`;
             const chatBox = document.getElementById('chat-messages'); chatBox.appendChild(div); chatBox.scrollTop = chatBox.scrollHeight;
         }
 
         async function sendMessage() {
-            if (isUploading || !currentServer) return; 
+            if (isUploading || (!currentServer && !isDmMode)) return; 
             const text = document.getElementById('message-input').value.trim(); 
             if (!text && !selectedFile) return; 
             isUploading = true; document.getElementById('message-input').disabled = true; let mediaUrl = null, mediaType = null;
             if(selectedFile) { const fd = new FormData(); fd.append('media', selectedFile); document.getElementById('message-input').placeholder = "A enviar..."; try { const res = await fetch('/upload', {method:'POST', body:fd}); const data = await res.json(); if(data.url) {mediaUrl=data.url; mediaType=data.type;} } catch(e) {} }
-            if(socket) socket.emit('chat message', { serverId: currentServer.id, channelId: currentTextChannelId, text, mediaUrl, mediaType, replyTo: replyingTo });
-            document.getElementById('message-input').value = ''; removeAttachment(); cancelReply(); isUploading = false; document.getElementById('message-input').disabled = false; document.getElementById('message-input').placeholder = "Mensagem..."; document.getElementById('message-input').focus();
+            const targetId = isDmMode ? currentDmId : currentServer.id;
+            if(socket) socket.emit('chat message', { serverId: targetId, channelId: currentTextChannelId, text, mediaUrl, mediaType, replyTo: replyingTo, isDm: isDmMode });
+            document.getElementById('message-input').value = ''; removeAttachment(); cancelReply(); isUploading = false; document.getElementById('message-input').disabled = false; document.getElementById('message-input').placeholder = "Mensagem..."; document.getElementById('message-input').focus(); document.getElementById('mention-popover').classList.add('hidden');
         }
         document.getElementById('message-input').addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }});
 
-        function sendGifUrl() {
-            if (!currentServer) return; const url = prompt("Cole o link (URL) do GIF que deseja enviar:");
-            if (url && url.trim() !== '') { socket.emit('chat message', { serverId: currentServer.id, channelId: currentTextChannelId, text: '', mediaUrl: url.trim(), mediaType: 'image', replyTo: replyingTo }); cancelReply(); document.getElementById('message-input').focus(); }
-        }
+        let typingTimeout; 
+        document.getElementById('message-input').addEventListener('input', (e) => { 
+            const val = e.target.value; const lastWord = val.split(' ').pop();
+            if (lastWord.startsWith('@') && lastWord.length > 0) {
+                const search = lastWord.substring(1).toLowerCase(); const matches = onlineUsersData.filter(u => u.name.toLowerCase().includes(search) && u.socketId !== currentUser.socketId);
+                if (matches.length > 0) { mentionList.innerHTML = ''; matches.forEach(m => { const li = document.createElement('li'); li.className = 'p-2 flex items-center gap-2 hover:bg-white/10 cursor-pointer transition text-sm text-white'; li.innerHTML = `<img src="${m.avatar}" class="w-5 h-5 rounded-full object-cover"> <span style="color:${getRoleColor(m.role)}">${m.name}</span>`; li.onmousedown = (ev) => { ev.preventDefault(); msgInput.value = val.substring(0, val.lastIndexOf(lastWord)) + `@${m.name} `; mentionPopover.classList.add('hidden'); msgInput.focus(); }; mentionList.appendChild(li); }); mentionPopover.classList.remove('hidden'); } else mentionPopover.classList.add('hidden');
+            } else { mentionPopover.classList.add('hidden'); }
 
-        let typingTimeout; document.getElementById('message-input').addEventListener('input', () => { if (!currentServer) return; socket.emit('typing', { serverId: currentServer.id, channelId: currentTextChannelId }); clearTimeout(typingTimeout); typingTimeout = setTimeout(() => { socket.emit('stop typing', { serverId: currentServer.id, channelId: currentTextChannelId }); }, 2000); });
-        let typingUsers = new Set(); function updateTypingIndicator() { const ind = document.getElementById('typing-indicator'); if (typingUsers.size === 0) ind.classList.add('hidden'); else { ind.classList.remove('hidden'); ind.innerHTML = `<strong>${Array.from(typingUsers).join(', ')}</strong> está a escrever<span class="typing-dots"></span>`; } }
+            if (!currentServer && !isDmMode) return; 
+            const targetId = isDmMode ? currentDmId : currentServer.id;
+            socket.emit('typing', { serverId: targetId, channelId: currentTextChannelId }); 
+            clearTimeout(typingTimeout); 
+            typingTimeout = setTimeout(() => { socket.emit('stop typing', { serverId: targetId, channelId: currentTextChannelId }); }, 2000); 
+        });
+
+        let typingUsers = new Set(); 
+        function updateTypingIndicator() { const ind = document.getElementById('typing-indicator'); if (typingUsers.size === 0) ind.classList.add('hidden'); else { ind.classList.remove('hidden'); ind.innerHTML = `<strong>${Array.from(typingUsers).join(', ')}</strong> está a escrever<span class="typing-dots"></span>`; } }
 
         if(socket) {
-            socket.on('initial servers', (srvs) => { srvs.forEach(s => myServers.set(s.id, s)); renderSidebar(); }); socket.on('server created', (srv) => { myServers.set(srv.id, srv); renderSidebar(); });
-            socket.on('server data', (data) => { currentServer = data; document.getElementById('current-server-name').innerText = data.name; unreadServers.delete(data.id); const textChannels = Object.values(data.channels).filter(c=>c.type==='text'); if(textChannels.length > 0) switchTextChannel(textChannels[0].id); renderChannels(); renderSidebar(); });
+            socket.on('initial data', (data) => { data.servers.forEach(s => myServers.set(s.id, s)); userDMs = data.dms; serverEmojis = data.customEmojis; openHomeDMs(); }); 
+            socket.on('server created', (srv) => { myServers.set(srv.id, srv); renderSidebar(); });
+            socket.on('dm created', (dm) => { userDMs[dm.id] = dm; renderDMList(); });
+            socket.on('server data', (data) => { isDmMode = false; currentServer = data; document.getElementById('current-server-name').innerText = data.name; document.getElementById('sidebar-category-name').innerHTML = `<i class="fa-solid fa-chevron-down text-[10px] mr-1"></i> Canais`; document.getElementById('btn-invite-copy').classList.remove('hidden'); document.getElementById('btn-sidebar-plus').onclick = openChannelModal; unreadServers.delete(data.id); const textChannels = Object.values(data.channels).filter(c=>c.type==='text'); if(textChannels.length > 0) switchTextChannel(textChannels[0].id); renderChannels(); renderSidebar(); document.getElementById('message-input').disabled = false; });
+            socket.on('dm data', (dm) => { isDmMode = true; currentDmId = dm.id; unreadServers.delete(dm.id); const otherIp = dm.users.find(ip => ip !== currentUser.ip); let otherName = "Amigo"; const otherUserObj = onlineUsersData.find(u => u.ip === otherIp); if(otherUserObj) otherName = otherUserObj.name; document.getElementById('chat-header-name').innerText = otherName; document.getElementById('header-channel-icon').className = 'fa-solid fa-at text-[#87898C] text-2xl hidden sm:block'; document.getElementById('chat-messages').innerHTML = `<div class="mt-10 mb-8 px-4"><div class="w-16 h-16 bg-[#5865F2] rounded-full flex items-center justify-center mb-4 shadow-lg"><i class="fa-solid fa-user text-white text-3xl"></i></div><h1 class="text-white text-4xl font-black mb-2">Mensagens Diretas com ${otherName}</h1></div>`; if (dm.messages) dm.messages.forEach(m => appendMessage(m, true)); document.getElementById('message-input').disabled = false; renderDMList(); });
             socket.on('channel created', ({ serverId, channel }) => { if(currentServer && currentServer.id === serverId) { currentServer.channels[channel.id] = channel; renderChannels(); } });
             
             socket.on('chat message', (data) => {
-                if(currentServer && data.serverId === currentServer.id) { if(currentServer.channels[data.channelId]) currentServer.channels[data.channelId].messages.push(data.message); if(data.channelId === currentTextChannelId) appendMessage(data.message); } else { unreadServers.add(data.serverId); renderSidebar(); }
-                if (document.hidden || (currentServer && data.serverId !== currentServer.id)) { playPing(); if ("Notification" in window && Notification.permission === "granted") { if(data.message.user.socketId !== currentUser.socketId) { new Notification(data.message.user.name, { body: data.message.text || 'Enviou um arquivo/mídia', icon: data.message.user.avatar }); } } }
+                if (data.isDm) { userDMs[data.serverId].messages.push(data.message); if(isDmMode && currentDmId === data.serverId) appendMessage(data.message, true); else { unreadServers.add(data.serverId); renderSidebar(); renderDMList(); } } 
+                else { if(currentServer && data.serverId === currentServer.id) { if(currentServer.channels[data.channelId]) currentServer.channels[data.channelId].messages.push(data.message); if(data.channelId === currentTextChannelId && !isDmMode) appendMessage(data.message, false); } else { unreadServers.add(data.serverId); renderSidebar(); } }
+                if (document.hidden || (data.isDm ? currentDmId !== data.serverId : currentServer?.id !== data.serverId)) { playPing(); if ("Notification" in window && Notification.permission === "granted") { if(data.message.user.socketId !== currentUser.socketId) { new Notification(data.message.user.name, { body: data.message.text || 'Enviou uma mídia', icon: data.message.user.avatar }); } } }
             });
 
-            socket.on('message deleted', ({ channelId, msgId }) => { if(channelId === currentTextChannelId) { const el = document.getElementById(`msg-${msgId}`); if(el) el.remove(); } });
-            socket.on('message edited', ({ channelId, msgId, newText }) => { if(channelId === currentTextChannelId) { const msgEl = document.getElementById(`msg-text-${msgId}`); if(msgEl) { msgEl.setAttribute('data-raw', newText.replace(/"/g, '&quot;')); let safeText = newText; if(safeText.includes('@everyone')) safeText = safeText.replace(/@everyone/g, `<span class="bg-[#FAA61A]/30 text-[#FEE75C] font-medium px-1 rounded">@everyone</span>`); if(safeText.includes(`@${currentUser.name}`)) safeText = safeText.replace(new RegExp(`@${currentUser.name}`, 'g'), `<span class="bg-[#5865F2]/30 text-[#C9CDD6] font-medium px-1 rounded">@${currentUser.name}</span>`); msgEl.innerHTML = `${safeText} <span class="text-[10px] text-[#87898C] ml-1">(editado)</span>`; } } });
+            socket.on('update reactions', ({ channelId, msgId, reactions, isDm }) => { if((isDm && isDmMode) || (!isDm && channelId === currentTextChannelId)) { const msgEl = document.getElementById(`msg-${msgId}`); if(msgEl) { const box = msgEl.querySelector(`#react-box-${msgId}`); if(box) box.remove(); if(Object.keys(reactions).length > 0) { let reactionsHtml = `<div class="flex flex-wrap gap-1 mt-2" id="react-box-${msgId}">`; for(let emoji in reactions) { const count = reactions[emoji].length; const iReacted = reactions[emoji].includes(currentUser.name); const bgR = iReacted ? 'bg-[#5865F2]/30 border-[#5865F2]' : 'bg-white/5 border-transparent hover:bg-white/10'; let displayEmoji = emoji; if(emoji.startsWith('img_')) { const ce = serverEmojis.find(e => e.id === emoji.replace('img_','')); if(ce) displayEmoji = `<img src="${ce.url}" class="w-4 h-4 inline-block object-contain">`; } reactionsHtml += `<button onclick="socket.emit('react message', {serverId:'${isDm ? currentDmId : currentServer.id}', channelId:'${currentTextChannelId}', msgId:'${msgId}', emoji:'${emoji}', isDm:${isDm}})" class="flex items-center gap-1.5 px-2 py-0.5 rounded-lg border ${bgR} text-xs font-bold transition text-white" title="${reactions[emoji].join(', ')}">${displayEmoji} <span>${count}</span></button>`; } reactionsHtml += `</div>`; msgEl.querySelector('.flex-col').insertAdjacentHTML('beforeend', reactionsHtml); } } } });
+            socket.on('new custom emoji', (ce) => { serverEmojis.push(ce); });
+            socket.on('message deleted', ({ channelId, msgId, isDm }) => { if((isDm && isDmMode) || (!isDm && channelId === currentTextChannelId)) { const el = document.getElementById(`msg-${msgId}`); if(el) el.remove(); } });
+            socket.on('message edited', ({ channelId, msgId, newText, isDm }) => { if((isDm && isDmMode) || (!isDm && channelId === currentTextChannelId)) { const msgEl = document.getElementById(`msg-text-${msgId}`); if(msgEl) { msgEl.setAttribute('data-raw', newText.replace(/"/g, '&quot;')); let safeText = newText; if(safeText.includes('@everyone')) safeText = safeText.replace(/@everyone/g, `<span class="bg-[#FAA61A]/30 text-[#FEE75C] font-medium px-1 rounded">@everyone</span>`); if(safeText.includes(`@${currentUser.name}`)) safeText = safeText.replace(new RegExp(`@${currentUser.name}`, 'g'), `<span class="bg-[#5865F2]/30 text-[#C9CDD6] font-medium px-1 rounded">@${currentUser.name}</span>`); msgEl.innerHTML = `${safeText} <span class="text-[10px] text-[#87898C] ml-1">(editado)</span>`; } } });
             socket.on('typing', ({ channelId, user }) => { if(channelId === currentTextChannelId && user.name !== currentUser.name) { typingUsers.add(user.name); updateTypingIndicator(); } });
             socket.on('stop typing', ({ channelId, userName }) => { if(channelId === currentTextChannelId) { typingUsers.delete(userName); updateTypingIndicator(); } });
-            socket.on('update users', (users) => { const myData = users.find(u => u.socketId === currentUser.socketId); if (myData) { currentUser.role = myData.role; } onlineUsersData = users; const ml = document.getElementById('members-list'); ml.innerHTML = ''; const visibleUsers = users.filter(u => u.status !== 'invisible' || u.socketId === currentUser.socketId); const roleOrder = { 'Admin': 1, 'Moderador': 2, 'VIP': 3, 'Membro': 4 }; visibleUsers.sort((a,b) => roleOrder[a.role] - roleOrder[b.role]); visibleUsers.forEach(u => { const icon = u.role === 'Admin' ? '<i class="fa-solid fa-crown text-[#F0B232] text-[10px] ml-1"></i>' : (u.role === 'Moderador' ? '<i class="fa-solid fa-shield text-[#23A559] text-[10px] ml-1"></i>' : ''); ml.innerHTML += `<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-black/10 cursor-pointer group smooth-hover" onclick="showUserPopout(event, '${u.socketId}')"><div class="relative"><img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover shadow-sm"><div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-[#2B2D31] rounded-full" style="background-color: ${getStatusColor(u.status)}"></div></div><div class="flex flex-col min-w-0"><span class="group-hover:text-white font-bold truncate text-[13px]" style="color:${getRoleColor(u.role, u.color)}">${u.name} ${icon}</span>${u.activity ? `<span class="text-[10px] text-[#B5BAC1] truncate font-medium">${u.activity}</span>` : ''}</div></div>`; }); renderChannels(); });
+            
+            socket.on('update users', (users) => { 
+                const myData = users.find(u => u.socketId === currentUser.socketId); if (myData) { currentUser.role = myData.role; } 
+                onlineUsersData = users; const ml = document.getElementById('members-list'); ml.innerHTML = ''; 
+                const visibleUsers = users.filter(u => u.status !== 'invisible' || u.socketId === currentUser.socketId); 
+                const roleOrder = { 'Admin': 1, 'Moderador': 2, 'VIP': 3, 'Membro': 4 }; visibleUsers.sort((a,b) => roleOrder[a.role] - roleOrder[b.role]); 
+                visibleUsers.forEach(u => { const icon = u.role === 'Admin' ? '<i class="fa-solid fa-crown text-[#F0B232] text-[10px] ml-1"></i>' : (u.role === 'Moderador' ? '<i class="fa-solid fa-shield text-[#23A559] text-[10px] ml-1"></i>' : ''); ml.innerHTML += `<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer group smooth-hover" onclick="showUserPopout(event, '${u.socketId}')"><div class="relative"><img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover shadow-sm"><div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-[#2B2D31] rounded-full" style="background-color: ${getStatusColor(u.status)}"></div></div><div class="flex flex-col min-w-0"><span class="group-hover:text-white font-bold truncate text-[13px]" style="color:${getRoleColor(u.role, u.color)}">${u.name} ${icon}</span>${u.activity ? `<span class="text-[10px] text-[#B5BAC1] truncate font-medium">${u.activity}</span>` : ''}</div></div>`; }); 
+                renderChannels(); 
+            });
             socket.on('system message', (msg) => { const div = document.createElement('div'); div.className = 'text-[#23A559] text-sm py-3 font-bold text-center bg-[#23A559]/10 rounded-lg border border-[#23A559]/30 mx-4 mt-2 shadow-sm'; div.innerHTML = msg; document.getElementById('chat-messages').appendChild(div); chatMessages.scrollTop = chatMessages.scrollHeight; });
-            socket.on('error message', alert);
         }
 
         // --- WEBRTC ---
