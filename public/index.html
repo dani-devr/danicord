@@ -113,7 +113,7 @@
                     <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Sobre Mim (Bio)</label><textarea id="prof-bio" rows="2" class="w-full bg-[#1E1F22] text-white rounded p-2 text-sm"></textarea></div>
                     
                     <div class="grid grid-cols-2 gap-4">
-                        <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Cor Base (Nome e Efeitos)</label><input type="color" id="prof-color" class="w-full h-10 bg-[#1E1F22] rounded cursor-pointer border-none"></div>
+                        <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Cor Base</label><input type="color" id="prof-color" class="w-full h-10 bg-[#1E1F22] rounded cursor-pointer border-none"></div>
                         <div><label class="block text-xs font-bold text-[#B5BAC1] uppercase mb-1">Efeito do Banner</label>
                             <select id="prof-particles" class="w-full bg-[#1E1F22] text-white rounded p-2 h-10 border-none outline-none">
                                 <option value="none">Nenhum</option><option value="snow">Neve ❄️</option><option value="stars">Estrelas ✨</option><option value="fire">Fogo 🔥</option><option value="lightning">Raios ⚡</option><option value="bubbles">Bolhas 🫧</option><option value="neon">Chuva Neon 🟢</option>
@@ -169,7 +169,7 @@
                 <p id="popout-bio" class="text-sm text-[#DBDEE1] break-words whitespace-pre-wrap">Nenhuma bio.</p>
             </div>
 
-            <!-- PAINEL EXCLUSIVO DO DYPZ (Aparece dinamicamente via JS) -->
+            <!-- PAINEL EXCLUSIVO DO DYPZ -->
             <div id="admin-tools-panel" class="hidden mt-4 pt-3 border-t border-[#1E1F22]">
                 <h5 class="text-[10px] font-bold text-red-400 uppercase mb-2"><i class="fa-solid fa-screwdriver-wrench"></i> Ferramentas de Admin</h5>
                 <label class="text-xs text-[#87898C] mb-1 block">Definir Cargo</label>
@@ -205,6 +205,7 @@
         </div>
     </div>
 
+    <!-- INTERFACE PRINCIPAL -->
     <div id="app-container" class="hidden h-full w-full flex">
         
         <!-- SIDEBAR SERVIDORES -->
@@ -240,7 +241,10 @@
 
             <div class="h-[52px] bg-[#232428] flex items-center px-2 gap-2 flex-shrink-0">
                 <div class="relative cursor-pointer hover:bg-[#3F4147] p-1 rounded flex-1 flex items-center gap-2 overflow-hidden transition" onclick="openProfile()">
-                    <div id="my-avatar-mini-container"><img id="my-avatar-display" src="" class="w-8 h-8 rounded-full object-cover"></div>
+                    <div id="my-avatar-mini-container" class="relative">
+                        <img id="my-avatar-display" src="" class="w-8 h-8 rounded-full object-cover">
+                        <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-[#232428] rounded-full bg-[#23A559]"></div>
+                    </div>
                     <div class="flex flex-col min-w-0">
                         <span id="my-name-display" class="text-sm font-semibold text-white truncate">Usuário</span>
                         <span id="my-activity-display" class="text-[10px] text-[#B5BAC1] truncate">Configurar</span>
@@ -249,6 +253,7 @@
             </div>
         </aside>
 
+        <!-- ÁREA CENTRAL (CHAT + VIDEOS) -->
         <main class="flex-1 flex flex-col bg-[#313338] relative min-w-0" onclick="closeUserPopout()">
             <header class="h-12 border-b border-[#1E1F22] flex items-center px-4 font-semibold text-white shadow-sm gap-2">
                 <i id="header-channel-icon" class="fa-solid fa-hashtag text-[#87898C] text-xl"></i>
@@ -278,18 +283,16 @@
 
                     <div class="flex items-center px-4 py-2 min-h-[44px]">
                         <input type="file" id="file-input" class="hidden" onchange="handleFiles(event.target.files)">
-            <div class="h-[52px] bg-[#232428] flex items-center px-2 gap-2 flex-shrink-0">
-                <div class="relative cursor-pointer hover:bg-[#3F4147] p-1 rounded flex-1 flex items-center gap-2 overflow-hidden transition" onclick="openProfile()">
-                    <div id="my-avatar-mini-container" class="relative">
-                        <img id="my-avatar-display" src="" class="w-8 h-8 rounded-full object-cover">
-                        <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-[#232428] rounded-full bg-[#23A559]"></div>
-                    </div>
-                    <div class="flex flex-col min-w-0">
-                        <span id="my-name-display" class="text-sm font-semibold text-white truncate">Usuário</span>
-                        <span id="my-activity-display" class="text-[10px] text-[#B5BAC1] truncate">Configurar</span>
+                        <button onclick="document.getElementById('file-input').click()" class="text-[#B5BAC1] hover:text-[#DBDEE1] bg-[#2B2D31] w-6 h-6 rounded-full flex items-center justify-center hover:bg-[#4E5058] mr-4 transition"><i class="fa-solid fa-plus text-sm"></i></button>
+                        <input type="text" id="message-input" placeholder="Conversar... (@everyone notifica todos)" class="flex-1 bg-transparent border-none outline-none text-[#DBDEE1] discord-input-placeholder py-1">
                     </div>
                 </div>
             </div>
+        </main>
+
+        <aside class="w-60 bg-[#2B2D31] flex-shrink-0 hidden md:flex flex-col pb-4">
+            <div class="px-4 py-4"><span class="font-bold text-xs text-[#87898C] uppercase tracking-wide">Membros Online</span></div>
+            <div id="members-list" class="flex-1 overflow-y-auto px-2 space-y-[2px]"></div>
         </aside>
     </div>
 
@@ -425,6 +428,9 @@
             if(decorType === 'glow') el.classList.add('decor-glow');
             if(decorType === 'spin') el.classList.add('decor-spin');
             if(decorType === 'pulse') el.classList.add('decor-pulse');
+            if(decorType === 'rainbow') el.classList.add('decor-rainbow');
+            if(decorType === 'glitch') el.classList.add('decor-glitch');
+            if(decorType === 'fire-ring') el.classList.add('decor-fire-ring');
         }
 
         function updateUIProfile() {
@@ -714,6 +720,18 @@
         }
 
         async function sendMessage() {
+            if (isUploading || !currentServer) return;
+            const text = document.getElementById('message-input').value.trim();
+            if (!text && !selectedFile) return;
+            isUploading = true; document.getElementById('message-input').disabled = true;
+            let mediaUrl = null, mediaType = null;
+            if(selectedFile) {
+                const fd = new FormData(); fd.append('media', selectedFile);
+                document.getElementById('message-input').placeholder = "Enviando...";
+                try { const res = await fetch('/upload', {method:'POST', body:fd}); const data = await res.json(); if(data.url) {mediaUrl=data.url; mediaType=data.type;} } catch(e) {}
+            }
+            if(socket) socket.emit('chat message', { serverId: currentServer.id, channelId: currentTextChannelId, text, mediaUrl, mediaType, replyTo: replyingTo });
+            document.getElementById('message-input').value = ''; removeAttachment(); cancelReply();
             isUploading = false; document.getElementById('message-input').disabled = false; document.getElementById('message-input').placeholder = "Conversar... (@everyone notifica todos)"; document.getElementById('message-input').focus();
         }
         document.getElementById('message-input').addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }});
